@@ -94,7 +94,7 @@ const App = () => {
             <div className="bg-white p-10 rounded-[2.5rem] shadow-xl border-4 border-slate-50 text-center">
                <GraduationCap size={56} className="text-blue-700 mx-auto mb-4 animate-bounce-slow" />
                <h2 className="text-2xl md:text-4xl font-black uppercase italic tracking-tight leading-tight">Master Mathematics <br/> <span className="text-blue-700 underline decoration-yellow-400 decoration-4 underline-offset-8">with Anshu Sir</span></h2>
-               <button onClick={() => setActiveTab('live')} className="mt-8 bg-blue-700 text-white px-10 py-3 rounded-full font-bold text-[10px] uppercase shadow-xl">Start Mock</button>
+               <button onClick={() => setActiveTab('live')} className="mt-8 bg-blue-700 text-white px-10 py-3 rounded-full font-bold text-[10px] uppercase shadow-xl hover:bg-blue-800">Start Mock</button>
             </div>
             <div className="bg-white p-6 rounded-3xl shadow-md border border-slate-100 text-left w-full">
               <h3 className="font-bold text-sm uppercase mb-4 border-b pb-2 flex items-center gap-3"><History size={18} className="text-blue-600"/> Live Activity Log</h3>
@@ -146,6 +146,7 @@ const App = () => {
   );
 };
 
+// --- Sub-component: Teacher Zone (সংশোধিত) ---
 const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, setTeacherPin, studentResults }) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isChangingPin, setIsChangingPin] = useState(false);
@@ -158,7 +159,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
 
   const PaperManager = ({ title, items, type, color }) => (
     <div className="bg-white p-6 rounded-3xl shadow-sm border-t-8 border-slate-100 mb-8 w-full text-left">
-      <div className="flex justify-between items-center border-b pb-4 mb-6"><h3 className={`font-bold uppercase text-xs italic ${color}`}>{title} Manager</h3><button onClick={async () => await addDoc(collection(db, type === 'live' ? 'liveMocks' : 'practiceSets'), { name: "New Slot", hours: "1", minutes: "0", fileUrl: "", isPublished: false, answerKey: "" })} className="p-2 bg-slate-100 rounded-full active:scale-90 border-2 border-white shadow-sm"><PlusCircle size={20}/></button></div>
+      <div className="flex justify-between items-center border-b pb-4 mb-6"><h3 className={`font-bold uppercase text-xs italic ${color}`}>{title} Manager</h3><button onClick={async () => await addDoc(collection(db, type === 'live' ? 'liveMocks' : 'practiceSets'), { name: "New Slot", hours: "1", minutes: "0", fileUrl: "", isPublished: false, answerKey: "", questionMarks: "" })} className="p-2 bg-slate-100 rounded-full active:scale-90 shadow-sm border-2 border-white"><PlusCircle size={20}/></button></div>
       <div className="space-y-6">{items.map(item => (
         <div key={item.id} className="p-5 bg-slate-50 rounded-2xl border-2 border-white space-y-4 shadow-sm">
           <div className="flex gap-2">
@@ -167,14 +168,24 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
             <button onClick={async () => { if(window.confirm("Delete?")) await deleteDoc(doc(db, type === 'live' ? 'liveMocks' : 'practiceSets', item.id)); }} className="text-red-400 active:scale-90"><Trash2 size={18}/></button>
           </div>
           <div className="flex gap-2">
-            <div className="flex items-center gap-1 bg-white px-3 py-2 rounded-lg border-2 border-blue-50">
-               <Timer size={14} className="text-blue-500"/> 
+            <div className="flex items-center gap-1 bg-white px-2 py-2 rounded-lg border-2 border-blue-50">
                <input type="number" value={item.hours} onChange={(e) => updateField(item.id, type, 'hours', e.target.value)} className="w-12 text-center font-black text-lg bg-blue-50 rounded outline-none" /> <span className="font-bold text-[9px]">H</span> 
                <input type="number" value={item.minutes} onChange={(e) => updateField(item.id, type, 'minutes', e.target.value)} className="w-12 text-center font-black text-lg bg-blue-50 rounded outline-none" /> <span className="font-bold text-[9px]">M</span>
             </div>
             <input type="text" value={item.fileUrl} onChange={(e) => updateField(item.id, type, 'fileUrl', e.target.value)} className="flex-1 p-2 rounded-lg border text-[10px] outline-none" placeholder="Drive Link" />
           </div>
-          <div className="bg-white p-3 rounded-xl border border-blue-100"><p className="text-[8px] font-black text-blue-700 uppercase mb-2 tracking-widest flex items-center gap-2"><CheckSquare size={12}/> Answer Key (A,B,C...)</p><input type="text" value={item.answerKey || ""} onChange={(e) => updateField(item.id, type, 'answerKey', e.target.value.toUpperCase())} className="w-full p-2 rounded-lg bg-blue-50/30 border-2 border-blue-100 font-bold text-xs outline-none" placeholder="e.g. A,D,B,C" /></div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div className="bg-white p-3 rounded-xl border border-blue-100">
+                <p className="text-[8px] font-black text-blue-700 uppercase mb-2 flex items-center gap-2"><CheckSquare size={12}/> Answer Key (A,B,C...)</p>
+                <input type="text" value={item.answerKey || ""} onChange={(e) => updateField(item.id, type, 'answerKey', e.target.value.toUpperCase())} className="w-full p-2 rounded-lg bg-blue-50/30 border-2 border-blue-100 font-bold text-xs outline-none" placeholder="e.g. A,D,B,C" />
+             </div>
+             {/* 🔴 নতুন মার্কস সেট করার বক্স */}
+             <div className="bg-white p-3 rounded-xl border border-yellow-100">
+                <p className="text-[8px] font-black text-yellow-700 uppercase mb-2 flex items-center gap-2"><Trophy size={12}/> Marks Per Question (1,2,5...)</p>
+                <input type="text" value={item.questionMarks || ""} onChange={(e) => updateField(item.id, type, 'questionMarks', e.target.value)} className="w-full p-2 rounded-lg bg-yellow-50/30 border-2 border-yellow-100 font-bold text-xs outline-none" placeholder="e.g. 1,1,2,5" />
+             </div>
+          </div>
         </div>
       ))}</div>
     </div>
@@ -190,14 +201,14 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
       </div>
       
       {isChangingPin && (
-        <div className="max-w-sm w-full p-6 bg-blue-50 rounded-3xl border-2 mb-8"><input type="text" onChange={(e) => setPinVal(e.target.value)} className="w-full p-3 rounded-xl bg-white border-2 text-xl font-black text-center" placeholder="NEW PIN" /><button onClick={async () => { if(pinVal.length >= 4) { await setTeacherPin(pinVal); setIsChangingPin(false); alert("Updated!"); }}} className="w-full py-2 bg-blue-700 text-white rounded-lg mt-4 font-bold text-xs uppercase uppercase">Save</button></div>
+        <div className="max-w-sm w-full p-6 bg-blue-50 rounded-3xl border-2 mb-8"><input type="text" onChange={(e) => setPinVal(e.target.value)} className="w-full p-3 rounded-xl bg-white border-2 text-xl font-black text-center" placeholder="NEW PIN" /><button onClick={async () => { if(pinVal.length >= 4) { await setTeacherPin(pinVal); setIsChangingPin(false); alert("Updated!"); }}} className="w-full py-2 bg-blue-700 text-white rounded-lg mt-4 font-bold text-xs uppercase">Save</button></div>
       )}
 
       <PaperManager title="Live Mock" items={liveMocks} type="live" color="text-red-600" />
       <PaperManager title="Practice" items={practiceSets} type="practice" color="text-blue-700" />
 
       <div className="bg-white p-6 rounded-3xl shadow-lg border-t-8 border-slate-900 w-full mb-20 text-center">
-        <h3 className="font-bold text-xs uppercase mb-6 flex items-center justify-center gap-3"><Trophy size={24} className="text-yellow-600"/> Registry</h3>
+        <h3 className="font-bold text-xs uppercase mb-6 flex items-center justify-center gap-3"><Trophy size={24} className="text-yellow-600"/> Student Registry</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {students.map((std) => (
             <div key={std.id} className="relative group transition-all">
@@ -220,13 +231,13 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
        <button onClick={onClose} className="font-bold text-blue-600 mb-8 border-b-2 border-blue-600 uppercase text-xs">BACK</button>
        <div className="bg-white p-8 rounded-3xl border-4 shadow-2xl max-w-xl mx-auto space-y-8">
           <h3 className="text-2xl font-black uppercase italic border-b pb-4">{student?.name} Stats</h3>
-          <div className="p-6 bg-blue-50 rounded-3xl space-y-4">
+          <div className="p-6 bg-blue-50 rounded-3xl space-y-4 shadow-inner">
              <div className="grid grid-cols-1 gap-4 text-left">
-               <input type="text" value={newRes.exam} onChange={(e) => setNewRes({...newRes, exam: e.target.value})} className="w-full p-3 rounded-xl border-2 font-bold text-xs outline-none shadow-sm" placeholder="Exam/Module Name" />
+               <input type="text" value={newRes.exam} onChange={(e) => setNewRes({...newRes, exam: e.target.value})} className="w-full p-3 rounded-xl border-2 font-bold text-xs outline-none" placeholder="Exam/Module Name" />
                <input type="date" value={newRes.date} onChange={(e) => setNewRes({...newRes, date: e.target.value})} className="w-full p-3 rounded-xl border-2 font-bold text-xs" />
                <div className="flex gap-2"><input type="number" placeholder="Obt" onChange={(e) => setNewRes({...newRes, obtained: e.target.value})} className="w-1/2 p-3 rounded-xl border-2 text-xs text-center" /><input type="number" placeholder="Full" onChange={(e) => setNewRes({...newRes, total: e.target.value})} className="w-1/2 p-3 rounded-xl border-2 text-xs text-center" /></div>
              </div>
-             <button onClick={async () => { if(newRes.exam && newRes.obtained && newRes.total && newRes.date) { const p = Math.round((parseFloat(newRes.obtained)/parseFloat(newRes.total))*100); await addDoc(collection(db, "results"), { ...newRes, name: student.name, percent: p, timestamp: Date.now() }); setNewRes({exam: "", obtained: "", total: "", date: ""}); alert("Saved!"); }}} className="w-full py-4 bg-blue-700 text-white rounded-2xl font-bold uppercase text-xs">Save Performance</button>
+             <button onClick={async () => { if(newRes.exam && newRes.obtained && newRes.total && newRes.date) { const p = Math.round((parseFloat(newRes.obtained)/parseFloat(newRes.total))*100); await addDoc(collection(db, "results"), { ...newRes, name: student.name, percent: p, timestamp: Date.now() }); setNewRes({exam: "", obtained: "", total: "", date: ""}); alert("Saved!"); }}} className="w-full py-4 bg-blue-700 text-white rounded-2xl font-bold uppercase text-xs shadow-xl active:scale-95 transition-all">Save Performance</button>
           </div>
           <div className="space-y-4 pt-6">{results.filter(r => r.name === student?.name).sort((a,b)=>b.timestamp-a.timestamp).map(r => (<div key={r.id} className="p-5 bg-slate-50 border-2 rounded-[2rem] flex justify-between items-center shadow-md transition-all hover:bg-white group"><div className="flex items-center gap-4"><div className="w-10 h-10 rounded-lg flex items-center justify-center font-black text-xs bg-white shadow">{r.percent}%</div><div><p className="text-sm font-black uppercase italic tracking-tighter">{r.exam}</p><p className="text-[10px] font-bold text-slate-400">{r.date} • Score: {r.obtained}/{r.total}</p></div></div><button onClick={async () => { if(window.confirm("Purge?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-red-200 hover:text-red-600 transition-colors active:scale-90"><Trash2 size={24} /></button></div>))}</div>
        </div>
@@ -245,7 +256,7 @@ const GrowthSectionView = ({ results, students }) => {
           <button onClick={() => setSel(null)} className="flex items-center gap-2 text-[11px] font-bold text-blue-600 uppercase italic hover:underline decoration-2 underline-offset-8"><ChevronLeft size={24}/> Return</button>
           <div className="bg-white rounded-3xl shadow-xl overflow-hidden border-4 border-slate-50 relative">
              <div className="bg-blue-700 p-10 text-white text-center relative overflow-hidden"><Trophy className="absolute -top-20 -right-20 opacity-10 rotate-12" size={150}/><h2 className="text-4xl font-black uppercase italic tracking-tighter leading-none">Growth Report</h2><p className="mt-5 inline-block bg-white/20 px-8 py-2 rounded-full border border-white/40 backdrop-blur-sm text-sm font-bold uppercase italic">{sel}</p></div>
-             <div className="p-6 overflow-x-auto"><table className="w-full text-sm font-bold border-separate border-spacing-y-4"><thead><tr className="text-slate-400 uppercase text-[10px] tracking-widest opacity-80"><th className="pb-4 text-left">Unit</th><th className="pb-4 text-center">Score</th><th className="pb-4 text-right">Metric</th></tr></thead><tbody>{results.filter(r => r.name === sel).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(r => (<tr key={r.id} className="bg-slate-50 rounded-2xl shadow-sm"><td className="p-5 uppercase text-slate-800 italic rounded-l-2xl border-l-8 border-blue-600">{r.exam}</td><td className="p-5 text-center text-blue-700 text-3xl font-black">{r.obtained}/{r.total}</td><td className="p-5 text-right rounded-r-2xl"><span className={`px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest border-2 shadow-sm ${r.percent >= 40 ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>{r.percent >= 90 ? 'MASTER' : r.percent >= 40 ? 'SUCCESS' : 'FAILURE'}</span></td></tr>))}</tbody></table></div>
+             <div className="p-6 overflow-x-auto"><table className="w-full text-sm font-bold border-separate border-spacing-y-4"><thead><tr className="text-slate-400 uppercase text-[10px] tracking-widest opacity-80"><th className="pb-4 text-left">Unit</th><th className="pb-4 text-center">Score</th><th className="pb-4 text-right">Metric</th></tr></thead><tbody>{results.filter(r => r.name === sel).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(r => (<tr key={r.id} className="bg-slate-50 rounded-2xl shadow-sm"><td className="p-5 uppercase text-slate-800 italic rounded-l-2xl border-l-8 border-blue-600">{r.exam}</td><td className="p-5 text-center text-blue-700 text-3xl font-black">{r.obtained}/{r.total}</td><td className="p-5 text-right rounded-r-2xl"><span className={`px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest border-2 shadow-sm ${r.percent >= 40 ? 'bg-green-100 text-green-700 border-green-200 shadow-green-100' : 'bg-red-100 text-red-700 border-red-200 shadow-red-100'}`}>{r.percent >= 90 ? 'MASTER' : r.percent >= 40 ? 'SUCCESS' : 'FAILURE'}</span></td></tr>))}</tbody></table></div>
           </div>
         </div>
       )}
@@ -253,15 +264,19 @@ const GrowthSectionView = ({ results, students }) => {
   );
 };
 
-// --- Sub-component: 🔴 Interactive Exam Hall (সাদা হওয়া রোধে সুরক্ষিত) ---
+// --- Sub-component: 🔴 Interactive Exam Hall (Dynamic Marking লজিক সহ) ---
 const InteractiveExamHall = ({ exam, onFinish }) => {
-  const [timeLeft, setTimeLeft] = useState(parseInt(exam?.duration) || 3600);
+  const h = parseInt(exam.hours) || 0;
+  const m = parseInt(exam.minutes) || 0;
+  const [timeLeft, setTimeLeft] = useState((h * 3600) + (m * 60) || 3600);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [answers, setAnswers] = useState({});
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [scoreData, setScoreData] = useState(null);
 
   const answerKeyArray = exam?.answerKey ? exam.answerKey.split(',').map(k => k.trim().toUpperCase()) : [];
+  // 🔴 মার্কস অ্যারে তৈরি করা হচ্ছে
+  const marksArray = exam?.questionMarks ? exam.questionMarks.split(',').map(m => parseFloat(m.trim()) || 1) : [];
 
   useEffect(() => {
     let t;
@@ -272,86 +287,82 @@ const InteractiveExamHall = ({ exam, onFinish }) => {
 
   const submitExam = async () => {
     try {
-      let correctCount = 0;
+      let totalObtainedMarks = 0;
+      let totalPossibleMarks = 0;
+      
       const detailResults = answerKeyArray.map((key, index) => {
         const qNum = index + 1;
+        const qMark = marksArray[index] !== undefined ? marksArray[index] : 1; // ডিফল্ট ১ নম্বর
         const isCorrect = (answers[qNum] || '') === key;
-        if (isCorrect) correctCount++;
-        return { qNum, selected: answers[qNum] || 'None', correct: key, status: isCorrect };
+        
+        totalPossibleMarks += qMark;
+        if (isCorrect) totalObtainedMarks += qMark;
+        
+        return { qNum, selected: answers[qNum] || 'None', correct: key, status: isCorrect, mark: qMark };
       });
-      const percent = answerKeyArray.length > 0 ? Math.round((correctCount / answerKeyArray.length) * 100) : 0;
-      
-      const d = new Date();
-      const scoreString = `${correctCount} / ${answerKeyArray.length}`;
 
-      // 🔴 প্রথমে হোমে দেখানোর জন্য লগ সেভ করা হচ্ছে
+      const percent = totalPossibleMarks > 0 ? Math.round((totalObtainedMarks / totalPossibleMarks) * 100) : 0;
+      const d = new Date();
+      
+      // 🔴 হোমপেজ লগে প্রাপ্ত নম্বর এবং মোট নম্বর পাঠানো হচ্ছে
       await addDoc(collection(db, "logs"), { 
-        studentName: exam.studentName, 
-        examTitle: exam.name, 
-        timestamp: Date.now(), 
+        studentName: exam.studentName, examTitle: exam.name, timestamp: Date.now(), 
         timeDisplay: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         dateDisplay: d.toLocaleDateString('en-GB'),
-        scoreDisplay: scoreString 
+        scoreDisplay: `${totalObtainedMarks} / ${totalPossibleMarks}` 
       });
 
-      // 🔴 তারপর গ্রোথ সেকশনের জন্য রেজাল্ট সেভ
       await addDoc(collection(db, "results"), { 
-        name: exam.studentName, exam: exam.name, percent, obtained: correctCount, 
-        total: answerKeyArray.length, date: d.toLocaleDateString('en-GB'), timestamp: Date.now() 
+        name: exam.studentName, exam: exam.name, percent, obtained: totalObtainedMarks, 
+        total: totalPossibleMarks, date: d.toLocaleDateString('en-GB'), timestamp: Date.now() 
       });
 
-      // 🔴 সব সেভ হওয়ার পর স্টেট আপডেট
-      setScoreData({ correct: correctCount, total: answerKeyArray.length, percent, details: detailResults });
+      setScoreData({ correct: totalObtainedMarks, total: totalPossibleMarks, percent, details: detailResults });
       setIsSubmitted(true);
-    } catch (error) {
-      alert("Submission Error! Refresh & Check Log.");
+    } catch (e) {
+      alert("Error submitting exam.");
       setIsSubmitted(true);
     }
   };
 
-  const formatTime = (s) => {
-    if (isNaN(s) || s < 0) return "00:00";
-    const mins = Math.floor(s / 60);
-    const secs = s % 60;
-    return `${mins}:${secs < 10 ? '0' + secs : secs}`;
-  };
+  const formatTime = (s) => `${Math.floor(s/60)}:${s%60 < 10 ? '0'+(s%60) : s%60}`;
 
   if (isSubmitted) return (
     <div className="fixed inset-0 bg-white z-[2000] flex flex-col items-center overflow-y-auto p-10 text-center animate-in zoom-in duration-500">
       <CheckCircle size={80} className="text-green-600 mb-6 animate-bounce" />
-      <h2 className="text-3xl font-black text-slate-800 uppercase italic mb-6">Evaluation Done</h2>
+      <h2 className="text-3xl font-black text-slate-800 uppercase italic mb-6">Evaluation Result</h2>
       <div className="bg-slate-50 p-6 rounded-[2rem] border-2 border-slate-100 mb-8 w-full max-w-sm shadow-inner text-center">
-         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Final Score</p>
+         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Final Marks</p>
          <h3 className="text-5xl font-black text-blue-700 italic tracking-tighter">{scoreData?.correct} / {scoreData?.total}</h3>
       </div>
       <div className="w-full max-w-lg space-y-3 mb-10 text-left">
-         <h4 className="text-[11px] font-black text-slate-500 uppercase border-b pb-2 flex gap-2"><ListChecks size={14}/> Detailed Review:</h4>
+         <h4 className="text-[11px] font-black text-slate-500 uppercase border-b pb-2 flex gap-2"><ListChecks size={14}/> Question-wise Analysis:</h4>
          {scoreData?.details.map(item => (
-           <div key={item.qNum} className={`p-4 rounded-2xl border-2 flex justify-between items-center transition-all ${item.status ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
-             <div><p className="font-black text-xs uppercase italic">Question {item.qNum}</p><p className="text-[10px] font-bold opacity-80 mt-0.5">Your Choice: {item.selected} • Answer: {item.correct}</p></div>
+           <div key={item.qNum} className={`p-4 rounded-2xl border-2 flex justify-between items-center ${item.status ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
+             <div><p className="font-black text-xs uppercase italic">Q{item.qNum} ({item.mark} Marks)</p><p className="text-[10px] font-bold opacity-80 mt-0.5">Your Choice: {item.selected} • Key: {item.correct}</p></div>
              {item.status ? <CheckSquare size={16}/> : <AlertCircle size={16}/>}
            </div>
          ))}
       </div>
-      <button onClick={onFinish} className="bg-blue-700 text-white px-16 py-4 rounded-full font-black uppercase text-[12px] shadow-lg active:scale-95 transition-all border-b-8 border-blue-900 active:border-b-0 mb-20">Finish & Exit</button>
+      <button onClick={onFinish} className="bg-blue-700 text-white px-16 py-4 rounded-full font-black uppercase text-[12px] shadow-lg active:scale-95 border-b-8 border-blue-900 active:border-b-0 mb-20">Close Arena</button>
     </div>
   );
 
   return (
     <div className="fixed inset-0 bg-slate-950 z-[100] flex flex-col overflow-hidden">
-      <div className="bg-white p-2.5 md:p-3 flex justify-between items-center border-b-4 border-yellow-400 shadow-xl relative z-50">
+      <div className="bg-white p-2.5 flex justify-between items-center border-b-4 border-yellow-400 shadow-xl relative z-50">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center text-white"><ShieldAlert size={16}/></div>
+          <ShieldAlert size={16} className="text-red-600 animate-pulse"/>
           <div><h2 className="font-black text-slate-800 text-xs md:text-sm uppercase italic tracking-tighter leading-none truncate max-w-[150px]">{exam?.name}</h2><p className="text-[8px] md:text-[10px] text-blue-700 font-bold uppercase mt-0.5">{exam?.studentName}</p></div>
         </div>
         <div className="flex items-center gap-4">
-          <div className={`px-4 py-1 rounded-xl font-black text-xl md:text-2xl border-4 ${timeLeft < 300 ? 'bg-red-50 text-red-600 border-red-200 animate-pulse' : 'bg-slate-800 text-white border-slate-600'}`}>{formatTime(timeLeft)}</div>
+          <div className={`px-4 py-1 rounded-xl font-black text-xl md:text-2xl border-4 ${timeLeft < 300 ? 'text-red-600 animate-pulse' : 'text-slate-800'}`}>{formatTime(timeLeft)}</div>
           <button onClick={() => { if(window.confirm("SUBMIT?")) submitExam(); }} className="bg-green-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg border-b-4 border-green-800 active:border-b-0">SUBMIT</button>
         </div>
       </div>
       <div className="flex-1 bg-slate-900 overflow-hidden relative">
          <iframe src={exam?.fileUrl?.replace('/view?usp=sharing', '/preview').replace('/view', '/preview')} className="w-full h-full border-none" title="PDF" />
-         <div className="absolute bottom-0 left-0 right-0 z-50 bg-slate-800/95 border-t-2 border-slate-700 backdrop-blur-md p-2 md:p-3">
+         <div className="absolute bottom-0 left-0 right-0 z-50 bg-slate-800/95 border-t-2 border-slate-700 backdrop-blur-md p-2">
             <div className="max-w-4xl mx-auto">
                <div className="flex items-center justify-between mb-2 px-2">
                   <span className="text-[8px] font-black text-blue-400 uppercase tracking-widest italic flex items-center gap-2"><PenTool size={12}/> RESPONSE PANEL</span>
