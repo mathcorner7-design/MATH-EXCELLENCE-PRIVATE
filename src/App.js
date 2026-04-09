@@ -7,6 +7,7 @@ import {
   Loader2, ChevronLeft, Trash2, UserPlus, History, UserCheck, X, CheckSquare, AlertCircle, ListChecks, Eye
 } from 'lucide-react';
 
+// --- 🟢 Firebase Configuration ---
 const firebaseConfig = {
   apiKey: "AIzaSyCTk1csUI0HeZhZvy6dOFwmLr-YVswPACyY",
   authDomain: "math-excellence-6d2b8.firebaseapp.com",
@@ -20,6 +21,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// --- 🔵 Review Display Component ---
 const ReviewResultModal = ({ result, onClose }) => {
   if (!result) return null;
   return (
@@ -33,7 +35,7 @@ const ReviewResultModal = ({ result, onClose }) => {
            <div key={idx} className={`p-4 rounded-2xl border-4 flex justify-between items-center transition-all ${item.status ? 'bg-green-50 border-green-100 text-green-700 shadow-sm shadow-green-100' : 'bg-red-50 border-red-100 text-red-700 shadow-sm shadow-red-100'}`}>
              <div>
                <p className="font-black text-xs uppercase italic tracking-tighter">Unit Q{item.qNum} <span className="text-[9px] opacity-60 ml-1">({item.mark} pts)</span></p>
-               <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">Choice: {item.selected} • Key: {item.correct}</p>
+               <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">Choice: {item.selected?.startsWith('data:image') ? 'IMAGE' : item.selected} • Key: {item.correct}</p>
              </div>
              {item.status ? <CheckSquare size={18} className="drop-shadow-md"/> : <AlertCircle size={18} className="drop-shadow-md"/>}
            </div>
@@ -177,6 +179,8 @@ const App = () => {
 
 const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, setTeacherPin, studentResults }) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [isChangingPin, setIsChangingPin] = useState(false);
+  const [pinVal, setPinVal] = useState('');
   const [expandedId, setExpandedId] = useState(null);
 
   const updateField = async (id, type, field, value) => { 
@@ -223,11 +227,11 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-white p-3 rounded-xl border-2 border-blue-50 shadow-sm">
                     <p className="text-[9px] font-black text-blue-700 uppercase mb-2 italic">Correct Key</p>
-                    <input type="text" value={item.answerKey || ""} onChange={(e) => updateField(item.id, type, 'answerKey', e.target.value.toUpperCase())} className="w-full p-2 rounded-xl bg-blue-50/20 border font-black text-xs outline-none" placeholder="e.g. A,B,D,C" />
+                    <input type="text" value={item.answerKey || ""} onChange={(e) => updateField(item.id, type, 'answerKey', e.target.value.toUpperCase())} className="w-full p-2 rounded-xl bg-blue-50/20 border font-black text-xs outline-none" placeholder="e.g. A,B,W,D" />
                   </div>
                   <div className="bg-white p-3 rounded-xl border-2 border-yellow-50 shadow-sm">
                     <p className="text-[9px] font-black text-yellow-700 uppercase mb-2 italic">Marks/Q</p>
-                    <input type="text" value={item.questionMarks || ""} onChange={(e) => updateField(item.id, type, 'questionMarks', e.target.value)} className="w-full p-2 rounded-xl bg-yellow-50/20 border font-black text-xs outline-none" placeholder="e.g. 1,1,2,5" />
+                    <input type="text" value={item.questionMarks || ""} onChange={(e) => updateField(item.id, type, 'questionMarks', e.target.value)} className="w-full p-2 rounded-xl bg-yellow-50/20 border font-black text-xs outline-none" placeholder="e.g. 1,1,5,1" />
                   </div>
                 </div>
               </div>
@@ -241,8 +245,17 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   return (
     <div className="w-full flex flex-col items-center">
       <div className="bg-white p-4 rounded-2xl flex justify-between items-center w-full mb-8 border-2 shadow-sm">
-        <button onClick={async () => { if(window.confirm("Clear Logs?")) { const q = query(collection(db, "logs")); const snapshot = await getDocs(q); const batch = writeBatch(db); snapshot.docs.forEach((d) => batch.delete(d.ref)); await batch.commit(); } }} className="px-5 py-2 rounded-full bg-red-100 text-red-700 text-[10px] font-black uppercase">Clear Activity</button>
+        <div className="flex gap-2">
+          <button onClick={() => setIsChangingPin(!isChangingPin)} className="px-5 py-2 rounded-full bg-blue-100 text-blue-700 text-[10px] font-black uppercase">PIN</button>
+          <button onClick={async () => { if(window.confirm("Clear Logs?")) { const q = query(collection(db, "logs")); const snapshot = await getDocs(q); const batch = writeBatch(db); snapshot.docs.forEach((d) => batch.delete(d.ref)); await batch.commit(); } }} className="px-5 py-2 rounded-full bg-red-100 text-red-700 text-[10px] font-black uppercase">Clear Activity</button>
+        </div>
       </div>
+      {isChangingPin && (
+        <div className="max-w-sm w-full p-6 bg-blue-50 rounded-3xl border-2 border-blue-100 mb-8 animate-in slide-in-from-top-4">
+           <input type="text" onChange={(e) => setPinVal(e.target.value)} className="w-full p-3 rounded-xl bg-white border-2 text-xl font-black text-center" placeholder="NEW PIN" />
+           <button onClick={async () => { if(pinVal.length >= 4) { await setTeacherPin(pinVal); setIsChangingPin(false); alert("Updated!"); }}} className="w-full py-3 bg-blue-700 text-white rounded-lg mt-4 font-bold text-xs uppercase">Save</button>
+        </div>
+      )}
       <PaperManager title="Live Mock Exam" items={liveMocks} type="live" color="text-red-600" />
       <PaperManager title="Practice Sets" items={practiceSets} type="practice" color="text-blue-700" />
       <div className="bg-white p-8 rounded-[2.5rem] shadow-lg border-t-8 border-slate-900 w-full mb-20 text-center">
@@ -296,6 +309,7 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
                   </div>
                   <button onClick={async () => { if(window.confirm("Purge record?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-red-200 hover:text-red-500 active:scale-90 transition-all"><Trash2 size={24} /></button>
                 </div>
+                {/* 🟠 Written Mark Review 엔진 */}
                 {r.details && r.details.some(d => d.pending) && (
                   <div className="p-4 bg-orange-50 border-2 border-orange-100 rounded-2xl w-full max-w-xs self-center shadow-inner">
                     <p className="text-[9px] font-black text-orange-700 uppercase mb-2 italic text-center animate-pulse">Written Solution Pending!</p>
@@ -304,7 +318,8 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
                       <div className="flex gap-2">
                         <input id={`mark-input-${r.id}`} type="number" placeholder="Marks" className="w-1/2 p-2 border-2 rounded-xl text-center font-black text-xs outline-none focus:border-orange-500 bg-white" />
                         <button onClick={async () => {
-                            const mark = document.getElementById(`mark-input-${r.id}`).value;
+                            const markInput = document.getElementById(`mark-input-${r.id}`);
+                            const mark = markInput.value;
                             if (!mark) return alert("Please enter marks!");
                             const updatedDetails = r.details.map(d => d.pending ? { ...d, status: true, mark: parseFloat(mark), pending: false, selected: "PHOTO_DELETED" } : d);
                             const newTotal = updatedDetails.reduce((sum, d) => sum + (d.status ? d.mark : 0), 0);
@@ -330,6 +345,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [scoreData, setScoreData] = useState(null);
 
+  // --- 🟠 ইমেজ ছোট করার (Compression) ইঞ্জিন ---
   const handleImageUpload = (qNum, file) => {
     if (!file) return;
     const reader = new FileReader();
@@ -345,7 +361,8 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
         canvas.height = img.height * scaleSize;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        setAnswers(prev => ({...prev, [qNum]: canvas.toDataURL('image/jpeg', 0.5)}));
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5); 
+        setAnswers(prev => ({...prev, [qNum]: compressedBase64}));
         setActiveQuestion(null); 
       };
     };
@@ -367,21 +384,30 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
       let totalPossibleMarks = 0;
       const detailResults = answerKeyArray.map((key, index) => {
         const qNum = index + 1;
-        const qMark = marksArray[index] || 1;
+        const qMark = marksArray[index] !== undefined ? marksArray[index] : 1;
         const isWritten = key === 'W';
         const isCorrect = isWritten ? false : (answers[qNum] || '') === key;
         totalPossibleMarks += qMark;
         if (!isWritten && isCorrect) totalObtainedMarks += qMark;
-        return { qNum, selected: answers[qNum] || 'None', correct: key, status: isCorrect, mark: qMark, type: isWritten ? 'written' : 'mcq', pending: isWritten };
+        return { 
+          qNum, 
+          selected: answers[qNum] || 'None', 
+          correct: key, 
+          status: isCorrect, 
+          mark: qMark,
+          type: isWritten ? 'written' : 'mcq',
+          pending: isWritten 
+        };
       });
       const percent = totalPossibleMarks > 0 ? Math.round((totalObtainedMarks / totalPossibleMarks) * 100) : 0;
       const d = new Date();
-      let finalStudentName = exam.studentName.toUpperCase();
-      const matchedStudent = studentsList.find(s => s.studentCode?.toString().trim() === exam.studentCode?.toString().trim());
-      if (matchedStudent) finalStudentName = matchedStudent.name;
+      let finalStudentName = exam.studentName.toUpperCase(); 
+      let isRegistered = false;
+      const matchedStudent = studentsList.find(s => s.studentCode && s.studentCode.toString().trim() === exam.studentCode.toString().trim());
+      if (matchedStudent) { finalStudentName = matchedStudent.name; isRegistered = true; }
 
       await addDoc(collection(db, "logs"), { studentName: finalStudentName, examTitle: exam.name, timestamp: Date.now(), timeDisplay: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), dateDisplay: d.toLocaleDateString('en-GB'), scoreDisplay: `${totalObtainedMarks} / ${totalPossibleMarks}` });
-      if (matchedStudent || exam.studentName) {
+      if (isRegistered) {
         await addDoc(collection(db, "results"), { name: finalStudentName, exam: exam.name, percent, obtained: totalObtainedMarks, total: totalPossibleMarks, date: d.toLocaleDateString('en-GB'), timestamp: Date.now(), details: detailResults });
       }
       setScoreData({ correct: totalObtainedMarks, total: totalPossibleMarks, percent, details: detailResults });
@@ -392,59 +418,80 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   const formatTime = (s) => `${Math.floor(s/60)}:${s%60 < 10 ? '0'+(s%60) : s%60}`;
 
   if (isSubmitted) return (
-    <div className="fixed inset-0 bg-white z-[2000] flex flex-col items-center overflow-y-auto p-10 text-center">
-      <CheckCircle size={80} className="text-green-600 mb-6 animate-bounce" />
-      <h2 className="text-3xl font-black text-slate-800 uppercase italic mb-8">Session Completed</h2>
-      <div className="bg-slate-50 p-10 rounded-[3rem] border-4 border-white mb-10 w-full max-w-sm shadow-2xl">
-         <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Result Transcript</p>
-         <h3 className="text-5xl font-black text-blue-700 italic">{scoreData?.correct} / {scoreData?.total}</h3>
+    <div className="fixed inset-0 bg-white z-[2000] flex flex-col items-center overflow-y-auto p-10 text-center animate-in zoom-in duration-500">
+      <CheckCircle size={80} className="text-green-600 mb-6 animate-bounce shadow-2xl rounded-full" />
+      <h2 className="text-3xl font-black text-slate-800 uppercase italic mb-8 tracking-tighter leading-none">Session Completed</h2>
+      <div className="bg-slate-50 p-10 rounded-[3rem] border-4 border-white mb-10 w-full max-w-sm shadow-2xl text-center">
+         <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 opacity-60">Result Transcript</p>
+         <h3 className="text-5xl font-black text-blue-700 italic tracking-tighter leading-none">{scoreData?.correct} / {scoreData?.total}</h3>
       </div>
       <div className="w-full max-w-lg space-y-3 mb-14 text-left">
+         <h4 className="text-[11px] font-black text-slate-500 uppercase border-b-4 border-slate-50 pb-3 flex gap-3 italic"><ListChecks size={18} className="text-blue-600"/> Corrective Review Terminal:</h4>
          {scoreData?.details.map(item => (
-           <div key={item.qNum} className={`p-4 rounded-2xl border-4 flex justify-between items-center ${item.status ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
-             <div><p className="font-black text-xs uppercase italic">Unit Q{item.qNum} ({item.mark} pts)</p><p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">Choice: {item.selected} • Key: {item.correct}</p></div>
-             {item.status ? <CheckSquare size={18}/> : <AlertCircle size={18}/>}
+           <div key={item.qNum} className={`p-4 rounded-2xl border-4 flex justify-between items-center transition-all ${item.status ? 'bg-green-50 border-green-100 text-green-700 shadow-sm shadow-green-100' : 'bg-red-50 border-red-100 text-red-700 shadow-sm shadow-red-100'}`}>
+             <div>
+               <p className="font-black text-xs uppercase italic tracking-tighter">Unit Q{item.qNum} <span className="text-[9px] opacity-60 ml-1">({item.mark} pts)</span></p>
+               <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">Choice: {item.selected?.startsWith('data:image') ? 'IMAGE' : item.selected} • Key: {item.correct}</p>
+             </div>
+             {item.status ? <CheckSquare size={18} className="drop-shadow-md"/> : <AlertCircle size={18} className="drop-shadow-md"/>}
            </div>
          ))}
       </div>
-      <button onClick={onFinish} className="bg-blue-700 text-white px-16 py-4 rounded-full font-black uppercase text-[12px] shadow-2xl">Close Arena</button>
+      <button onClick={onFinish} className="bg-blue-700 text-white px-16 py-4 rounded-full font-black uppercase text-[12px] shadow-2xl active:scale-95 transition-all border-b-8 border-blue-900 active:border-b-0 mb-20 tracking-tighter italic">Close Arena</button>
     </div>
   );
 
   return (
-    <div className="fixed inset-0 bg-slate-950 z-[100] flex flex-col overflow-hidden">
-      <div className="bg-white p-2 md:p-3 flex justify-between items-center border-b-8 border-yellow-400">
+    <div className="fixed inset-0 bg-slate-950 z-[100] flex flex-col overflow-hidden animate-in fade-in duration-500">
+      <div className="bg-white p-2 md:p-3 flex justify-between items-center border-b-8 border-yellow-400 shadow-2xl relative z-50">
         <div className="flex items-center gap-4">
-          <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center text-white"><ShieldAlert size={18}/></div>
-          <div><h2 className="font-black text-slate-800 text-[10px] uppercase italic leading-none">{exam?.name}</h2><p className="text-[8px] text-blue-700 font-black uppercase mt-1 italic leading-none">{exam?.studentName}</p></div>
+          <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center text-white animate-pulse"><ShieldAlert size={18}/></div>
+          <div>
+            <h2 className="font-black text-slate-800 text-[10px] md:text-xs uppercase italic tracking-tighter leading-none truncate max-w-[150px]">{exam?.name}</h2>
+            <p className="text-[8px] md:text-[9px] text-blue-700 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName}</p>
+          </div>
         </div>
         <div className="flex items-center gap-6">
-          <div className={`px-5 py-1.5 rounded-xl font-black text-2xl text-slate-800 border-4 border-slate-100`}>{formatTime(timeLeft)}</div>
-          <button onClick={() => { if(window.confirm("SUBMIT EXAM?")) submitExam(); }} className="bg-green-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg">SUBMIT</button>
+          <div className={`px-5 py-1.5 rounded-xl font-black text-2xl md:text-3xl border-4 transition-all shadow-inner text-slate-800 border-slate-100`}>{formatTime(timeLeft)}</div>
+          <button onClick={() => { if(window.confirm("SUBMIT EXAM?")) submitExam(); }} className="bg-green-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg border-b-4 border-green-800 active:border-b-0 transition-all active:scale-95">SUBMIT</button>
         </div>
       </div>
       <div className="flex-1 bg-slate-900 overflow-hidden relative">
          <iframe src={exam?.fileUrl?.replace('/view?usp=sharing', '/preview').replace('/view', '/preview')} className="w-full h-full border-none opacity-95" title="Paper" />
-         <div className="absolute bottom-0 left-0 right-0 z-50 bg-slate-800/98 border-t-4 border-slate-700 p-4 shadow-2xl">
+         <div className="absolute bottom-0 left-0 right-0 z-50 bg-slate-800/98 border-t-4 border-slate-700 backdrop-blur-xl p-3 md:p-4 shadow-[0_-15px_40px_rgba(0,0,0,0.6)]">
             <div className="max-w-4xl mx-auto">
                <div className="flex items-center justify-between mb-2 px-2">
-                  <span className="text-[9px] font-black text-blue-400 uppercase italic flex items-center gap-3"><PenTool size={16}/> RESPONSE INTERFACE</span>
-                  {activeQuestion && <button onClick={() => setActiveQuestion(null)} className="text-slate-500 font-black text-[10px] uppercase border-b-2 border-slate-700">Close</button>}
+                  <span className="text-[9px] font-black text-blue-400 uppercase tracking-[0.3em] italic flex items-center gap-3"><PenTool size={16} className="animate-bounce"/> RESPONSE INTERFACE ALPHA</span>
+                  {activeQuestion && <button onClick={() => setActiveQuestion(null)} className="text-slate-500 font-black text-[10px] uppercase border-b-2 border-slate-700 hover:text-white transition-all">Close</button>}
                </div>
                {activeQuestion ? (
-                  <div className="flex flex-col items-center pb-2">
-                    <p className="text-white font-black text-xs mb-4 uppercase opacity-60">{answerKeyArray[activeQuestion-1] === 'W' ? `Upload Unit Q${activeQuestion}:` : `Choice Unit Q${activeQuestion}:`}</p>
+                  <div className="flex flex-col items-center animate-in slide-in-from-bottom-2 duration-200 pb-2">
+                    <p className="text-white font-black text-xs mb-4 tracking-widest italic uppercase opacity-60">
+                       {answerKeyArray[activeQuestion-1] === 'W' ? `Upload Unit Q${activeQuestion}:` : `Choice Unit Q${activeQuestion}:`}
+                    </p>
                     {answerKeyArray[activeQuestion-1] === 'W' ? (
-                      <label className="bg-blue-600 text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase cursor-pointer flex items-center gap-2"><PenTool size={16}/> {answers[activeQuestion]?.startsWith('data:image') ? 'CHANGE PHOTO' : 'CAPTURE PHOTO'}<input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleImageUpload(activeQuestion, e.target.files[0])} /></label>
+                      <div className="flex flex-col items-center gap-2">
+                        <label className="bg-blue-600 text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase cursor-pointer shadow-xl active:scale-95 flex items-center gap-2">
+                           <PenTool size={16}/> {answers[activeQuestion]?.startsWith('data:image') ? 'CHANGE PHOTO' : 'CAPTURE PHOTO'}
+                           <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleImageUpload(activeQuestion, e.target.files[0])} />
+                        </label>
+                        {answers[activeQuestion]?.startsWith('data:image') && <p className="text-green-400 text-[8px] font-bold uppercase">✓ Photo Captured</p>}
+                      </div>
                     ) : (
-                      <div className="flex gap-5">{['A', 'B', 'C', 'D'].map(opt => (<button key={opt} onClick={() => { setAnswers({...answers, [activeQuestion]: opt}); setActiveQuestion(null); }} className={`w-12 h-12 rounded-xl font-black text-xl flex items-center justify-center border-b-8 ${answers[activeQuestion] === opt ? 'bg-blue-600 text-white border-blue-900' : 'bg-slate-700 text-slate-300 border-slate-950'}`}>{opt}</button>))}</div>
+                      <div className="flex gap-5">
+                        {['A', 'B', 'C', 'D'].map(opt => (
+                          <button key={opt} onClick={() => { setAnswers({...answers, [activeQuestion]: opt}); setActiveQuestion(null); }} className={`w-12 h-12 rounded-xl font-black text-xl flex items-center justify-center border-b-8 transition-all active:scale-90 active:border-b-0 ${answers[activeQuestion] === opt ? 'bg-blue-600 text-white border-blue-900 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'bg-slate-700 text-slate-300 border-slate-950 hover:bg-slate-600'}`}>{opt}</button>
+                        ))}
+                      </div>
                     )}
                  </div>
                ) : (
-                 <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar">
+                 <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar snap-x items-center justify-start">
                     {answerKeyArray.map((_, index) => {
                       const num = index + 1;
-                      return (<button key={num} onClick={() => setActiveQuestion(num)} className={`min-w-[42px] h-[42px] rounded-xl font-black text-xs flex items-center justify-center border-b-4 ${answers[num] ? 'bg-green-600 text-white border-green-900' : 'bg-slate-700 text-slate-400 border-slate-900'}`}>{num}</button>);
+                      return (
+                        <button key={num} onClick={() => setActiveQuestion(num)} className={`min-w-[42px] h-[42px] rounded-xl font-black text-xs flex items-center justify-center transition-all snap-center border-b-4 shadow-lg active:scale-90 ${answers[num] ? 'bg-green-600 text-white border-green-900' : 'bg-slate-700 text-slate-400 border-slate-900 hover:bg-slate-600 hover:text-white'}`}>{num}</button>
+                      );
                     })}
                  </div>
                )}
@@ -455,25 +502,26 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   );
 };
 
-const GrowthSectionView = ({ results }) => {
-  const [selectedRes, setSelectedRes] = useState(null);
+// --- 📈 Growth Section ---
+const GrowthSectionView = ({ results, students }) => {
+  const [sel, setSel] = useState(null);
   return (
-    <div className="w-full space-y-6">
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-        <h3 className="font-black text-xs uppercase mb-6 flex items-center gap-3 italic"><Trophy size={20} className="text-yellow-600"/> Growth Terminal</h3>
-        <div className="space-y-4">
-          {results.sort((a,b)=>b.timestamp-a.timestamp).map(r => (
-            <div key={r.id} onClick={() => setSelectedRes(r)} className="p-4 bg-slate-50 rounded-2xl border-2 border-white flex justify-between items-center cursor-pointer hover:bg-blue-50 transition-all group">
-              <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg ${r.percent >= 80 ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'} border-2 border-white shadow-sm`}>{r.percent}%</div>
-                <div><p className="text-xs font-black uppercase italic text-slate-700">{r.exam}</p><p className="text-[9px] font-bold text-slate-400 mt-1 uppercase italic">{r.name} • {r.date}</p></div>
-              </div>
-              <ChevronRight size={20} className="text-slate-300 group-hover:text-blue-600" />
-            </div>
-          ))}
+    <div className="max-w-2xl mx-auto w-full animate-in fade-in duration-500 text-left">
+      {!sel ? (
+        <div className="grid gap-5">
+          {students.map((std) => (<button key={std.id} onClick={() => setSel(std.name)} className="w-full bg-white p-6 rounded-[2.2rem] shadow-xl border-4 border-white flex justify-between items-center group active:scale-95 transition-all hover:border-blue-200"><div className="flex items-center gap-5"><div className="w-12 h-10 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-700 shadow-inner group-hover:bg-blue-700 group-hover:text-white transition-all"><User size={20}/></div> <span className="font-black text-slate-800 uppercase text-[15px] italic tracking-tight">{std.name}</span></div><ChevronRight size={28} className="text-slate-200 group-hover:text-blue-600 transition-colors" /></button>))}
         </div>
-      </div>
-      {selectedRes && <ReviewResultModal result={selectedRes} onClose={() => setSelectedRes(null)} />}
+      ) : (
+        <div className="space-y-8 animate-in slide-in-from-right-20 duration-700">
+          <button onClick={() => setSel(null)} className="flex items-center gap-3 text-[12px] font-black text-blue-600 uppercase italic hover:underline transition-all"><ChevronLeft size={30}/> Return</button>
+          <div className="bg-white rounded-[4rem] shadow-3xl overflow-hidden border-[12px] border-slate-50 relative">
+             <div className="bg-blue-700 p-12 text-white text-center relative overflow-hidden"><Trophy className="absolute -top-24 -right-24 opacity-10 rotate-12" size={200}/><h2 className="text-4xl font-black uppercase italic tracking-tighter mb-6">Performance Transcript</h2><div className="inline-block bg-white/20 px-10 py-3 rounded-full border-2 border-white/40 shadow-2xl"><p className="text-lg font-black uppercase italic">{sel}</p></div></div>
+             <div className="p-8"><table className="w-full text-sm font-bold border-separate border-spacing-y-5"><thead><tr className="text-slate-400 uppercase text-[10px] tracking-widest"><th className="pb-4 text-left px-4">Exam Unit</th><th className="pb-4 text-center">Score</th><th className="pb-4 text-right px-4">Status</th></tr></thead><tbody>{results.filter(r => r.name === sel).sort((a,b)=>b.timestamp-a.timestamp).map(r => (<tr key={r.id} className="bg-slate-50 rounded-3xl shadow-sm hover:bg-white transition-all"><td className="p-6 uppercase text-slate-800 italic rounded-l-[2rem] border-l-[12px] border-blue-600 text-lg leading-none">{r.exam}</td><td className="p-6 text-center text-blue-700 text-4xl italic font-black">{r.obtained}/{r.total}</td><td className="p-6 text-right rounded-r-[2rem] px-8"><span className={`px-6 py-2 rounded-full text-[11px] font-black tracking-widest border-4 shadow-xl ${r.percent >= 40 ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>{r.percent >= 40 ? 'SUCCESS' : 'FAILURE'}</span></td></tr>))}</tbody></table></div>
+          </div>
+        </div>
+      )}
+      {/* 🔴 Review Modal Trigger within Growth */}
+      {studentResults.some(r => r.id === sel) && <ReviewResultModal result={studentResults.find(r => r.id === sel)} onClose={() => setSel(null)} />}
     </div>
   );
 };
