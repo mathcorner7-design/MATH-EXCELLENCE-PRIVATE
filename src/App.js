@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, deleteDoc, getDocs, writeBatch } from "firebase/firestore";
 import { 
@@ -58,6 +58,7 @@ const ReviewResultModal = ({ result, onClose }) => {
   );
 };
 
+// --- 🟡 Main App Component ---
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [isExamActive, setIsExamActive] = useState(false);
@@ -104,7 +105,7 @@ const App = () => {
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 select-none flex flex-col items-center overflow-x-hidden">
       {showNameModal && (
         <div className="fixed inset-0 bg-black/80 z-[1000] flex items-center justify-center p-6 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border-4 border-slate-50">
+          <div className="bg-white rounded-3xl p-8 max-sm w-full text-center shadow-2xl border-4 border-slate-50">
             <UserCheck size={40} className="text-blue-600 mx-auto mb-4" />
             <h3 className="font-bold text-lg mb-6 uppercase tracking-tight italic">Student Login</h3>
             <div className="space-y-4">
@@ -159,8 +160,8 @@ const App = () => {
             <h2 className="font-bold uppercase text-slate-700 border-b-2 pb-2 text-[10px] flex items-center gap-2"><Clock size={14} className="text-red-600"/> Ongoing Live Mocks</h2>
             {liveMocks.filter(m => m.isPublished).map(m => (
               <div key={m.id} className="bg-white p-4 rounded-2xl shadow flex justify-between items-center border border-slate-100">
-                <div><h3 className="text-sm font-black uppercase italic tracking-tighter">{m.name}</h3><p className="text-[9px] font-bold text-red-600 uppercase italic mt-1">Duration: {m.hours || 0}h {m.minutes || 0}m</p></div>
-                <button onClick={() => handleStartExamFlow(m)} className="bg-red-600 text-white px-6 py-2 rounded-full font-bold text-[9px] uppercase shadow-lg">Attend</button>
+                <div className="flex-1 pr-4"><h3 className="text-sm font-black uppercase italic tracking-tighter break-words">{m.name}</h3><p className="text-[9px] font-bold text-red-600 uppercase italic mt-1">Duration: {m.hours || 0}h {m.minutes || 0}m</p></div>
+                <button onClick={() => handleStartExamFlow(m)} className="bg-red-600 text-white px-6 py-2 rounded-full font-bold text-[9px] uppercase shadow-lg h-fit">Attend</button>
               </div>
             ))}
           </div>
@@ -179,8 +180,8 @@ const App = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full text-left">
             {practiceSets.filter(p => p.isPublished).map(p => (
               <div key={p.id} className="bg-white p-4 rounded-2xl shadow flex justify-between items-center border border-slate-100 hover:border-blue-300">
-                <div><h3 className="font-bold uppercase text-xs italic">{p.name}</h3><p className="text-[9px] font-bold text-slate-400 uppercase italic mt-1">Time: {p.hours || 0}h {p.minutes || 0}m</p></div>
-                <button onClick={() => handleStartExamFlow(p)} className="bg-blue-700 text-white px-6 py-2 rounded-full font-bold text-[9px] uppercase shadow-md">Start</button>
+                <div className="flex-1 pr-4"><h3 className="font-bold uppercase text-xs italic break-words">{p.name}</h3><p className="text-[9px] font-bold text-slate-400 uppercase italic mt-1">Time: {p.hours || 0}h {p.minutes || 0}m</p></div>
+                <button onClick={() => handleStartExamFlow(p)} className="bg-blue-700 text-white px-6 py-2 rounded-full font-bold text-[9px] uppercase shadow-md h-fit">Start</button>
               </div>
             ))}
           </div>
@@ -212,9 +213,11 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
         {items.map(item => (
           <div key={item.id} className="bg-white rounded-2xl border-2 border-white shadow-sm overflow-hidden transition-all">
             <div onClick={() => setExpandedId(expandedId === item.id ? null : item.id)} className="p-4 flex justify-between items-center cursor-pointer hover:bg-slate-50 group">
-              <div className="flex items-center gap-3">
-                <div className={`w-2 h-2 rounded-full ${item.isPublished ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></div>
-                <span className="text-xs font-black uppercase italic text-slate-700">{item.name}</span>
+              <div className="flex-1 pr-2">
+                <div className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.isPublished ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></div>
+                  <span className="text-xs font-black uppercase italic text-slate-700 break-words">{item.name}</span>
+                </div>
               </div>
               <div className="flex items-center gap-3">
                  <button onClick={(e) => { e.stopPropagation(); updateField(item.id, type, 'isPublished', !item.isPublished); }} className={`px-4 py-1.5 rounded-full text-[8px] font-black shadow-sm ${item.isPublished ? 'bg-green-600 text-white' : 'bg-slate-200 text-slate-500'}`}>{item.isPublished ? 'LIVE' : 'HIDDEN'}</button>
@@ -224,28 +227,31 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
             </div>
             {expandedId === item.id && (
               <div className="p-5 border-t bg-slate-50/20 space-y-4 animate-in slide-in-from-top-2">
-                <input type="text" value={item.name} onChange={(e) => updateField(item.id, type, 'name', e.target.value.toUpperCase())} className="w-full p-2.5 rounded-xl border-2 text-xs font-black outline-none bg-white focus:border-blue-400" placeholder="Exam Name" />
+                <div>
+                   <p className="text-[8px] font-black text-slate-400 uppercase mb-1 ml-1">Exam Name</p>
+                   <input type="text" defaultValue={item.name} onBlur={(e) => updateField(item.id, type, 'name', e.target.value.toUpperCase())} className="w-full p-2.5 rounded-xl border-2 text-xs font-black outline-none bg-white focus:border-blue-400" placeholder="Exam Name" />
+                </div>
                 <div className="flex flex-wrap gap-3">
                   <div className="bg-white p-2.5 rounded-xl border-2 border-blue-50 shadow-sm">
                     <p className="text-[8px] font-black text-blue-700 uppercase mb-1 ml-1">Time Limit</p>
                     <div className="flex items-center gap-1">
-                      <input type="number" value={item.hours} onChange={(e) => updateField(item.id, type, 'hours', e.target.value)} className="w-10 text-center font-black bg-blue-50 rounded-lg outline-none" /> <span className="font-bold text-[9px]">H</span> 
-                      <input type="number" value={item.minutes} onChange={(e) => updateField(item.id, type, 'minutes', e.target.value)} className="w-10 text-center font-black bg-blue-50 rounded-lg outline-none" /> <span className="font-bold text-[9px]">M</span>
+                      <input type="number" defaultValue={item.hours} onBlur={(e) => updateField(item.id, type, 'hours', e.target.value)} className="w-10 text-center font-black bg-blue-50 rounded-lg outline-none" /> <span className="font-bold text-[9px]">H</span> 
+                      <input type="number" defaultValue={item.minutes} onBlur={(e) => updateField(item.id, type, 'minutes', e.target.value)} className="w-10 text-center font-black bg-blue-50 rounded-lg outline-none" /> <span className="font-bold text-[9px]">M</span>
                     </div>
                   </div>
                   <div className="flex-1 bg-white p-2.5 rounded-xl border-2 border-slate-50 shadow-sm">
                     <p className="text-[8px] font-black text-slate-400 uppercase mb-1 ml-1">Google Drive Link</p>
-                    <input type="text" value={item.fileUrl} onChange={(e) => updateField(item.id, type, 'fileUrl', e.target.value)} className="w-full p-2 rounded-lg border text-[10px] outline-none font-bold" />
+                    <input type="text" defaultValue={item.fileUrl} onBlur={(e) => updateField(item.id, type, 'fileUrl', e.target.value)} className="w-full p-2 rounded-lg border text-[10px] outline-none font-bold" />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-white p-3 rounded-xl border-2 border-blue-50 shadow-sm">
                     <p className="text-[9px] font-black text-blue-700 uppercase mb-2 italic">Correct Key</p>
-                    <input type="text" value={item.answerKey || ""} onChange={(e) => updateField(item.id, type, 'answerKey', e.target.value.toUpperCase())} className="w-full p-2 rounded-xl bg-blue-50/20 border font-black text-xs outline-none" placeholder="e.g. A,B,W,D" />
+                    <input type="text" defaultValue={item.answerKey || ""} onBlur={(e) => updateField(item.id, type, 'answerKey', e.target.value.toUpperCase())} className="w-full p-2 rounded-xl bg-blue-50/20 border font-black text-xs outline-none" placeholder="e.g. A,B,W,D" />
                   </div>
                   <div className="bg-white p-3 rounded-xl border-2 border-yellow-50 shadow-sm">
                     <p className="text-[9px] font-black text-yellow-700 uppercase mb-2 italic">Marks/Q</p>
-                    <input type="text" value={item.questionMarks || ""} onChange={(e) => updateField(item.id, type, 'questionMarks', e.target.value)} className="w-full p-2 rounded-xl bg-yellow-50/20 border font-black text-xs outline-none" placeholder="e.g. 1,1,5,1" />
+                    <input type="text" defaultValue={item.questionMarks || ""} onBlur={(e) => updateField(item.id, type, 'questionMarks', e.target.value)} className="w-full p-2 rounded-xl bg-yellow-50/20 border font-black text-xs outline-none" placeholder="e.g. 1,1,5,1" />
                   </div>
                 </div>
               </div>
@@ -322,9 +328,12 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
                 <div className="flex justify-between items-center w-full">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg bg-blue-50 text-blue-700 border-2 border-white shadow-sm">{r.percent}%</div>
-                    <div><p className="text-sm font-black uppercase italic tracking-tighter leading-none">{r.exam}</p><p className="text-[10px] font-bold text-slate-400 mt-1 italic">{r.date} • Score: {r.obtained}/{r.total}</p></div>
+                    <div className="flex-1 min-w-0 pr-2">
+                       <p className="text-sm font-black uppercase italic tracking-tighter leading-none break-words whitespace-normal">{r.exam}</p>
+                       <p className="text-[10px] font-bold text-slate-400 mt-1 italic">{r.date} • Score: {r.obtained}/{r.total}</p>
+                    </div>
                   </div>
-                  <button onClick={async () => { if(window.confirm("Purge record?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-red-200 hover:text-red-500 active:scale-90 transition-all"><Trash2 size={24} /></button>
+                  <button onClick={async () => { if(window.confirm("Purge record?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-red-200 hover:text-red-500 active:scale-90 transition-all flex-shrink-0"><Trash2 size={24} /></button>
                 </div>
                 {r.details && r.details.some(d => d.pending) && (
                   <div className="p-4 bg-orange-50 border-2 border-orange-100 rounded-2xl w-full max-w-xs self-center shadow-inner">
@@ -441,11 +450,11 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
          <h4 className="text-[11px] font-black text-slate-500 uppercase border-b-4 border-slate-50 pb-3 flex gap-3 italic"><ListChecks size={18} className="text-blue-600"/> Corrective Review Terminal:</h4>
          {scoreData?.details.map(item => (
            <div key={item.qNum} className={`p-4 rounded-2xl border-4 flex justify-between items-center transition-all ${item.status ? 'bg-green-50 border-green-100 text-green-700 shadow-sm shadow-green-100' : 'bg-red-50 border-red-100 text-red-700 shadow-sm shadow-red-100'}`}>
-             <div>
-               <p className="font-black text-xs uppercase italic tracking-tighter">Unit Q{item.qNum} ({item.mark} pts)</p>
-               <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">Choice: {item.selected?.startsWith('data:image') ? 'IMAGE' : item.selected} • Key: {item.correct}</p>
+             <div className="flex-1 min-w-0 pr-2">
+               <p className="font-black text-xs uppercase italic tracking-tighter break-words">Unit Q{item.qNum} ({item.mark} pts)</p>
+               <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic break-words">Choice: {item.selected?.startsWith('data:image') ? 'IMAGE' : item.selected} • Key: {item.correct}</p>
              </div>
-             {item.status ? <CheckSquare size={18} className="drop-shadow-md"/> : <AlertCircle size={18} className="drop-shadow-md"/>}
+             {item.status ? <CheckSquare size={18} className="drop-shadow-md flex-shrink-0"/> : <AlertCircle size={18} className="drop-shadow-md flex-shrink-0"/>}
            </div>
          ))}
       </div>
@@ -458,7 +467,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
       <div className="bg-white p-2 md:p-3 flex justify-between items-center border-b-8 border-yellow-400 shadow-2xl relative z-50">
         <div className="flex items-center gap-4">
           <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center text-white animate-pulse"><ShieldAlert size={18}/></div>
-          <div><h2 className="font-black text-slate-800 text-[10px] uppercase italic tracking-tighter leading-none truncate max-w-[150px]">{exam?.name}</h2><p className="text-[8px] md:text-[9px] text-blue-700 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName}</p></div>
+          <div className="flex-1 min-w-0 pr-2"><h2 className="font-black text-slate-800 text-[10px] uppercase italic leading-none truncate max-w-[150px]">{exam?.name}</h2><p className="text-[8px] md:text-[9px] text-blue-700 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName}</p></div>
         </div>
         <div className="flex items-center gap-6">
           <div className={`px-5 py-1.5 rounded-xl font-black text-2xl md:text-3xl border-4 transition-all shadow-inner text-slate-800 border-slate-100`}>{formatTime(timeLeft)}</div>
@@ -475,7 +484,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
                </div>
                {activeQuestion ? (
                   <div className="flex flex-col items-center animate-in slide-in-from-bottom-2 duration-200 pb-2">
-                    <p className="text-white font-black text-xs mb-4 tracking-widest italic uppercase opacity-60">
+                    <p className="text-white font-black text-xs mb-4 tracking-widest italic uppercase opacity-60 break-words text-center">
                        {answerKeyArray[activeQuestion-1] === 'W' ? `Upload Unit Q${activeQuestion}:` : `Choice Unit Q${activeQuestion}:`}
                     </p>
                     {answerKeyArray[activeQuestion-1] === 'W' ? (
@@ -522,22 +531,22 @@ const GrowthSectionView = ({ results, students }) => {
       
       {!sel ? (
         <div className="grid gap-5">
-          {students.map((std) => (<button key={std.id} onClick={() => setSel(std.name)} className="w-full bg-white p-6 rounded-[2.2rem] shadow-xl border-4 border-white flex justify-between items-center group active:scale-95 transition-all hover:border-blue-200"><div className="flex items-center gap-5"><div className="w-12 h-10 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-700 shadow-inner group-hover:bg-blue-700 group-hover:text-white transition-all"><User size={20}/></div> <span className="font-black text-slate-800 uppercase text-[15px] italic tracking-tight">{std.name}</span></div><ChevronRight size={28} className="text-slate-200 group-hover:text-blue-600 transition-colors" /></button>))}
+          {students.map((std) => (<button key={std.id} onClick={() => setSel(std.name)} className="w-full bg-white p-6 rounded-[2.2rem] shadow-xl border-4 border-white flex justify-between items-center group active:scale-95 transition-all hover:border-blue-200"><div className="flex items-center gap-5"><div className="w-12 h-10 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-700 shadow-inner group-hover:bg-blue-700 group-hover:text-white transition-all"><User size={20}/></div> <span className="font-black text-slate-800 uppercase text-[15px] italic tracking-tight break-words">{std.name}</span></div><ChevronRight size={28} className="text-slate-200 group-hover:text-blue-600 transition-colors" /></button>))}
         </div>
       ) : (
         <div className="space-y-8 animate-in slide-in-from-right-20 duration-700">
           <button onClick={() => setSel(null)} className="flex items-center gap-3 text-[12px] font-black text-blue-600 uppercase italic hover:underline transition-all"><ChevronLeft size={30}/> Return</button>
           <div className="bg-white rounded-[4rem] shadow-3xl overflow-hidden border-[12px] border-slate-50 relative">
-             <div className="bg-blue-700 p-12 text-white text-center relative overflow-hidden"><Trophy className="absolute -top-24 -right-24 opacity-10 rotate-12" size={200}/><h2 className="text-4xl font-black uppercase italic tracking-tighter mb-6 leading-none">Performance Transcript</h2><div className="inline-block bg-white/20 px-10 py-3 rounded-full border-2 border-white/40 shadow-2xl"><p className="text-lg font-black uppercase italic">{sel}</p></div></div>
+             <div className="bg-blue-700 p-12 text-white text-center relative overflow-hidden"><Trophy className="absolute -top-24 -right-24 opacity-10 rotate-12" size={200}/><h2 className="text-4xl font-black uppercase italic tracking-tighter mb-6 leading-none break-words">Performance Transcript</h2><div className="inline-block bg-white/20 px-10 py-3 rounded-full border-2 border-white/40 shadow-2xl"><p className="text-lg font-black uppercase italic break-words">{sel}</p></div></div>
              <div className="p-8">
                <table className="w-full text-sm font-bold border-separate border-spacing-y-5">
                  <thead><tr className="text-slate-400 uppercase text-[10px] tracking-widest"><th className="pb-4 text-left px-4">Exam Unit</th><th className="pb-4 text-center">Score</th><th className="pb-4 text-right px-4">Action</th></tr></thead>
                  <tbody>
                    {results.filter(r => r.name === sel).sort((a,b)=> (b.timestamp || 0) - (a.timestamp || 0)).map(r => (
                      <tr key={r.id} className="bg-slate-50 rounded-3xl shadow-sm hover:bg-white transition-all group">
-                       <td className="p-6 uppercase text-slate-800 italic rounded-l-[2rem] border-l-[12px] border-blue-600 text-lg leading-none">{r.exam}</td>
-                       <td className="p-6 text-center text-blue-700 text-4xl italic font-black">{r.obtained}/{r.total}</td>
-                       <td className="p-6 text-right rounded-r-[2rem] px-8">
+                       <td className="p-6 uppercase text-slate-800 italic rounded-l-[2rem] border-l-[12px] border-blue-600 text-sm md:text-lg leading-tight break-words whitespace-normal min-w-[120px]">{r.exam}</td>
+                       <td className="p-6 text-center text-blue-700 text-2xl md:text-4xl italic font-black break-words">{r.obtained}/{r.total}</td>
+                       <td className="p-6 text-right rounded-r-[2rem] px-4 md:px-8">
                          <button onClick={() => setSelectedReview(r)} className="bg-white border-2 border-blue-100 text-blue-700 p-3 rounded-2xl shadow-sm group-hover:bg-blue-700 group-hover:text-white transition-all"><Eye size={20}/></button>
                        </td>
                      </tr>
