@@ -4,10 +4,10 @@ import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setD
 import { 
   Trophy, BookOpen, TrendingUp, User, Clock, ChevronRight, GraduationCap, PlusCircle, 
   FileText, Lock, Award, Timer, Settings2, CheckCircle, PenTool, ShieldAlert, 
-  Loader2, ChevronLeft, Trash2, UserPlus, History, UserCheck, X, CheckSquare, AlertCircle, ListChecks
+  Loader2, ChevronLeft, Trash2, UserPlus, History, UserCheck, X, CheckSquare, AlertCircle, ListChecks, Eye
 } from 'lucide-react';
 
-// --- 🟢 Firebase Configuration (আপনার প্রজেক্ট আইডি অনুযায়ী) ---
+// --- 🟢 Firebase Configuration ---
 const firebaseConfig = {
   apiKey: "AIzaSyCTk1csUI0HeZhZvy6dOFwmLr-YVswPACyY",
   authDomain: "math-excellence-6d2b8.firebaseapp.com",
@@ -20,6 +20,31 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+// --- 🔵 New Component for Review Display (Only opens when button clicked) ---
+const ReviewResultModal = ({ result, onClose }) => {
+  if (!result) return null;
+  return (
+    <div className="fixed inset-0 bg-white z-[2500] flex flex-col items-center overflow-y-auto p-10 text-center animate-in zoom-in duration-300">
+      <div className="w-full max-w-lg flex justify-between items-center mb-10 border-b-4 border-slate-50 pb-5">
+         <h2 className="text-2xl font-black text-slate-800 uppercase italic tracking-tighter">Review: {result.exam}</h2>
+         <button onClick={onClose} className="p-2 bg-slate-100 rounded-full hover:bg-red-50 hover:text-red-500 transition-all"><X size={28}/></button>
+      </div>
+      <div className="w-full max-w-lg space-y-3 mb-14 text-left">
+         {result.details && result.details.map((item, idx) => (
+           <div key={idx} className={`p-4 rounded-2xl border-4 flex justify-between items-center transition-all ${item.status ? 'bg-green-50 border-green-100 text-green-700 shadow-sm shadow-green-100' : 'bg-red-50 border-red-100 text-red-700 shadow-sm shadow-red-100'}`}>
+             <div>
+               <p className="font-black text-xs uppercase italic tracking-tighter">Unit Q{item.qNum} <span className="text-[9px] opacity-60 ml-1">({item.mark} pts)</span></p>
+               <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">Choice: {item.selected} • Key: {item.correct}</p>
+             </div>
+             {item.status ? <CheckSquare size={18} className="drop-shadow-md"/> : <AlertCircle size={18} className="drop-shadow-md"/>}
+           </div>
+         ))}
+      </div>
+      <button onClick={onClose} className="bg-blue-700 text-white px-16 py-4 rounded-full font-black uppercase text-[12px] shadow-2xl active:scale-95 transition-all border-b-8 border-blue-900 active:border-b-0 mb-20 tracking-tighter italic">Return to Growth</button>
+    </div>
+  );
+};
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
@@ -153,7 +178,6 @@ const App = () => {
   );
 };
 
-// --- Sub-component: Teacher Zone (Smart Compact Design) ---
 const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, setTeacherPin, studentResults }) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isChangingPin, setIsChangingPin] = useState(false);
@@ -302,8 +326,11 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
   );
 };
 
+// --- 🔵 GrowthSectionView (Upgraded for Review Access) ---
 const GrowthSectionView = ({ results, students }) => {
   const [sel, setSel] = useState(null);
+  const [viewingResult, setViewingResult] = useState(null);
+
   return (
     <div className="max-w-2xl mx-auto w-full animate-in fade-in duration-500 text-left">
       {!sel ? (
@@ -316,10 +343,46 @@ const GrowthSectionView = ({ results, students }) => {
           <button onClick={() => setSel(null)} className="flex items-center gap-3 text-[12px] font-black text-blue-600 uppercase italic hover:underline decoration-4 underline-offset-8 transition-all"><ChevronLeft size={30}/> Return</button>
           <div className="bg-white rounded-[4rem] shadow-3xl overflow-hidden border-[12px] border-slate-50 relative">
              <div className="bg-blue-700 p-12 text-white text-center relative overflow-hidden"><Trophy className="absolute -top-24 -right-24 opacity-10 rotate-12" size={200}/><h2 className="text-4xl font-black uppercase italic tracking-tighter leading-none mb-6">Performance Transcript</h2><div className="inline-block bg-white/20 px-10 py-3 rounded-full border-2 border-white/40 backdrop-blur-md shadow-2xl"><p className="text-lg font-black uppercase tracking-[0.3em] italic">{sel}</p></div></div>
-             <div className="p-8 overflow-x-auto"><table className="w-full text-sm font-bold border-separate border-spacing-y-5"><thead><tr className="text-slate-400 uppercase text-[10px] tracking-widest opacity-80"><th className="pb-4 text-left px-4">Exam Unit</th><th className="pb-4 text-center">Score</th><th className="pb-4 text-right px-4">Status</th></tr></thead><tbody>{results.filter(r => r.name === sel).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(r => (<tr key={r.id} className="bg-slate-50 rounded-3xl shadow-sm hover:bg-white transition-all"><td className="p-6 uppercase text-slate-800 italic rounded-l-[2rem] border-l-[12px] border-blue-600 tracking-tighter text-lg leading-none">{r.exam}</td><td className="p-6 text-center text-blue-700 text-4xl italic tracking-tighter leading-none font-black">{r.obtained}/{r.total}</td><td className="p-6 text-right rounded-r-[2rem] px-8"><span className={`px-6 py-2 rounded-full text-[11px] font-black tracking-widest border-4 shadow-xl transition-all ${r.percent >= 40 ? 'bg-green-100 text-green-700 border-green-200 shadow-green-100' : 'bg-red-100 text-red-700 border-red-200 shadow-red-100'}`}>{r.percent >= 40 ? 'SUCCESS' : 'FAILURE'}</span></td></tr>))}</tbody></table></div>
+             <div className="p-8 overflow-x-auto">
+               <table className="w-full text-sm font-bold border-separate border-spacing-y-5">
+                 <thead>
+                   <tr className="text-slate-400 uppercase text-[10px] tracking-widest opacity-80">
+                     <th className="pb-4 text-left px-4">Exam Unit</th>
+                     <th className="pb-4 text-center">Score</th>
+                     <th className="pb-4 text-right px-4">Status</th>
+                   </tr>
+                 </thead>
+                 <tbody>
+                   {results.filter(r => r.name === sel).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(r => (
+                     <tr key={r.id} className="bg-slate-50 rounded-3xl shadow-sm hover:bg-white transition-all">
+                       <td className="p-6 uppercase text-slate-800 italic rounded-l-[2rem] border-l-[12px] border-blue-600 tracking-tighter text-lg leading-none">
+                          {r.exam}
+                          {/* Only show Review button if details exist (to keep legacy records intact) */}
+                          {r.details && (
+                            <button 
+                              onClick={() => setViewingResult(r)}
+                              className="flex items-center gap-1 mt-3 text-[8px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-800 transition-all border-b-2 border-blue-50 w-fit"
+                            >
+                              <Eye size={10}/> REVIEW REPORT
+                            </button>
+                          )}
+                       </td>
+                       <td className="p-6 text-center text-blue-700 text-4xl italic tracking-tighter leading-none font-black">{r.obtained}/{r.total}</td>
+                       <td className="p-6 text-right rounded-r-[2rem] px-8">
+                         <span className={`px-6 py-2 rounded-full text-[11px] font-black tracking-widest border-4 shadow-xl transition-all ${r.percent >= 40 ? 'bg-green-100 text-green-700 border-green-200 shadow-green-100' : 'bg-red-100 text-red-700 border-red-200 shadow-red-100'}`}>
+                           {r.percent >= 40 ? 'SUCCESS' : 'FAILURE'}
+                         </span>
+                       </td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+             </div>
           </div>
         </div>
       )}
+      {/* Review Modal used only when requested */}
+      {viewingResult && <ReviewResultModal result={viewingResult} onClose={() => setViewingResult(null)} />}
     </div>
   );
 };
@@ -371,7 +434,8 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
       if (isRegistered) {
         await addDoc(collection(db, "results"), { 
           name: finalStudentName, exam: exam.name, percent, obtained: totalObtainedMarks, 
-          total: totalPossibleMarks, date: d.toLocaleDateString('en-GB'), timestamp: Date.now() 
+          total: totalPossibleMarks, date: d.toLocaleDateString('en-GB'), timestamp: Date.now(),
+          details: detailResults // Storing response history
         });
       }
       setScoreData({ correct: totalObtainedMarks, total: totalPossibleMarks, percent, details: detailResults });
