@@ -21,6 +21,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// --- 🔵 New Modal for Image Preview ---
+const ImagePreviewModal = ({ src, onClose }) => {
+  if (!src) return null;
+  return (
+    <div className="fixed inset-0 bg-black/90 z-[3000] flex flex-col items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-300">
+      <button onClick={onClose} className="absolute top-10 right-10 text-white p-3 bg-red-600 rounded-full shadow-2xl"><X size={32}/></button>
+      <img src={src} alt="Student Solution" className="max-w-full max-h-[80vh] rounded-xl shadow-2xl border-4 border-white animate-in zoom-in duration-300" />
+      <p className="text-white mt-6 font-black uppercase italic tracking-widest text-xs">Student's Hand-written Solution</p>
+    </div>
+  );
+};
+
 // --- 🔵 Review Display Component ---
 const ReviewResultModal = ({ result, onClose }) => {
   if (!result) return null;
@@ -55,6 +67,7 @@ const App = () => {
   const [studentCodeInput, setStudentCodeInput] = useState('');
   const [teacherPin, setTeacherPin] = useState('1234567890');
   const [isTeacherAuthenticated, setIsTeacherAuthenticated] = useState(false);
+  
   const [liveMocks, setLiveMocks] = useState([]);
   const [practiceSets, setPracticeSets] = useState([]);
   const [students, setStudents] = useState([]);
@@ -177,6 +190,7 @@ const App = () => {
   );
 };
 
+// --- Teacher Zone ---
 const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, setTeacherPin, studentResults }) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isChangingPin, setIsChangingPin] = useState(false);
@@ -283,8 +297,11 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
 
 const AdminMarksheetModal = ({ student, results, onClose }) => {
   const [newRes, setNewRes] = useState({ exam: "", obtained: "", total: "", date: "" });
+  const [previewImg, setPreviewImg] = useState(null);
+
   return (
     <div className="fixed inset-0 bg-white z-[1200] p-6 overflow-y-auto animate-in slide-in-from-right-full duration-500">
+       {previewImg && <ImagePreviewModal src={previewImg} onClose={() => setPreviewImg(null)} />}
        <button onClick={onClose} className="font-black text-blue-600 mb-10 flex items-center gap-3 border-b-4 border-blue-600 w-fit uppercase text-[11px] italic tracking-tighter hover:text-blue-800 transition-all"><ChevronLeft size={24}/> Return to Registry</button>
        <div className="bg-white p-10 rounded-[3rem] border-4 border-slate-50 shadow-3xl max-w-xl mx-auto space-y-10">
           <div className="flex items-center gap-5 border-b-4 border-slate-50 pb-6">
@@ -309,17 +326,15 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
                   </div>
                   <button onClick={async () => { if(window.confirm("Purge record?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-red-200 hover:text-red-500 active:scale-90 transition-all"><Trash2 size={24} /></button>
                 </div>
-                {/* 🟠 Written Mark Review 엔진 */}
                 {r.details && r.details.some(d => d.pending) && (
                   <div className="p-4 bg-orange-50 border-2 border-orange-100 rounded-2xl w-full max-w-xs self-center shadow-inner">
                     <p className="text-[9px] font-black text-orange-700 uppercase mb-2 italic text-center animate-pulse">Written Solution Pending!</p>
                     <div className="flex flex-col gap-2">
-                      <button onClick={() => window.open(r.details.find(d => d.pending).selected, "_blank")} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95">View Paper</button>
+                      <button onClick={() => setPreviewImg(r.details.find(d => d.pending).selected)} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95">View Paper</button>
                       <div className="flex gap-2">
                         <input id={`mark-input-${r.id}`} type="number" placeholder="Marks" className="w-1/2 p-2 border-2 rounded-xl text-center font-black text-xs outline-none focus:border-orange-500 bg-white" />
                         <button onClick={async () => {
-                            const markInput = document.getElementById(`mark-input-${r.id}`);
-                            const mark = markInput.value;
+                            const mark = document.getElementById(`mark-input-${r.id}`).value;
                             if (!mark) return alert("Please enter marks!");
                             const updatedDetails = r.details.map(d => d.pending ? { ...d, status: true, mark: parseFloat(mark), pending: false, selected: "PHOTO_DELETED" } : d);
                             const newTotal = updatedDetails.reduce((sum, d) => sum + (d.status ? d.mark : 0), 0);
@@ -345,7 +360,6 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [scoreData, setScoreData] = useState(null);
 
-  // --- 🟠 ইমেজ ছোট করার (Compression) ইঞ্জিন ---
   const handleImageUpload = (qNum, file) => {
     if (!file) return;
     const reader = new FileReader();
@@ -361,8 +375,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
         canvas.height = img.height * scaleSize;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5); 
-        setAnswers(prev => ({...prev, [qNum]: compressedBase64}));
+        setAnswers(prev => ({...prev, [qNum]: canvas.toDataURL('image/jpeg', 0.5)}));
         setActiveQuestion(null); 
       };
     };
@@ -401,13 +414,12 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
       });
       const percent = totalPossibleMarks > 0 ? Math.round((totalObtainedMarks / totalPossibleMarks) * 100) : 0;
       const d = new Date();
-      let finalStudentName = exam.studentName.toUpperCase(); 
-      let isRegistered = false;
-      const matchedStudent = studentsList.find(s => s.studentCode && s.studentCode.toString().trim() === exam.studentCode.toString().trim());
-      if (matchedStudent) { finalStudentName = matchedStudent.name; isRegistered = true; }
+      let finalStudentName = exam.studentName.toUpperCase();
+      const matchedStudent = studentsList.find(s => s.studentCode?.toString().trim() === exam.studentCode?.toString().trim());
+      if (matchedStudent) finalStudentName = matchedStudent.name;
 
       await addDoc(collection(db, "logs"), { studentName: finalStudentName, examTitle: exam.name, timestamp: Date.now(), timeDisplay: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), dateDisplay: d.toLocaleDateString('en-GB'), scoreDisplay: `${totalObtainedMarks} / ${totalPossibleMarks}` });
-      if (isRegistered) {
+      if (matchedStudent || exam.studentName) {
         await addDoc(collection(db, "results"), { name: finalStudentName, exam: exam.name, percent, obtained: totalObtainedMarks, total: totalPossibleMarks, date: d.toLocaleDateString('en-GB'), timestamp: Date.now(), details: detailResults });
       }
       setScoreData({ correct: totalObtainedMarks, total: totalPossibleMarks, percent, details: detailResults });
@@ -430,7 +442,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
          {scoreData?.details.map(item => (
            <div key={item.qNum} className={`p-4 rounded-2xl border-4 flex justify-between items-center transition-all ${item.status ? 'bg-green-50 border-green-100 text-green-700 shadow-sm shadow-green-100' : 'bg-red-50 border-red-100 text-red-700 shadow-sm shadow-red-100'}`}>
              <div>
-               <p className="font-black text-xs uppercase italic tracking-tighter">Unit Q{item.qNum} <span className="text-[9px] opacity-60 ml-1">({item.mark} pts)</span></p>
+               <p className="font-black text-xs uppercase italic tracking-tighter">Unit Q{item.qNum} ({item.mark} pts)</p>
                <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">Choice: {item.selected?.startsWith('data:image') ? 'IMAGE' : item.selected} • Key: {item.correct}</p>
              </div>
              {item.status ? <CheckSquare size={18} className="drop-shadow-md"/> : <AlertCircle size={18} className="drop-shadow-md"/>}
@@ -446,10 +458,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
       <div className="bg-white p-2 md:p-3 flex justify-between items-center border-b-8 border-yellow-400 shadow-2xl relative z-50">
         <div className="flex items-center gap-4">
           <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center text-white animate-pulse"><ShieldAlert size={18}/></div>
-          <div>
-            <h2 className="font-black text-slate-800 text-[10px] md:text-xs uppercase italic tracking-tighter leading-none truncate max-w-[150px]">{exam?.name}</h2>
-            <p className="text-[8px] md:text-[9px] text-blue-700 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName}</p>
-          </div>
+          <div><h2 className="font-black text-slate-800 text-[10px] uppercase italic tracking-tighter leading-none truncate max-w-[150px]">{exam?.name}</h2><p className="text-[8px] md:text-[9px] text-blue-700 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName}</p></div>
         </div>
         <div className="flex items-center gap-6">
           <div className={`px-5 py-1.5 rounded-xl font-black text-2xl md:text-3xl border-4 transition-all shadow-inner text-slate-800 border-slate-100`}>{formatTime(timeLeft)}</div>
@@ -505,8 +514,12 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
 // --- 📈 Growth Section ---
 const GrowthSectionView = ({ results, students }) => {
   const [sel, setSel] = useState(null);
+  const [selectedReview, setSelectedReview] = useState(null);
+
   return (
     <div className="max-w-2xl mx-auto w-full animate-in fade-in duration-500 text-left">
+      {selectedReview && <ReviewResultModal result={selectedReview} onClose={() => setSelectedReview(null)} />}
+      
       {!sel ? (
         <div className="grid gap-5">
           {students.map((std) => (<button key={std.id} onClick={() => setSel(std.name)} className="w-full bg-white p-6 rounded-[2.2rem] shadow-xl border-4 border-white flex justify-between items-center group active:scale-95 transition-all hover:border-blue-200"><div className="flex items-center gap-5"><div className="w-12 h-10 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-700 shadow-inner group-hover:bg-blue-700 group-hover:text-white transition-all"><User size={20}/></div> <span className="font-black text-slate-800 uppercase text-[15px] italic tracking-tight">{std.name}</span></div><ChevronRight size={28} className="text-slate-200 group-hover:text-blue-600 transition-colors" /></button>))}
@@ -515,13 +528,26 @@ const GrowthSectionView = ({ results, students }) => {
         <div className="space-y-8 animate-in slide-in-from-right-20 duration-700">
           <button onClick={() => setSel(null)} className="flex items-center gap-3 text-[12px] font-black text-blue-600 uppercase italic hover:underline transition-all"><ChevronLeft size={30}/> Return</button>
           <div className="bg-white rounded-[4rem] shadow-3xl overflow-hidden border-[12px] border-slate-50 relative">
-             <div className="bg-blue-700 p-12 text-white text-center relative overflow-hidden"><Trophy className="absolute -top-24 -right-24 opacity-10 rotate-12" size={200}/><h2 className="text-4xl font-black uppercase italic tracking-tighter mb-6">Performance Transcript</h2><div className="inline-block bg-white/20 px-10 py-3 rounded-full border-2 border-white/40 shadow-2xl"><p className="text-lg font-black uppercase italic">{sel}</p></div></div>
-             <div className="p-8"><table className="w-full text-sm font-bold border-separate border-spacing-y-5"><thead><tr className="text-slate-400 uppercase text-[10px] tracking-widest"><th className="pb-4 text-left px-4">Exam Unit</th><th className="pb-4 text-center">Score</th><th className="pb-4 text-right px-4">Status</th></tr></thead><tbody>{results.filter(r => r.name === sel).sort((a,b)=>b.timestamp-a.timestamp).map(r => (<tr key={r.id} className="bg-slate-50 rounded-3xl shadow-sm hover:bg-white transition-all"><td className="p-6 uppercase text-slate-800 italic rounded-l-[2rem] border-l-[12px] border-blue-600 text-lg leading-none">{r.exam}</td><td className="p-6 text-center text-blue-700 text-4xl italic font-black">{r.obtained}/{r.total}</td><td className="p-6 text-right rounded-r-[2rem] px-8"><span className={`px-6 py-2 rounded-full text-[11px] font-black tracking-widest border-4 shadow-xl ${r.percent >= 40 ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>{r.percent >= 40 ? 'SUCCESS' : 'FAILURE'}</span></td></tr>))}</tbody></table></div>
+             <div className="bg-blue-700 p-12 text-white text-center relative overflow-hidden"><Trophy className="absolute -top-24 -right-24 opacity-10 rotate-12" size={200}/><h2 className="text-4xl font-black uppercase italic tracking-tighter mb-6 leading-none">Performance Transcript</h2><div className="inline-block bg-white/20 px-10 py-3 rounded-full border-2 border-white/40 shadow-2xl"><p className="text-lg font-black uppercase italic">{sel}</p></div></div>
+             <div className="p-8">
+               <table className="w-full text-sm font-bold border-separate border-spacing-y-5">
+                 <thead><tr className="text-slate-400 uppercase text-[10px] tracking-widest"><th className="pb-4 text-left px-4">Exam Unit</th><th className="pb-4 text-center">Score</th><th className="pb-4 text-right px-4">Action</th></tr></thead>
+                 <tbody>
+                   {results.filter(r => r.name === sel).sort((a,b)=> (b.timestamp || 0) - (a.timestamp || 0)).map(r => (
+                     <tr key={r.id} className="bg-slate-50 rounded-3xl shadow-sm hover:bg-white transition-all group">
+                       <td className="p-6 uppercase text-slate-800 italic rounded-l-[2rem] border-l-[12px] border-blue-600 text-lg leading-none">{r.exam}</td>
+                       <td className="p-6 text-center text-blue-700 text-4xl italic font-black">{r.obtained}/{r.total}</td>
+                       <td className="p-6 text-right rounded-r-[2rem] px-8">
+                         <button onClick={() => setSelectedReview(r)} className="bg-white border-2 border-blue-100 text-blue-700 p-3 rounded-2xl shadow-sm group-hover:bg-blue-700 group-hover:text-white transition-all"><Eye size={20}/></button>
+                       </td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+             </div>
           </div>
         </div>
       )}
-      {/* 🔴 Review Modal Trigger within Growth */}
-      {studentResults.some(r => r.id === sel) && <ReviewResultModal result={studentResults.find(r => r.id === sel)} onClose={() => setSel(null)} />}
     </div>
   );
 };
