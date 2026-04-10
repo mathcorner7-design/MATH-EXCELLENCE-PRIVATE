@@ -4,7 +4,7 @@ import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setD
 import { 
   Trophy, BookOpen, TrendingUp, User, Clock, ChevronRight, GraduationCap, PlusCircle, 
   FileText, Lock, Award, Timer, Settings2, CheckCircle, PenTool, ShieldAlert, 
-  Loader2, ChevronLeft, Trash2, UserPlus, History, UserCheck, X, CheckSquare, AlertCircle, ListChecks, Eye
+  Loader2, ChevronLeft, Trash2, UserPlus, History, UserCheck, X, CheckSquare, AlertCircle, ListChecks, Eye, Camera
 } from 'lucide-react';
 
 // --- 🟢 Firebase Configuration ---
@@ -46,7 +46,7 @@ const ReviewResultModal = ({ result, onClose }) => {
            <div key={idx} className={`p-4 rounded-2xl border-4 flex justify-between items-center transition-all ${item.status ? 'bg-green-50 border-green-100 text-green-700 shadow-sm shadow-green-100' : 'bg-red-50 border-red-100 text-red-700 shadow-sm shadow-red-100'}`}>
              <div>
                <p className="font-black text-xs uppercase italic tracking-tighter">Unit Q{item.qNum} <span className="text-[9px] opacity-60 ml-1">({item.mark} pts)</span></p>
-               <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">Choice: {item.selected?.startsWith('data:image') ? 'IMAGE' : item.selected} • Key: {item.correct}</p>
+               <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">Choice: {Array.isArray(item.selected) ? `IMAGE (${item.selected.length} Pgs)` : (item.selected?.startsWith('data:image') ? 'IMAGE' : item.selected)} • Key: {item.correct}</p>
              </div>
              {item.status ? <CheckSquare size={18} className="drop-shadow-md"/> : <AlertCircle size={18} className="drop-shadow-md"/>}
            </div>
@@ -337,28 +337,37 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
                   <button onClick={async () => { if(window.confirm("Purge record?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-red-200 hover:text-red-500 active:scale-90 transition-all flex-shrink-0"><Trash2 size={24} /></button>
                 </div>
 
-                {/* 🟠 HORIZONTAL SLIDER FOR PENDING PAPERS */}
+                {/* 🟠 HORIZONTAL SLIDER FOR PENDING PAPERS (NEW MULTI-PAGE FIX) */}
                 {r.details && r.details.some(d => d.pending) && (
                   <div className="bg-orange-50 border-2 border-orange-100 rounded-[2rem] p-4 flex flex-col gap-3 shadow-inner">
                     <p className="text-[10px] font-black text-orange-600 uppercase italic text-center animate-pulse tracking-widest">Action Required: Written Solutions</p>
                     <div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory">
-                      {r.details.filter(d => d.pending).map((pendingQ, pIdx) => (
-                        <div key={pIdx} className="min-w-[200px] bg-white border-2 border-white shadow-md rounded-2xl p-4 flex flex-col items-center gap-3 snap-center">
-                          <p className="text-[9px] font-black text-slate-400 uppercase italic">Unit Q{pendingQ.qNum}</p>
-                          <button onClick={() => setPreviewImg(pendingQ.selected)} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">View Work</button>
-                          <div className="flex gap-2 w-full">
-                            <input id={`mark-input-${r.id}-${pendingQ.qNum}`} type="number" placeholder="Marks" className="w-1/2 p-2 border-2 rounded-xl text-center font-black text-[10px] outline-none focus:border-orange-500" />
-                            <button onClick={async () => {
-                                const markVal = document.getElementById(`mark-input-${r.id}-${pendingQ.qNum}`).value;
-                                if (!markVal) return alert("Enter marks!");
-                                const updatedDetails = r.details.map(d => (d.pending && d.qNum === pendingQ.qNum) ? { ...d, status: true, mark: parseFloat(markVal), pending: false, selected: "PHOTO_DELETED" } : d);
-                                const newObt = updatedDetails.reduce((sum, d) => sum + (d.status ? d.mark : 0), 0);
-                                await setDoc(doc(db, "results", r.id), { details: updatedDetails, obtained: newObt, percent: Math.round((newObt / r.total) * 100) }, { merge: true });
-                                alert(`Q${pendingQ.qNum} Done!`);
-                              }} className="w-1/2 py-2 bg-orange-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">Save</button>
-                          </div>
-                        </div>
-                      ))}
+                      {r.details.filter(d => d.pending).map((pendingQ, pIdx) => {
+                         // এখানে দেখা হচ্ছে selected ফিল্ডটি কি Array (Multi-page) নাকি Single String
+                         const photoList = Array.isArray(pendingQ.selected) ? pendingQ.selected : [pendingQ.selected];
+                         
+                         return photoList.map((photoUrl, imgIdx) => (
+                           <div key={`${pIdx}-${imgIdx}`} className="min-w-[200px] bg-white border-2 border-white shadow-md rounded-2xl p-4 flex flex-col items-center gap-3 snap-center">
+                             <p className="text-[9px] font-black text-slate-400 uppercase italic">Q{pendingQ.qNum} - Page {imgIdx + 1}</p>
+                             <button onClick={() => setPreviewImg(photoUrl)} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">View Page</button>
+                             
+                             {/* মার্ক ইনপুট শুধু প্রতিটি প্রশ্নের শেষ পাতার নিচে আসবে */}
+                             {imgIdx === photoList.length - 1 && (
+                               <div className="flex gap-2 w-full mt-2">
+                                 <input id={`mark-input-${r.id}-${pendingQ.qNum}`} type="number" placeholder="Marks" className="w-1/2 p-2 border-2 rounded-xl text-center font-black text-[10px] outline-none focus:border-orange-500 bg-white" />
+                                 <button onClick={async () => {
+                                     const markVal = document.getElementById(`mark-input-${r.id}-${pendingQ.qNum}`).value;
+                                     if (!markVal) return alert("Enter marks!");
+                                     const updatedDetails = r.details.map(d => (d.pending && d.qNum === pendingQ.qNum) ? { ...d, status: true, mark: parseFloat(markVal), pending: false, selected: "PHOTO_DELETED" } : d);
+                                     const newObt = updatedDetails.reduce((sum, d) => sum + (d.status ? d.mark : 0), 0);
+                                     await setDoc(doc(db, "results", r.id), { details: updatedDetails, obtained: newObt, percent: Math.round((newObt / r.total) * 100) }, { merge: true });
+                                     alert(`Q${pendingQ.qNum} Marks Updated!`);
+                                   }} className="w-1/2 py-2 bg-orange-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">Save</button>
+                               </div>
+                             )}
+                           </div>
+                         ));
+                      })}
                     </div>
                   </div>
                 )}
@@ -377,6 +386,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [scoreData, setScoreData] = useState(null);
 
+  // 🟢 Updated: Multi-page handle for 'W' questions
   const handleImageUpload = (qNum, file) => {
     if (!file) return;
     const reader = new FileReader();
@@ -392,8 +402,13 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
         canvas.height = img.height * scaleSize;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        setAnswers(prev => ({...prev, [qNum]: canvas.toDataURL('image/jpeg', 0.5)}));
-        setActiveQuestion(null); 
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5);
+        
+        setAnswers(prev => {
+          // আগের ফটোগুলো সংগ্রহ করা হচ্ছে
+          const existingPhotos = Array.isArray(prev[qNum]) ? prev[qNum] : [];
+          return { ...prev, [qNum]: [...existingPhotos, compressedBase64] };
+        });
       };
     };
   };
@@ -427,10 +442,8 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
       const matchedStudent = studentsList.find(s => s.studentCode?.toString().trim() === exam.studentCode?.toString().trim());
       if (matchedStudent) finalStudentName = matchedStudent.name;
 
-      await addDoc(collection(db, "logs"), { studentName: finalStudentName, examTitle: exam.name, timestamp: Date.now(), timeDisplay: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), dateDisplay: d.toLocaleDateString('en-GB'), scoreDisplay: `${totalObtainedMarks} / ${totalPossibleMarks}` });
-      if (matchedStudent || exam.studentName) {
-        await addDoc(collection(db, "results"), { name: finalStudentName, exam: exam.name, percent, obtained: totalObtainedMarks, total: totalPossibleMarks, date: d.toLocaleDateString('en-GB'), timestamp: Date.now(), details: detailResults });
-      }
+      await addDoc(collection(db, "logs"), { studentName: finalStudentName, examTitle: exam.name, timestamp: Date.now(), scoreDisplay: `${totalObtainedMarks} / ${totalPossibleMarks}` });
+      await addDoc(collection(db, "results"), { name: finalStudentName, exam: exam.name, percent, obtained: totalObtainedMarks, total: totalPossibleMarks, date: d.toLocaleDateString('en-GB'), timestamp: Date.now(), details: detailResults });
       setScoreData({ correct: totalObtainedMarks, total: totalPossibleMarks, percent, details: detailResults });
       setIsSubmitted(true);
     } catch (e) { setIsSubmitted(true); }
@@ -446,32 +459,17 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
          <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 opacity-60">Result Transcript</p>
          <h3 className="text-5xl font-black text-blue-700 italic tracking-tighter leading-none">{scoreData?.correct} / {scoreData?.total}</h3>
       </div>
-      <div className="w-full max-w-lg space-y-3 mb-14 text-left">
-         <h4 className="text-[11px] font-black text-slate-500 uppercase border-b-4 border-slate-50 pb-3 flex gap-3 italic"><ListChecks size={18} className="text-blue-600"/> Corrective Review Terminal:</h4>
-         {scoreData?.details.map(item => (
-           <div key={item.qNum} className={`p-4 rounded-2xl border-4 flex justify-between items-center transition-all ${item.status ? 'bg-green-50 border-green-100 text-green-700 shadow-sm shadow-green-100' : 'bg-red-50 border-red-100 text-red-700 shadow-sm shadow-red-100'}`}>
-             <div className="flex-1 min-w-0 pr-2">
-               <p className="font-black text-xs uppercase italic tracking-tighter break-words">Unit Q{item.qNum} ({item.mark} pts)</p>
-               <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic break-words">Choice: {item.selected?.startsWith('data:image') ? 'IMAGE' : item.selected} • Key: {item.correct}</p>
-             </div>
-             {item.status ? <CheckSquare size={18} className="drop-shadow-md flex-shrink-0"/> : <AlertCircle size={18} className="drop-shadow-md flex-shrink-0"/>}
-           </div>
-         ))}
-      </div>
-      <button onClick={onFinish} className="bg-blue-700 text-white px-16 py-4 rounded-full font-black uppercase text-[12px] shadow-2xl active:scale-95 transition-all border-b-8 border-blue-900 active:border-b-0 mb-20 tracking-tighter italic">Close Arena</button>
+      <button onClick={onFinish} className="bg-blue-700 text-white px-16 py-4 rounded-full font-black uppercase text-[12px] shadow-2xl">Close Arena</button>
     </div>
   );
 
   return (
     <div className="fixed inset-0 bg-slate-950 z-[100] flex flex-col overflow-hidden animate-in fade-in duration-500">
       <div className="bg-white p-2 md:p-3 flex justify-between items-center border-b-8 border-yellow-400 shadow-2xl relative z-50">
-        <div className="flex items-center gap-4">
-          <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center text-white animate-pulse"><ShieldAlert size={18}/></div>
-          <div className="flex-1 min-w-0 pr-2"><h2 className="font-black text-slate-800 text-[10px] uppercase italic leading-none truncate max-w-[150px]">{exam?.name}</h2><p className="text-[8px] md:text-[9px] text-blue-700 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName}</p></div>
-        </div>
+        <div className="flex-1 min-w-0 pr-2"><h2 className="font-black text-slate-800 text-[10px] uppercase italic tracking-tighter leading-none truncate max-w-[150px]">{exam?.name}</h2><p className="text-[8px] md:text-[9px] text-blue-700 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName}</p></div>
         <div className="flex items-center gap-6">
-          <div className={`px-5 py-1.5 rounded-xl font-black text-2xl md:text-3xl border-4 transition-all shadow-inner text-slate-800 border-slate-100`}>{formatTime(timeLeft)}</div>
-          <button onClick={() => { if(window.confirm("SUBMIT EXAM?")) submitExam(); }} className="bg-green-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg border-b-4 border-green-800 active:border-b-0 transition-all active:scale-95">SUBMIT</button>
+          <div className={`px-5 py-1.5 rounded-xl font-black text-2xl border-4 text-slate-800 border-slate-100`}>{formatTime(timeLeft)}</div>
+          <button onClick={() => { if(window.confirm("SUBMIT EXAM?")) submitExam(); }} className="bg-green-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg">SUBMIT</button>
         </div>
       </div>
       <div className="flex-1 bg-slate-900 overflow-hidden relative">
@@ -479,26 +477,35 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
          <div className="absolute bottom-0 left-0 right-0 z-50 bg-slate-800/98 border-t-4 border-slate-700 backdrop-blur-xl p-3 md:p-4 shadow-[0_-15px_40px_rgba(0,0,0,0.6)]">
             <div className="max-w-4xl mx-auto">
                <div className="flex items-center justify-between mb-2 px-2">
-                  <span className="text-[9px] font-black text-blue-400 uppercase tracking-[0.3em] italic flex items-center gap-3"><PenTool size={16} className="animate-bounce"/> RESPONSE INTERFACE ALPHA</span>
-                  {activeQuestion && <button onClick={() => setActiveQuestion(null)} className="text-slate-500 font-black text-[10px] uppercase border-b-2 border-slate-700 hover:text-white transition-all">Close</button>}
+                  <span className="text-[9px] font-black text-blue-400 uppercase italic flex items-center gap-3"><PenTool size={16}/> RESPONSE INTERFACE</span>
+                  {activeQuestion && <button onClick={() => setActiveQuestion(null)} className="text-slate-500 font-black text-[10px] uppercase border-b-2 border-slate-700">Close</button>}
                </div>
                {activeQuestion ? (
-                  <div className="flex flex-col items-center animate-in slide-in-from-bottom-2 duration-200 pb-2">
-                    <p className="text-white font-black text-xs mb-4 tracking-widest italic uppercase opacity-60 break-words text-center">
-                       {answerKeyArray[activeQuestion-1] === 'W' ? `Upload Unit Q${activeQuestion}:` : `Choice Unit Q${activeQuestion}:`}
+                  <div className="flex flex-col items-center animate-in slide-in-from-bottom-2 pb-2">
+                    <p className="text-white font-black text-xs mb-4 italic uppercase opacity-60">
+                       {answerKeyArray[activeQuestion-1] === 'W' ? `Upload Pages for Q${activeQuestion}:` : `Choice for Q${activeQuestion}:`}
                     </p>
                     {answerKeyArray[activeQuestion-1] === 'W' ? (
-                      <div className="flex flex-col items-center gap-2">
-                        <label className="bg-blue-600 text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase cursor-pointer shadow-xl active:scale-95 flex items-center gap-2">
-                           <PenTool size={16}/> {answers[activeQuestion]?.startsWith('data:image') ? 'CHANGE PHOTO' : 'CAPTURE PHOTO'}
-                           <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleImageUpload(activeQuestion, e.target.files[0])} />
-                        </label>
-                        {answers[activeQuestion]?.startsWith('data:image') && <p className="text-green-400 text-[8px] font-bold uppercase">✓ Photo Captured</p>}
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="flex gap-2 flex-wrap justify-center">
+                           {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].map((_, i) => (
+                             <div key={i} className="bg-green-500 text-white text-[8px] font-black px-2 py-1 rounded-lg uppercase">Page {i+1} ✓</div>
+                           ))}
+                        </div>
+                        <div className="flex gap-4">
+                           <label className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase cursor-pointer shadow-xl flex items-center gap-2 active:scale-95 transition-all">
+                              <Camera size={16}/> {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 ? 'ADD ANOTHER PAGE' : 'CAPTURE PAGE'}
+                              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleImageUpload(activeQuestion, e.target.files[0])} />
+                           </label>
+                           {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (
+                             <button onClick={() => setActiveQuestion(null)} className="bg-green-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl active:scale-95 transition-all">DONE</button>
+                           )}
+                        </div>
                       </div>
                     ) : (
                       <div className="flex gap-5">
                         {['A', 'B', 'C', 'D'].map(opt => (
-                          <button key={opt} onClick={() => { setAnswers({...answers, [activeQuestion]: opt}); setActiveQuestion(null); }} className={`w-12 h-12 rounded-xl font-black text-xl flex items-center justify-center border-b-8 transition-all active:scale-90 active:border-b-0 ${answers[activeQuestion] === opt ? 'bg-blue-600 text-white border-blue-900 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'bg-slate-700 text-slate-300 border-slate-950 hover:bg-slate-600'}`}>{opt}</button>
+                          <button key={opt} onClick={() => { setAnswers({...answers, [activeQuestion]: opt}); setActiveQuestion(null); }} className={`w-12 h-12 rounded-xl font-black text-xl flex items-center justify-center border-b-8 transition-all active:scale-90 ${answers[activeQuestion] === opt ? 'bg-blue-600 text-white border-blue-900 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'bg-slate-700 text-slate-300 border-slate-950 hover:bg-slate-600'}`}>{opt}</button>
                         ))}
                       </div>
                     )}
@@ -508,7 +515,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
                     {answerKeyArray.map((_, index) => {
                       const num = index + 1;
                       return (
-                        <button key={num} onClick={() => setActiveQuestion(num)} className={`min-w-[42px] h-[42px] rounded-xl font-black text-xs flex items-center justify-center transition-all snap-center border-b-4 shadow-lg active:scale-90 ${answers[num] ? 'bg-green-600 text-white border-green-900' : 'bg-slate-700 text-slate-400 border-slate-900 hover:bg-slate-600 hover:text-white'}`}>{num}</button>
+                        <button key={num} onClick={() => setActiveQuestion(num)} className={`min-w-[42px] h-[42px] rounded-xl font-black text-xs flex items-center justify-center transition-all snap-center border-b-4 shadow-lg ${answers[num] ? 'bg-green-600 text-white border-green-900' : 'bg-slate-700 text-slate-400 border-slate-900 hover:bg-slate-600 hover:text-white'}`}>{num}</button>
                       );
                     })}
                  </div>
