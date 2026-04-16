@@ -32,7 +32,7 @@ const ImagePreviewModal = ({ src, onClose }) => {
   );
 };
 
-// --- 🔵 Review Display Component ---
+// --- 🔵 Review Display Component (Updated UI) ---
 const ReviewResultModal = ({ result, onClose }) => {
   if (!result) return null;
   return (
@@ -43,12 +43,15 @@ const ReviewResultModal = ({ result, onClose }) => {
       </div>
       <div className="w-full max-w-lg space-y-3 mb-14 text-left">
          {result.details && result.details.map((item, idx) => (
-           <div key={idx} className={`p-4 rounded-2xl border-4 flex justify-between items-center transition-all ${item.status ? 'bg-green-50 border-green-100 text-green-700 shadow-sm shadow-green-100' : 'bg-red-50 border-red-100 text-red-700 shadow-sm shadow-red-100'}`}>
+           <div key={idx} className={`p-4 rounded-2xl border-4 flex justify-between items-center transition-all ${item.pending ? 'bg-orange-50 border-orange-100 text-orange-700' : (item.status ? 'bg-green-50 border-green-100 text-green-700 shadow-sm shadow-green-100' : 'bg-red-50 border-red-100 text-red-700 shadow-sm shadow-red-100')}`}>
              <div>
-               <p className="font-black text-xs uppercase italic tracking-tighter">Unit Q{item.qNum} <span className="text-[9px] opacity-60 ml-1">({item.mark} pts)</span></p>
-               <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">Choice: {Array.isArray(item.selected) ? `IMAGE (${item.selected.length} Pgs)` : (item.selected?.startsWith('data:image') ? 'IMAGE' : item.selected)} • Key: {item.correct}</p>
+               <p className="font-black text-xs uppercase italic tracking-tighter">Question Q{item.qNum} <span className="text-[9px] opacity-60 ml-1">({item.mark} Marks)</span></p>
+               <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">
+                  Choice: {Array.isArray(item.selected) ? `IMAGE (${item.selected.length} Pgs)` : (item.selected?.startsWith('data:image') ? 'IMAGE' : item.selected)} • Correct: {item.correct}
+                  {item.pending && <span className="ml-2 bg-orange-200 px-2 py-0.5 rounded text-[8px] text-orange-800">U GET: PENDING</span>}
+               </p>
              </div>
-             {item.status ? <CheckSquare size={18} className="drop-shadow-md"/> : <AlertCircle size={18} className="drop-shadow-md"/>}
+             {item.pending ? <Clock size={18} className="animate-pulse" /> : (item.status ? <CheckSquare size={18} className="drop-shadow-md"/> : <AlertCircle size={18} className="drop-shadow-md"/>)}
            </div>
          ))}
       </div>
@@ -90,19 +93,14 @@ const App = () => {
     setShowNameModal(true);
   };
 
-  // 🔴 পরিবর্তিত সেকশন: স্টুডেন্ট কোড ম্যান্ডেটরি করা হয়েছে
   const finalizeExamStart = () => {
     if (!studentNameInput.trim()) return alert("PLEASE ENTER YOUR NAME");
     if (!studentCodeInput.trim()) return alert("STUDENT CODE IS MANDATORY!");
-
-    // কোড চেক করা হচ্ছে রেজিস্ট্রি লিস্টে আছে কি না
     const isRegistered = students.some(s => s.studentCode?.toString().trim() === studentCodeInput.trim());
-    
     if (!isRegistered) {
       alert("INVALID STUDENT CODE! PLEASE CONTACT ANSHU SIR.");
       return;
     }
-
     setCurrentExam({ ...pendingExam, studentName: studentNameInput.trim(), studentCode: studentCodeInput.trim() });
     setIsExamActive(true);
     setShowNameModal(false);
