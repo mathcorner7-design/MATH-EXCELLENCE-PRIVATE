@@ -299,7 +299,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   );
 };
 
-// --- 🟡 ADMIN MARKSHEET MODAL (FIXED FOR MULTIPLE IMAGES) ---
+// --- 🟡 ADMIN MARKSHEET MODAL ---
 const AdminMarksheetModal = ({ student, results, onClose }) => {
   const [newRes, setNewRes] = useState({ exam: "", obtained: "", total: "", date: "" });
   const [previewImg, setPreviewImg] = useState(null);
@@ -337,13 +337,11 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
                   <button onClick={async () => { if(window.confirm("Purge record?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-red-200 hover:text-red-500 active:scale-90 transition-all flex-shrink-0"><Trash2 size={24} /></button>
                 </div>
 
-                {/* 🟠 HORIZONTAL SLIDER FOR PENDING PAPERS (NEW MULTI-PAGE FIX) */}
                 {r.details && r.details.some(d => d.pending) && (
                   <div className="bg-orange-50 border-2 border-orange-100 rounded-[2rem] p-4 flex flex-col gap-3 shadow-inner">
                     <p className="text-[10px] font-black text-orange-600 uppercase italic text-center animate-pulse tracking-widest">Action Required: Written Solutions</p>
                     <div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory">
                       {r.details.filter(d => d.pending).map((pendingQ, pIdx) => {
-                         // এখানে দেখা হচ্ছে selected ফিল্ডটি কি Array (Multi-page) নাকি Single String
                          const photoList = Array.isArray(pendingQ.selected) ? pendingQ.selected : [pendingQ.selected];
                          
                          return photoList.map((photoUrl, imgIdx) => (
@@ -351,7 +349,6 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
                              <p className="text-[9px] font-black text-slate-400 uppercase italic">Q{pendingQ.qNum} - Page {imgIdx + 1}</p>
                              <button onClick={() => setPreviewImg(photoUrl)} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">View Page</button>
                              
-                             {/* মার্ক ইনপুট শুধু প্রতিটি প্রশ্নের শেষ পাতার নিচে আসবে */}
                              {imgIdx === photoList.length - 1 && (
                                <div className="flex gap-2 w-full mt-2">
                                  <input id={`mark-input-${r.id}-${pendingQ.qNum}`} type="number" placeholder="Marks" className="w-1/2 p-2 border-2 rounded-xl text-center font-black text-[10px] outline-none focus:border-orange-500 bg-white" />
@@ -386,7 +383,6 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [scoreData, setScoreData] = useState(null);
 
-  // 🟢 Updated: Multi-page handle for 'W' questions
   const handleImageUpload = (qNum, file) => {
     if (!file) return;
     const reader = new FileReader();
@@ -405,12 +401,20 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
         const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5);
         
         setAnswers(prev => {
-          // আগের ফটোগুলো সংগ্রহ করা হচ্ছে
           const existingPhotos = Array.isArray(prev[qNum]) ? prev[qNum] : [];
           return { ...prev, [qNum]: [...existingPhotos, compressedBase64] };
         });
       };
     };
+  };
+
+  // 🔴 নতুন লজিক: ছবি রিমুভ করার জন্য (এটিই একমাত্র নতুন লজিক)
+  const removeImage = (qNum, indexToRemove) => {
+    setAnswers(prev => {
+      const existingPhotos = Array.isArray(prev[qNum]) ? prev[qNum] : [];
+      const updatedPhotos = existingPhotos.filter((_, idx) => idx !== indexToRemove);
+      return { ...prev, [qNum]: updatedPhotos };
+    });
   };
 
   const answerKeyArray = exam?.answerKey ? exam.answerKey.split(',').map(k => k.trim().toUpperCase()) : [];
@@ -489,13 +493,22 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
                       <div className="flex flex-col items-center gap-4">
                         <div className="flex gap-2 flex-wrap justify-center">
                            {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].map((_, i) => (
-                             <div key={i} className="bg-green-500 text-white text-[8px] font-black px-2 py-1 rounded-lg uppercase">Page {i+1} ✓</div>
+                             <div key={i} className="relative">
+                               <div className="bg-green-500 text-white text-[8px] font-black px-2 py-1 rounded-lg uppercase">Page {i+1} ✓</div>
+                               {/* 🟢 নতুন ডিলিট বাটন */}
+                               <button 
+                                 onClick={() => removeImage(activeQuestion, i)}
+                                 className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-0.5 shadow-lg active:scale-75 transition-all"
+                               >
+                                 <X size={12}/>
+                               </button>
+                             </div>
                            ))}
                         </div>
                         <div className="flex gap-4">
                            <label className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase cursor-pointer shadow-xl flex items-center gap-2 active:scale-95 transition-all">
                               <Camera size={16}/> {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 ? 'ADD ANOTHER PAGE' : 'CAPTURE PAGE'}
-                              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleImageUpload(activeQuestion, e.target.files[0])} />
+                              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { handleImageUpload(activeQuestion, e.target.files[0]); e.target.value = null; }} />
                            </label>
                            {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (
                              <button onClick={() => setActiveQuestion(null)} className="bg-green-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl active:scale-95 transition-all">DONE</button>
