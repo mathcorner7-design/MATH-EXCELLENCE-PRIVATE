@@ -7,8 +7,8 @@ import {
   Loader2, ChevronLeft, Trash2, UserPlus, History, UserCheck, X, CheckSquare, AlertCircle, ListChecks, Eye, Camera, Send, Link, Zap, Download
 } from 'lucide-react';
 
-// --- 🖼️ CONFIGURATION: আপনার ব্যাকগ্রাউন্ড ইমেজের লিঙ্ক এখানে দিন ---
-const APP_BACKGROUND_URL = "https://i.gifer.com/4A5.gif"; 
+// --- 🖼️ CONFIGURATION: আপনার GIF লিঙ্কটি এখানে দিন ---
+const APP_BACKGROUND_URL = "https://i.gifer.com/your-link.gif"; 
 
 // --- 🟢 Firebase Configuration ---
 const firebaseConfig = {
@@ -28,7 +28,7 @@ const db = getFirestore(app);
 const ImagePreviewModal = ({ src, onClose }) => {
   if (!src) return null;
   return (
-    <div className="fixed inset-0 bg-black/90 z-[3000] flex flex-col items-center justify-center p-4 backdrop-blur-md animate-in fade-in print:hidden">
+    <div className="fixed inset-0 bg-black/95 z-[3000] flex flex-col items-center justify-center p-4 backdrop-blur-md animate-in fade-in print:hidden">
       <button onClick={onClose} className="absolute top-10 right-10 text-white p-3 bg-red-600 rounded-full shadow-2xl"><X size={32}/></button>
       <img src={src} alt="Student Solution" className="max-w-full max-h-[80vh] rounded-xl shadow-2xl border-4 border-white animate-in zoom-in" />
     </div>
@@ -39,22 +39,22 @@ const ImagePreviewModal = ({ src, onClose }) => {
 const ReviewResultModal = ({ result, onClose }) => {
   if (!result) return null;
   return (
-    <div className="fixed inset-0 bg-white z-[2500] flex flex-col items-center overflow-y-auto p-10 text-center animate-in zoom-in duration-300 print:hidden">
-      <div className="w-full max-w-lg flex justify-between items-center mb-10 border-b-4 border-slate-50 pb-5">
-         <h2 className="text-2xl font-black text-slate-800 uppercase italic tracking-tighter">Review: {result.exam}</h2>
-         <button onClick={onClose} className="p-2 bg-slate-100 rounded-full hover:bg-red-50 hover:text-red-500 transition-all"><X size={28}/></button>
+    <div className="fixed inset-0 bg-slate-950 z-[2500] flex flex-col items-center overflow-y-auto p-10 text-center animate-in zoom-in duration-300 print:hidden text-white">
+      <div className="w-full max-w-lg flex justify-between items-center mb-10 border-b-4 border-slate-800 pb-5">
+         <h2 className="text-2xl font-black uppercase italic tracking-tighter text-blue-400">Review: {result.exam}</h2>
+         <button onClick={onClose} className="p-2 bg-slate-800 rounded-full hover:bg-red-900 transition-all text-white"><X size={28}/></button>
       </div>
       <div className="w-full max-w-lg space-y-3 mb-14 text-left">
          {result.details && result.details.map((item, idx) => (
-           <div key={idx} className={`p-4 rounded-2xl border-4 flex justify-between items-center transition-all ${item.pending ? 'bg-orange-50 border-orange-100 text-orange-700' : (item.status ? 'bg-green-50 border-green-100 text-green-700 shadow-sm shadow-green-100' : 'bg-red-50 border-red-100 text-red-700 shadow-sm shadow-red-100')}`}>
+           <div key={idx} className={`p-4 rounded-2xl border-2 flex justify-between items-center transition-all ${item.pending ? 'bg-orange-900/40 border-orange-700 text-orange-200' : (item.status ? 'bg-green-900/40 border-green-700 text-green-200 shadow-sm' : 'bg-red-900/40 border-red-700 text-red-200 shadow-sm')}`}>
              <div>
                <p className="font-black text-xs uppercase italic tracking-tighter">Question Q{item.qNum} <span className="text-[9px] opacity-60 ml-1">({item.mark} Marks)</span></p>
                <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">
                   Choice: {Array.isArray(item.selected) ? `IMAGE (${item.selected.length} Pgs)` : (item.selected?.startsWith('data:image') ? 'IMAGE' : item.selected)} • Correct: {item.correct}
-                  {item.pending && <span className="ml-2 bg-orange-200 px-2 py-0.5 rounded text-[8px] text-orange-800">U GET: PENDING</span>}
+                  {item.pending && <span className="ml-2 bg-orange-600 px-2 py-0.5 rounded text-[8px] text-white">U GET: PENDING</span>}
                </p>
              </div>
-             {item.pending ? <Clock size={18} className="animate-pulse" /> : (item.status ? <CheckSquare size={18} className="drop-shadow-md"/> : <AlertCircle size={18} className="drop-shadow-md"/>)}
+             {item.pending ? <Clock size={18} className="animate-pulse" /> : (item.status ? <CheckSquare size={18}/> : <AlertCircle size={18}/>)}
            </div>
          ))}
       </div>
@@ -120,9 +120,9 @@ const App = () => {
 
   return (
     <div 
-      className="min-h-screen font-sans text-slate-900 select-none flex flex-col items-center overflow-x-hidden transition-all duration-500"
+      className="min-h-screen font-sans text-white select-none flex flex-col items-center overflow-x-hidden transition-all duration-700 bg-black"
       style={{
-        backgroundImage: `linear-gradient(rgba(248, 250, 252, 0.85), rgba(248, 250, 252, 0.85)), url(${APP_BACKGROUND_URL})`,
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url(${APP_BACKGROUND_URL})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed'
@@ -133,39 +133,40 @@ const App = () => {
           body { background: white !important; overflow: visible !important; }
           header, nav, .print-hide, button, .lucide { display: none !important; }
           .min-h-screen { min-height: auto !important; background: none !important; }
-          main { padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+          main { padding: 0 !important; width: 100% !important; max-width: 100% !important; color: black !important; }
           .print-full-report { display: block !important; position: static !important; width: 100% !important; height: auto !important; overflow: visible !important; }
-          .print-card { border: 2px solid #ddd !important; break-inside: avoid; page-break-inside: avoid; margin-bottom: 15px !important; }
+          .print-card { border: 2px solid #ddd !important; break-inside: avoid; page-break-inside: avoid; margin-bottom: 15px !important; color: black !important; background: white !important; }
+          .text-white { color: black !important; }
         }
         main { overflow-anchor: none; }
       `}</style>
 
       {showNameModal && (
-        <div className="fixed inset-0 bg-black/80 z-[1000] flex items-center justify-center p-6 backdrop-blur-sm print:hidden">
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border-4 border-slate-50">
-            <UserCheck size={40} className="text-blue-600 mx-auto mb-4" />
-            <h3 className="font-bold text-lg mb-6 uppercase tracking-tight italic">Student Login</h3>
+        <div className="fixed inset-0 bg-black/90 z-[1000] flex items-center justify-center p-6 backdrop-blur-md print:hidden">
+          <div className="bg-slate-900 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border-2 border-slate-800">
+            <UserCheck size={40} className="text-blue-500 mx-auto mb-4" />
+            <h3 className="font-bold text-lg mb-6 uppercase tracking-tight italic text-white">Student Login</h3>
             <div className="space-y-4">
-              <input autoFocus type="text" value={studentNameInput} onChange={(e) => setStudentNameInput(e.target.value)} className="w-full p-3 rounded-xl border-2 font-bold text-center outline-none focus:border-blue-500 uppercase" placeholder="NAME" />
-              <input type="text" value={studentCodeInput} onChange={(e) => setStudentCodeInput(e.target.value)} className="w-full p-3 rounded-xl border-2 font-bold text-center outline-none focus:border-blue-500" placeholder="ENTER UNIQUE CODE" />
+              <input autoFocus type="text" value={studentNameInput} onChange={(e) => setStudentNameInput(e.target.value)} className="w-full p-3 rounded-xl border-2 border-slate-700 bg-black text-white font-bold text-center outline-none focus:border-blue-500 uppercase" placeholder="NAME" />
+              <input type="text" value={studentCodeInput} onChange={(e) => setStudentCodeInput(e.target.value)} className="w-full p-3 rounded-xl border-2 border-slate-700 bg-black text-white font-bold text-center outline-none focus:border-blue-500" placeholder="ENTER UNIQUE CODE" />
             </div>
             <div className="flex gap-4 mt-8">
-              <button onClick={() => setShowNameModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 font-bold text-[10px] uppercase">Cancel</button>
+              <button onClick={() => setShowNameModal(false)} className="flex-1 py-3 rounded-xl bg-slate-800 text-white font-bold text-[10px] uppercase">Cancel</button>
               <button onClick={finalizeExamStart} className="flex-1 py-3 rounded-xl bg-blue-700 text-white font-bold text-[10px] uppercase shadow-lg">Confirm</button>
             </div>
           </div>
         </div>
       )}
 
-      <header className="bg-white/90 backdrop-blur-md border-b sticky top-0 z-50 shadow-sm px-6 py-2 flex justify-between items-center w-full max-w-6xl print:hidden">
-        <h1 className="text-lg font-black text-blue-700 uppercase italic tracking-tighter cursor-pointer" onClick={() => setActiveTab('home')}>MATH EXCELLENCE</h1>
-        <p className="text-[9px] font-bold text-slate-400 italic">ANSHU SIR</p>
+      <header className="bg-black/60 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50 shadow-2xl px-6 py-2 flex justify-between items-center w-full max-w-6xl print:hidden">
+        <h1 className="text-lg font-black text-blue-400 uppercase italic tracking-tighter cursor-pointer" onClick={() => setActiveTab('home')}>MATH EXCELLENCE</h1>
+        <p className="text-[9px] font-bold text-slate-500 italic">ANSHU SIR</p>
       </header>
 
-      <nav className="bg-blue-700/90 backdrop-blur-md text-white w-full sticky top-[45px] z-40 flex justify-center shadow-lg print:hidden">
+      <nav className="bg-blue-700/80 backdrop-blur-xl text-white w-full sticky top-[45px] z-40 flex justify-center shadow-lg print:hidden">
         <div className="max-w-6xl w-full flex overflow-x-auto no-scrollbar">
           {[{ id: 'home', label: 'Home', icon: <History size={14}/> }, { id: 'live', label: 'Live Mock', icon: <Clock size={14}/> }, { id: 'practice', label: 'Practice', icon: <BookOpen size={14}/> }, { id: 'growth', label: 'Growth', icon: <TrendingUp size={14}/> }, { id: 'teacher', label: 'Admin', icon: <User size={14}/> }].map((item) => (
-            <button key={item.id} onClick={() => setActiveTab(item.id)} className={`flex-1 flex items-center justify-center gap-1.5 px-4 py-3.5 font-bold text-[9px] uppercase border-b-4 transition-all ${activeTab === item.id ? 'border-yellow-400 bg-blue-800' : 'border-transparent'}`}>{item.icon} {item.label}</button>
+            <button key={item.id} onClick={() => setActiveTab(item.id)} className={`flex-1 flex items-center justify-center gap-1.5 px-4 py-3.5 font-bold text-[9px] uppercase border-b-4 transition-all ${activeTab === item.id ? 'border-yellow-400 bg-white/10' : 'border-transparent'}`}>{item.icon} {item.label}</button>
           ))}
         </div>
       </nav>
@@ -173,18 +174,18 @@ const App = () => {
       <main className="w-full max-w-5xl p-4 mb-20 flex flex-col items-center">
         {activeTab === 'home' && (
           <div className="space-y-6 animate-in fade-in w-full text-center print:hidden">
-            <div className="bg-white/80 backdrop-blur-sm p-8 rounded-[2.5rem] shadow-xl border-4 border-white/50">
-               <GraduationCap size={48} className="text-blue-700 mx-auto mb-3 animate-bounce-slow" />
-               <h2 className="text-xl md:text-3xl font-black uppercase italic tracking-tight leading-tight">Elevate Your Mathematics <br/> <span className="text-blue-700 underline decoration-yellow-400 decoration-2 underline-offset-8">with Anshu Sir</span></h2>
+            <div className="bg-black/60 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border-2 border-white/10">
+               <GraduationCap size={48} className="text-blue-400 mx-auto mb-3 animate-bounce-slow" />
+               <h2 className="text-xl md:text-3xl font-black uppercase italic tracking-tight leading-tight text-white">Elevate Your Mathematics <br/> <span className="text-blue-400 underline decoration-yellow-400 decoration-2 underline-offset-8">with Anshu Sir</span></h2>
                <button onClick={() => setActiveTab('live')} className="mt-8 bg-blue-700 text-white px-8 py-2.5 rounded-full font-bold text-[9px] uppercase shadow-xl hover:bg-blue-800 transition-all">Start Session</button>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm p-5 rounded-3xl shadow-md border border-white/50 text-left w-full">
-              <h3 className="font-bold text-xs uppercase mb-3 border-b pb-2 flex items-center gap-2 italic"><History size={16} className="text-blue-600"/> Activity Stream</h3>
+            <div className="bg-black/60 backdrop-blur-xl p-5 rounded-3xl shadow-md border border-white/10 text-left w-full">
+              <h3 className="font-bold text-xs uppercase mb-3 border-b border-white/10 pb-2 flex items-center gap-2 italic text-blue-300"><History size={16} className="text-blue-400"/> Activity Stream</h3>
               <div className="space-y-3">
                 {activityLogs.slice(0, 10).map(log => (
-                  <div key={log.id} className="p-2.5 bg-white/60 rounded-xl flex justify-between items-center border-l-4 border-blue-600 shadow-sm transition-all hover:bg-white">
-                    <div><p className="text-[10px] font-black uppercase text-slate-800">{log.studentName}</p><p className="text-[8px] font-bold text-slate-400 uppercase italic">{log.examTitle} • {new Date(log.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • {new Date(log.timestamp).toLocaleDateString('en-GB')}</p></div>
-                    <div className="text-right text-[7px] font-bold text-slate-300 uppercase leading-tight">RECENT <br/> ACTIVITY</div>
+                  <div key={log.id} className="p-2.5 bg-white/5 rounded-xl flex justify-between items-center border-l-4 border-blue-600 shadow-sm transition-all hover:bg-white/10">
+                    <div><p className="text-[10px] font-black uppercase text-white">{log.studentName}</p><p className="text-[8px] font-bold text-slate-400 uppercase italic">{log.examTitle} • {new Date(log.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • {new Date(log.timestamp).toLocaleDateString('en-GB')}</p></div>
+                    <div className="text-right text-[7px] font-bold text-slate-500 uppercase leading-tight">RECENT <br/> ACTIVITY</div>
                   </div>
                 ))}
               </div>
@@ -194,10 +195,10 @@ const App = () => {
 
         {activeTab === 'live' && (
           <div className="space-y-4 w-full text-left print:hidden">
-            <h2 className="font-bold uppercase text-slate-700 border-b-2 pb-2 text-[10px] flex items-center gap-2 bg-white/50 p-2 rounded-lg backdrop-blur-sm"><Clock size={14} className="text-red-600"/> Ongoing Live Mocks</h2>
+            <h2 className="font-bold uppercase text-blue-300 border-b border-white/10 pb-2 text-[10px] flex items-center gap-2 bg-black/40 p-2 rounded-lg backdrop-blur-md"><Clock size={14} className="text-red-500"/> Ongoing Live Mocks</h2>
             {liveMocks.filter(m => m.isPublished).map(m => (
-              <div key={m.id} className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow flex justify-between items-center border border-white/50">
-                <div className="flex-1 pr-4"><h3 className="text-sm font-black uppercase italic tracking-tighter break-words">{m.name}</h3><p className="text-[9px] font-bold text-red-600 uppercase italic mt-1">Duration: {m.hours || 0}h {m.minutes || 0}m</p></div>
+              <div key={m.id} className="bg-black/60 backdrop-blur-xl p-4 rounded-2xl shadow-xl flex justify-between items-center border border-white/10">
+                <div className="flex-1 pr-4"><h3 className="text-sm font-black uppercase italic tracking-tighter text-white break-words">{m.name}</h3><p className="text-[9px] font-bold text-red-500 uppercase italic mt-1">Duration: {m.hours || 0}h {m.minutes || 0}m</p></div>
                 <button onClick={() => handleStartExamFlow(m)} className="bg-red-600 text-white px-6 py-2 rounded-full font-bold text-[9px] uppercase shadow-lg h-fit">Attend</button>
               </div>
             ))}
@@ -205,9 +206,9 @@ const App = () => {
         )}
 
         {activeTab === 'teacher' && (!isTeacherAuthenticated ? 
-          <div className="max-w-md w-full mx-auto mt-20 p-10 bg-white/90 backdrop-blur-md rounded-3xl shadow-xl text-center border-t-8 border-blue-700 print:hidden">
-            <Lock size={40} className="text-blue-700 mx-auto mb-6" />
-            <input type="password" onChange={(e) => { if(e.target.value === teacherPin) setIsTeacherAuthenticated(true); }} className="w-full py-4 bg-slate-50/50 border-2 rounded-xl text-center text-4xl font-black outline-none" placeholder="••••" />
+          <div className="max-w-md w-full mx-auto mt-20 p-10 bg-slate-950 backdrop-blur-xl rounded-3xl shadow-2xl text-center border-t-8 border-blue-700 border-x border-b border-white/10 print:hidden">
+            <Lock size={40} className="text-blue-500 mx-auto mb-6" />
+            <input type="password" onChange={(e) => { if(e.target.value === teacherPin) setIsTeacherAuthenticated(true); }} className="w-full py-4 bg-black border-2 border-slate-800 rounded-xl text-center text-4xl font-black outline-none text-white placeholder:text-slate-800" placeholder="••••" />
           </div> : <TeacherZoneMainView liveMocks={liveMocks} practiceSets={practiceSets} students={students} teacherPin={teacherPin} studentResults={studentResults} setTeacherPin={async (v) => await setDoc(doc(db, "settings", "adminConfig"), { pin: v }, { merge: true })} />
         )}
 
@@ -216,9 +217,9 @@ const App = () => {
         {activeTab === 'practice' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full text-left print:hidden">
             {practiceSets.filter(p => p.isPublished).map(p => (
-              <div key={p.id} className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow flex justify-between items-center border border-white/50 hover:border-blue-300">
-                <div className="flex-1 pr-4"><h3 className="font-bold uppercase text-xs italic break-words">{p.name}</h3><p className="text-[9px] font-bold text-slate-400 uppercase italic mt-1">Time: {p.hours || 0}h {p.minutes || 0}m</p></div>
-                <button onClick={() => handleStartExamFlow(p)} className="bg-blue-700 text-white px-6 py-2 rounded-full font-bold text-[9px] uppercase shadow-md h-fit">Start</button>
+              <div key={p.id} className="bg-black/60 backdrop-blur-xl p-4 rounded-2xl shadow flex justify-between items-center border border-white/10 hover:border-blue-500/50 transition-all">
+                <div className="flex-1 pr-4"><h3 className="font-bold uppercase text-xs italic text-white break-words">{p.name}</h3><p className="text-[9px] font-bold text-slate-500 uppercase italic mt-1">Time: {p.hours || 0}h {p.minutes || 0}m</p></div>
+                <button onClick={() => handleStartExamFlow(p)} className="bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-[9px] uppercase shadow-md h-fit">Start</button>
               </div>
             ))}
           </div>
@@ -266,48 +267,48 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   };
 
   const PaperManager = ({ title, items, type, color }) => (
-    <div className="bg-white/80 backdrop-blur-sm rounded-[2rem] shadow-sm border-t-8 border-slate-100/50 mb-8 w-full overflow-hidden print:hidden">
-      <div className="flex justify-between items-center p-6 border-b">
+    <div className="bg-black/60 backdrop-blur-xl rounded-[2rem] shadow-2xl border-t-8 border-slate-900 mb-8 w-full overflow-hidden print:hidden border-x border-b border-white/5">
+      <div className="flex justify-between items-center p-6 border-b border-white/5">
         <h3 className={`font-black uppercase text-xs italic ${color}`}>{title} Manager ({items.length})</h3>
       </div>
-      <div className="max-h-[500px] overflow-y-auto p-4 space-y-3 bg-slate-50/30 no-scrollbar">
+      <div className="max-h-[500px] overflow-y-auto p-4 space-y-3 bg-white/5 no-scrollbar">
         {items.map(item => (
-          <div key={item.id} className="bg-white/90 rounded-2xl border-2 border-white shadow-sm overflow-hidden transition-all">
-            <div onClick={() => setExpandedId(expandedId === item.id ? null : item.id)} className="p-4 flex justify-between items-center cursor-pointer hover:bg-slate-50 group">
+          <div key={item.id} className="bg-slate-900/60 rounded-2xl border border-white/10 overflow-hidden transition-all">
+            <div onClick={() => setExpandedId(expandedId === item.id ? null : item.id)} className="p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 group">
               <div className="flex-1 pr-2">
                 <div className="flex flex-col">
                   <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.isPublished ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></div>
-                    <span className="text-xs font-black uppercase italic text-slate-700 break-words">{item.name}</span>
+                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.isPublished ? 'bg-green-500 animate-pulse' : 'bg-slate-700'}`}></div>
+                    <span className="text-xs font-black uppercase italic text-white break-words">{item.name}</span>
                   </div>
-                  <p className="text-[8px] font-bold text-slate-400 uppercase italic ml-5 mt-1">
+                  <p className="text-[8px] font-bold text-slate-500 uppercase italic ml-5 mt-1">
                     Created: {item.timestamp ? `${new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • ${new Date(item.timestamp).toLocaleDateString('en-GB')}` : 'N/A'}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                 <button onClick={(e) => { e.stopPropagation(); updateField(item.id, type, 'isPublished', !item.isPublished); }} className={`px-4 py-1.5 rounded-full text-[8px] font-black shadow-sm ${item.isPublished ? 'bg-green-600 text-white' : 'bg-slate-200 text-slate-500'}`}>{item.isPublished ? 'LIVE' : 'HIDDEN'}</button>
-                 <button onClick={async (e) => { e.stopPropagation(); if(window.confirm("Permanent delete?")) await deleteDoc(doc(db, type === 'live' ? 'liveMocks' : 'practiceSets', item.id)); }} className="p-2 text-red-300 hover:text-red-500"><Trash2 size={16}/></button>
-                 <ChevronRight size={18} className={`transition-transform text-slate-300 ${expandedId === item.id ? 'rotate-90 text-blue-600' : ''}`} />
+                 <button onClick={(e) => { e.stopPropagation(); updateField(item.id, type, 'isPublished', !item.isPublished); }} className={`px-4 py-1.5 rounded-full text-[8px] font-black shadow-sm ${item.isPublished ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-500'}`}>{item.isPublished ? 'LIVE' : 'HIDDEN'}</button>
+                 <button onClick={async (e) => { e.stopPropagation(); if(window.confirm("Permanent delete?")) await deleteDoc(doc(db, type === 'live' ? 'liveMocks' : 'practiceSets', item.id)); }} className="p-2 text-slate-600 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
+                 <ChevronRight size={18} className={`transition-transform text-slate-600 ${expandedId === item.id ? 'rotate-90 text-blue-400' : ''}`} />
               </div>
             </div>
             {expandedId === item.id && (
-              <div className="p-5 border-t bg-slate-50/20 space-y-4 animate-in slide-in-from-top-2">
+              <div className="p-5 border-t border-white/5 bg-black/40 space-y-4 animate-in slide-in-from-top-2">
                 <div>
-                   <p className="text-[8px] font-black text-slate-400 uppercase mb-1 ml-1">Exam Name</p>
-                   <input type="text" defaultValue={item.name} onBlur={(e) => updateField(item.id, type, 'name', e.target.value.toUpperCase())} className="w-full p-2.5 rounded-xl border-2 text-xs font-black outline-none bg-white focus:border-blue-400" />
+                   <p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1">Exam Name</p>
+                   <input type="text" defaultValue={item.name} onBlur={(e) => updateField(item.id, type, 'name', e.target.value.toUpperCase())} className="w-full p-2.5 rounded-xl border border-white/10 bg-black text-white text-xs font-black outline-none focus:border-blue-500" />
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <div className="bg-white p-2.5 rounded-xl border-2 border-blue-50 shadow-sm">
-                    <p className="text-[8px] font-black text-blue-700 uppercase mb-1 ml-1">Time Limit</p>
+                  <div className="bg-black p-2.5 rounded-xl border border-white/10 shadow-sm">
+                    <p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1">Time Limit</p>
                     <div className="flex items-center gap-1">
-                      <input type="number" defaultValue={item.hours} onBlur={(e) => updateField(item.id, type, 'hours', e.target.value)} className="w-10 text-center font-black bg-blue-50 rounded-lg outline-none" /> <span className="font-bold text-[9px]">H</span> 
-                      <input type="number" defaultValue={item.minutes} onBlur={(e) => updateField(item.id, type, 'minutes', e.target.value)} className="w-10 text-center font-black bg-blue-50 rounded-lg outline-none" /> <span className="font-bold text-[9px]">M</span>
+                      <input type="number" defaultValue={item.hours} onBlur={(e) => updateField(item.id, type, 'hours', e.target.value)} className="w-10 text-center font-black bg-slate-900 rounded-lg outline-none text-white" /> <span className="font-bold text-[9px]">H</span> 
+                      <input type="number" defaultValue={item.minutes} onBlur={(e) => updateField(item.id, type, 'minutes', e.target.value)} className="w-10 text-center font-black bg-slate-900 rounded-lg outline-none text-white" /> <span className="font-bold text-[9px]">M</span>
                     </div>
                   </div>
-                  <div className="flex-1 bg-white p-2.5 rounded-xl border-2 border-slate-50 shadow-sm">
-                    <p className="text-[8px] font-black text-slate-400 uppercase mb-1 ml-1">Google Drive Link</p>
-                    <input type="text" defaultValue={item.fileUrl} onBlur={(e) => updateField(item.id, type, 'fileUrl', e.target.value)} className="w-full p-2 rounded-lg border text-[10px] outline-none font-bold" />
+                  <div className="flex-1 bg-black p-2.5 rounded-xl border border-white/10 shadow-sm">
+                    <p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1">Google Drive Link</p>
+                    <input type="text" defaultValue={item.fileUrl} onBlur={(e) => updateField(item.id, type, 'fileUrl', e.target.value)} className="w-full p-2 rounded-lg border border-white/5 bg-black text-white text-[10px] outline-none font-bold" />
                   </div>
                 </div>
               </div>
@@ -320,53 +321,53 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
 
   return (
     <div className="w-full flex flex-col items-center">
-      <div className="bg-white/80 backdrop-blur-sm p-6 rounded-[2.5rem] shadow-xl border-t-8 border-blue-700 w-full mb-8 text-left animate-in fade-in print:hidden">
+      <div className="bg-slate-950/80 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-2xl border-t-8 border-blue-700 w-full mb-8 text-left animate-in fade-in print:hidden border-x border-b border-white/5">
         <div className="flex justify-between items-center mb-6">
-           <h3 className="font-black text-[10px] uppercase flex items-center gap-2 italic text-blue-700"><Zap size={20}/> KUI GET (Quick Add)</h3>
-           <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
-              <button onClick={() => setQuickAddType('live')} className={`px-4 py-1.5 rounded-lg font-black text-[8px] uppercase transition-all ${quickAddType === 'live' ? 'bg-red-600 text-white shadow-md' : 'text-slate-400'}`}>Live</button>
-              <button onClick={() => setQuickAddType('practice')} className={`px-4 py-1.5 rounded-lg font-black text-[8px] uppercase transition-all ${quickAddType === 'practice' ? 'bg-blue-700 text-white shadow-md' : 'text-slate-400'}`}>Practice</button>
+           <h3 className="font-black text-[10px] uppercase flex items-center gap-2 italic text-blue-400"><Zap size={20}/> KUI GET (Quick Add)</h3>
+           <div className="flex gap-1 p-1 bg-black rounded-xl border border-white/5">
+              <button onClick={() => setQuickAddType('live')} className={`px-4 py-1.5 rounded-lg font-black text-[8px] uppercase transition-all ${quickAddType === 'live' ? 'bg-red-600 text-white shadow-md' : 'text-slate-500'}`}>Live</button>
+              <button onClick={() => setQuickAddType('practice')} className={`px-4 py-1.5 rounded-lg font-black text-[8px] uppercase transition-all ${quickAddType === 'practice' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500'}`}>Practice</button>
            </div>
         </div>
         <div className="space-y-6">
-          <div><p className="text-[8px] font-black text-slate-400 uppercase mb-1 ml-1 italic leading-none">Exam Name</p><input type="text" value={qaName} onChange={(e) => setQaName(e.target.value)} className="w-full p-3.5 bg-slate-50/50 border-2 border-white rounded-2xl text-[10px] font-black outline-none shadow-inner focus:bg-white focus:border-blue-400 transition-all uppercase" placeholder="New Slot" /></div>
+          <div><p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1 italic leading-none">Exam Name</p><input type="text" value={qaName} onChange={(e) => setQaName(e.target.value)} className="w-full p-3.5 bg-black border border-white/10 rounded-2xl text-[10px] font-black outline-none shadow-inner focus:border-blue-500 text-white transition-all uppercase" placeholder="New Slot" /></div>
           <div className="flex flex-col md:flex-row gap-4">
-             <div className="bg-slate-50/50 p-3 rounded-2xl border-2 border-white shadow-inner min-w-[120px]"><p className="text-[8px] font-black text-blue-700 uppercase mb-1 ml-1 italic">Time Limit</p><div className="flex items-center gap-1 font-black text-[10px]"><input type="number" value={qaHours} onChange={(e) => setQaHours(e.target.value)} className="w-8 text-center bg-transparent outline-none" /> <span>H</span><input type="number" value={qaMinutes} onChange={(e) => setQaMinutes(e.target.value)} className="w-8 text-center bg-transparent outline-none" /> <span>M</span></div></div>
-             <div className="flex-1 bg-slate-50/50 p-3 rounded-2xl border-2 border-white shadow-inner"><p className="text-[8px] font-black text-slate-400 uppercase mb-1 ml-1 italic tracking-widest">Google Drive Link</p><input type="text" value={qaLink} onChange={(e) => setQaLink(e.target.value)} className="w-full bg-transparent outline-none text-[9px] font-bold" placeholder="Paste PDF/Doc Link" /></div>
+             <div className="bg-black p-3 rounded-2xl border border-white/10 shadow-inner min-w-[120px]"><p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1 italic">Time Limit</p><div className="flex items-center gap-1 font-black text-[10px] text-white"><input type="number" value={qaHours} onChange={(e) => setQaHours(e.target.value)} className="w-8 text-center bg-transparent outline-none" /> <span>H</span><input type="number" value={qaMinutes} onChange={(e) => setQaMinutes(e.target.value)} className="w-8 text-center bg-transparent outline-none" /> <span>M</span></div></div>
+             <div className="flex-1 bg-black p-3 rounded-2xl border border-white/10 shadow-inner"><p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1 italic tracking-widest">Google Drive Link</p><input type="text" value={qaLink} onChange={(e) => setQaLink(e.target.value)} className="w-full bg-transparent outline-none text-[9px] font-bold text-white" placeholder="Paste PDF/Doc Link" /></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             <div className="bg-slate-50/50 p-3 rounded-2xl border-2 border-white shadow-inner"><p className="text-[9px] font-black text-blue-700 uppercase mb-1 italic">Correct Key</p><input type="text" value={qaKey} onChange={(e) => setQaKey(e.target.value)} className="w-full bg-transparent outline-none font-black text-[10px] uppercase" placeholder="e.g. A,B,W,D" /></div>
-             <div className="bg-slate-50/50 p-3 rounded-2xl border-2 border-white shadow-inner"><p className="text-[9px] font-black text-yellow-700 uppercase mb-1 italic">Marks/Q</p><input type="text" value={qaMarks} onChange={(e) => setQaMarks(e.target.value)} className="w-full bg-transparent outline-none font-black text-[10px]" placeholder="e.g. 1,1,5,1" /></div>
+             <div className="bg-black p-3 rounded-2xl border border-white/10 shadow-inner"><p className="text-[9px] font-black text-blue-400 uppercase mb-1 italic">Correct Key</p><input type="text" value={qaKey} onChange={(e) => setQaKey(e.target.value)} className="w-full bg-transparent outline-none font-black text-[10px] uppercase text-white" placeholder="e.g. A,B,W,D" /></div>
+             <div className="bg-black p-3 rounded-2xl border border-white/10 shadow-inner"><p className="text-[9px] font-black text-yellow-500 uppercase mb-1 italic">Marks/Q</p><input type="text" value={qaMarks} onChange={(e) => setQaMarks(e.target.value)} className="w-full bg-transparent outline-none font-black text-[10px] text-white" placeholder="e.g. 1,1,5,1" /></div>
           </div>
-          <button onClick={handleQuickAdd} className="w-full bg-slate-900 text-white py-4 rounded-[1.5rem] font-black text-[11px] uppercase shadow-xl active:scale-95 transition-all flex items-center justify-center gap-3 border-b-4 border-black hover:bg-blue-700 hover:border-blue-900 italic tracking-tighter"><Send size={18}/> Deploy to Registry</button>
+          <button onClick={handleQuickAdd} className="w-full bg-blue-700 text-white py-4 rounded-[1.5rem] font-black text-[11px] uppercase shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3 border-b-4 border-blue-900 hover:bg-blue-600 italic tracking-tighter"><Send size={18}/> Deploy to Registry</button>
         </div>
       </div>
 
-      <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl flex justify-between items-center w-full mb-8 border-2 shadow-sm print:hidden border-white/50">
+      <div className="bg-black/60 backdrop-blur-xl p-4 rounded-2xl flex justify-between items-center w-full mb-8 border border-white/10 shadow-sm print:hidden">
         <div className="flex gap-2">
-          <button onClick={() => setIsChangingPin(!isChangingPin)} className="px-5 py-2 rounded-full bg-blue-100 text-blue-700 text-[10px] font-black uppercase">PIN</button>
-          <button onClick={async () => { if(window.confirm("Clear Logs?")) { const q = query(collection(db, "logs")); const snapshot = await getDocs(q); const batch = writeBatch(db); snapshot.docs.forEach((d) => batch.delete(d.ref)); await batch.commit(); } }} className="px-5 py-2 rounded-full bg-red-100 text-red-700 text-[10px] font-black uppercase">Clear Activity</button>
+          <button onClick={() => setIsChangingPin(!isChangingPin)} className="px-5 py-2 rounded-full bg-blue-900/40 text-blue-400 text-[10px] font-black uppercase border border-blue-800/50">PIN</button>
+          <button onClick={async () => { if(window.confirm("Clear Logs?")) { const q = query(collection(db, "logs")); const snapshot = await getDocs(q); const batch = writeBatch(db); snapshot.docs.forEach((d) => batch.delete(d.ref)); await batch.commit(); } }} className="px-5 py-2 rounded-full bg-red-900/40 text-red-400 text-[10px] font-black uppercase border border-red-800/50">Clear Activity</button>
         </div>
       </div>
       
-      <PaperManager title="Live Mock Exam" items={liveMocks} type="live" color="text-red-600" />
-      <PaperManager title="Practice Sets" items={practiceSets} type="practice" color="text-blue-700" />
-      <div className="bg-white/80 backdrop-blur-sm p-8 rounded-[2.5rem] shadow-lg border-t-8 border-slate-900 w-full mb-20 text-center print:hidden">
-        <h3 className="font-black text-xs uppercase mb-8 flex items-center justify-center gap-3 italic text-slate-800"><Trophy size={28} className="text-yellow-600"/> Student Registry</h3>
+      <PaperManager title="Live Mock Exam" items={liveMocks} type="live" color="text-red-500" />
+      <PaperManager title="Practice Sets" items={practiceSets} type="practice" color="text-blue-400" />
+      <div className="bg-black/60 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border-t-8 border-slate-900 w-full mb-20 text-center print:hidden border-x border-b border-white/5">
+        <h3 className="font-black text-xs uppercase mb-8 flex items-center justify-center gap-3 italic text-blue-300"><Trophy size={28} className="text-yellow-500"/> Student Registry</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {students.map((std) => (
-            <div key={std.id} className="relative group p-5 bg-white/90 border-2 border-white rounded-[2rem] flex flex-col items-center shadow-sm hover:shadow-md transition-all">
-              <p className="text-md font-black uppercase italic tracking-tighter text-slate-800">{std.name}</p>
-              <div className="mt-2 flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-                 <Lock size={10} className="text-blue-600"/><p className="text-[10px] font-black text-blue-700 uppercase tracking-widest">CODE: {std.studentCode || 'N/A'}</p>
+            <div key={std.id} className="relative group p-5 bg-white/5 border border-white/10 rounded-[2rem] flex flex-col items-center shadow-lg hover:bg-white/10 transition-all">
+              <p className="text-md font-black uppercase italic tracking-tighter text-white">{std.name}</p>
+              <div className="mt-2 flex items-center gap-2 bg-blue-950 px-3 py-1 rounded-full border border-blue-900">
+                 <Lock size={10} className="text-blue-400"/><p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">CODE: {std.studentCode || 'N/A'}</p>
               </div>
               <div className="flex gap-3 mt-6">
-                <button onClick={() => setSelectedStudent(std)} className="px-5 py-1.5 bg-white border-2 rounded-full text-[10px] font-black uppercase hover:bg-slate-900 hover:text-white transition-all shadow-sm italic">Reports</button>
-                <button onClick={async (e) => { if(window.confirm(`Delete ${std.name}?`)) await deleteDoc(doc(db, "students", std.id)); }} className="p-2 bg-red-50 text-red-500 rounded-full border border-red-100 active:scale-90"><Trash2 size={16}/></button>
+                <button onClick={() => setSelectedStudent(std)} className="px-5 py-1.5 bg-slate-800 border border-slate-700 rounded-full text-[10px] font-black uppercase hover:bg-blue-600 hover:text-white transition-all shadow-sm italic">Reports</button>
+                <button onClick={async (e) => { if(window.confirm(`Delete ${std.name}?`)) await deleteDoc(doc(db, "students", std.id)); }} className="p-2 bg-red-950/40 text-red-500 rounded-full border border-red-900/50 active:scale-90"><Trash2 size={16}/></button>
               </div>
             </div>
           ))}
-          <button onClick={async () => { const n = prompt("Student Name:"); const c = prompt("Unique Code (Phone last 4):"); if(n) await addDoc(collection(db, "students"), {name: n.toUpperCase(), studentCode: c || ""}); }} className="p-8 border-4 border-dashed border-white/50 rounded-[2.5rem] text-[12px] font-black text-slate-400 uppercase hover:text-blue-600 transition-all">+ REGISTER</button>
+          <button onClick={async () => { const n = prompt("Student Name:"); const c = prompt("Unique Code (Phone last 4):"); if(n) await addDoc(collection(db, "students"), {name: n.toUpperCase(), studentCode: c || ""}); }} className="p-8 border-4 border-dashed border-white/10 rounded-[2.5rem] text-[12px] font-black text-slate-600 uppercase hover:text-blue-500 transition-all">+ REGISTER</button>
         </div>
       </div>
       {selectedStudent && <AdminMarksheetModal student={selectedStudent} results={studentResults} onClose={() => setSelectedStudent(null)} />}
@@ -374,27 +375,28 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   );
 };
 
+// --- 🟡 Admin Marksheet Modal (Dark Theme Fixed) ---
 const AdminMarksheetModal = ({ student, results, onClose }) => {
   const [newRes, setNewRes] = useState({ exam: "", obtained: "", total: "", date: "" });
   const [previewImg, setPreviewImg] = useState(null);
   return (
-    <div className="fixed inset-0 bg-white z-[1200] p-6 overflow-y-auto animate-in slide-in-from-right-full duration-500 print:hidden">
+    <div className="fixed inset-0 bg-slate-950 z-[1200] p-6 overflow-y-auto animate-in slide-in-from-right-full duration-500 print:hidden text-white">
        {previewImg && <ImagePreviewModal src={previewImg} onClose={() => setPreviewImg(null)} />}
-       <button onClick={onClose} className="font-black text-blue-600 mb-10 flex items-center gap-3 border-b-4 border-blue-600 w-fit uppercase text-[11px] italic tracking-tighter hover:text-blue-800 transition-all print:hidden"><ChevronLeft size={24}/> Return to Registry</button>
-       <div className="bg-white p-10 rounded-[3rem] border-4 border-slate-50 shadow-3xl max-w-xl mx-auto space-y-10">
-          <div className="flex items-center gap-5 border-b-4 border-slate-50 pb-6"><div className="w-16 h-16 bg-blue-700 rounded-[1.5rem] flex items-center justify-center text-white shadow-xl italic font-black text-2xl">{student?.name?.charAt(0)}</div><div><h3 className="text-3xl font-black uppercase italic tracking-tighter leading-none">{student?.name}</h3><p className="text-[11px] font-bold text-slate-300 uppercase tracking-widest mt-1 italic">Performance Logs</p></div></div>
-          <div className="p-8 bg-blue-50 rounded-[2.5rem] space-y-5 shadow-inner border-2 border-blue-100 print:hidden"><div className="grid grid-cols-1 gap-5 text-left"><input type="text" value={newRes.exam} onChange={(e) => setNewRes({...newRes, exam: e.target.value.toUpperCase()})} className="w-full p-4 rounded-xl border-2 font-black text-xs outline-none shadow-sm focus:border-blue-500" placeholder="Module Name" /><input type="date" value={newRes.date} onChange={(e) => setNewRes({...newRes, date: e.target.value})} className="w-full p-4 rounded-xl border-2 font-black text-xs outline-none shadow-sm" /><div className="flex gap-3"><input type="number" placeholder="Obt" value={newRes.obtained} onChange={(e) => setNewRes({...newRes, obtained: e.target.value})} className="w-1/2 p-4 rounded-xl border-2 font-black text-lg text-center outline-none shadow-sm focus:border-blue-500" /><input type="number" placeholder="Full" value={newRes.total} onChange={(e) => setNewRes({...newRes, total: e.target.value})} className="w-1/2 p-4 rounded-xl border-2 font-black text-lg text-center outline-none shadow-sm focus:border-blue-500" /></div></div><button onClick={async () => { if(newRes.exam && newRes.obtained && newRes.total && newRes.date) { const p = Math.round((parseFloat(newRes.obtained)/parseFloat(newRes.total))*100); await addDoc(collection(db, "results"), { ...newRes, name: student.name, percent: p, timestamp: Date.now() }); setNewRes({exam: "", obtained: "", total: "", date: ""}); alert("Saved!"); } }} className="w-full py-5 bg-blue-700 text-white rounded-[1.5rem] font-black uppercase text-xs shadow-xl active:scale-95 transition-all">Manual Entry</button></div>
-          <div className="space-y-8 pt-8 border-t-4 border-slate-50">
+       <button onClick={onClose} className="font-black text-blue-400 mb-10 flex items-center gap-3 border-b-4 border-blue-400 w-fit uppercase text-[11px] italic tracking-tighter hover:text-blue-200 transition-all print:hidden"><ChevronLeft size={24}/> Return to Registry</button>
+       <div className="bg-slate-900/60 backdrop-blur-md p-10 rounded-[3rem] border border-white/10 shadow-3xl max-w-xl mx-auto space-y-10">
+          <div className="flex items-center gap-5 border-b border-white/10 pb-6"><div className="w-16 h-16 bg-blue-700 rounded-[1.5rem] flex items-center justify-center text-white shadow-xl italic font-black text-2xl">{student?.name?.charAt(0)}</div><div><h3 className="text-3xl font-black uppercase italic tracking-tighter text-white leading-none">{student?.name}</h3><p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1 italic">Performance Logs</p></div></div>
+          <div className="p-8 bg-black rounded-[2.5rem] space-y-5 border border-white/10 print:hidden"><div className="grid grid-cols-1 gap-5 text-left"><input type="text" value={newRes.exam} onChange={(e) => setNewRes({...newRes, exam: e.target.value.toUpperCase()})} className="w-full p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-xs outline-none focus:border-blue-500" placeholder="Module Name" /><input type="date" value={newRes.date} onChange={(e) => setNewRes({...newRes, date: e.target.value})} className="w-full p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-xs outline-none" /><div className="flex gap-3"><input type="number" placeholder="Obt" value={newRes.obtained} onChange={(e) => setNewRes({...newRes, obtained: e.target.value})} className="w-1/2 p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-lg text-center outline-none focus:border-blue-500" /><input type="number" placeholder="Full" value={newRes.total} onChange={(e) => setNewRes({...newRes, total: e.target.value})} className="w-1/2 p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-lg text-center outline-none focus:border-blue-500" /></div></div><button onClick={async () => { if(newRes.exam && newRes.obtained && newRes.total && newRes.date) { const p = Math.round((parseFloat(newRes.obtained)/parseFloat(newRes.total))*100); await addDoc(collection(db, "results"), { ...newRes, name: student.name, percent: p, timestamp: Date.now() }); setNewRes({exam: "", obtained: "", total: "", date: ""}); alert("Saved!"); } }} className="w-full py-5 bg-blue-700 text-white rounded-[1.5rem] font-black uppercase text-xs shadow-xl active:scale-95 transition-all">Manual Entry</button></div>
+          <div className="space-y-8 pt-8 border-t border-white/10">
             {results.filter(r => r.name === student?.name).sort((a,b)=>b.timestamp-a.timestamp).map(r => (
-              <div key={r.id} className="p-6 bg-white border-2 border-slate-100 rounded-[2.5rem] flex flex-col gap-6 shadow-sm hover:shadow-md transition-all group">
-                <div className="flex justify-between items-start w-full"><div className="flex items-center gap-4"><div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg bg-blue-50 text-blue-700 border-2 border-white shadow-sm">{r.percent}%</div><div className="flex-1 min-w-0 pr-2"><p className="text-sm font-black uppercase italic tracking-tighter leading-none break-words whitespace-normal">{r.exam}</p><p className="text-[10px] font-bold text-slate-400 mt-1 italic">{r.date} • Score: {r.obtained}/{r.total}</p></div></div><button onClick={async () => { if(window.confirm("Purge record?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-red-200 hover:text-red-500 active:scale-90 transition-all flex-shrink-0 print:hidden"><Trash2 size={24} /></button></div>
+              <div key={r.id} className="p-6 bg-white/5 border border-white/10 rounded-[2.5rem] flex flex-col gap-6 shadow-sm hover:shadow-md transition-all group">
+                <div className="flex justify-between items-start w-full"><div className="flex items-center gap-4"><div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg bg-blue-900/40 text-blue-400 border border-blue-800/50 shadow-sm">{r.percent}%</div><div className="flex-1 min-w-0 pr-2"><p className="text-sm font-black uppercase italic tracking-tighter text-white leading-none break-words whitespace-normal">{r.exam}</p><p className="text-[10px] font-bold text-slate-500 mt-1 italic">{r.date} • Score: {r.obtained}/{r.total}</p></div></div><button onClick={async () => { if(window.confirm("Purge record?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-slate-600 hover:text-red-500 active:scale-90 transition-all flex-shrink-0 print:hidden"><Trash2 size={24} /></button></div>
                 {r.details && r.details.some(d => d.pending) && (
-                  <div className="bg-orange-50 border-2 border-orange-100 rounded-[2rem] p-4 flex flex-col gap-3 shadow-inner print:hidden"><p className="text-[10px] font-black text-orange-600 uppercase italic text-center animate-pulse tracking-widest">Action Required: Written Solutions</p><div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory">
+                  <div className="bg-orange-950/30 border border-orange-900/50 rounded-[2rem] p-4 flex flex-col gap-3 shadow-inner print:hidden"><p className="text-[10px] font-black text-orange-400 uppercase italic text-center animate-pulse tracking-widest">Action Required: Written Solutions</p><div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory">
                       {r.details.filter(d => d.pending).map((pendingQ, pIdx) => {
                          const photoList = Array.isArray(pendingQ.selected) ? pendingQ.selected : [pendingQ.selected];
                          return photoList.map((photoUrl, imgIdx) => (
-                           <div key={`${pIdx}-${imgIdx}`} className="min-w-[200px] bg-white border-2 border-white shadow-md rounded-2xl p-4 flex flex-col items-center gap-3 snap-center"><p className="text-[9px] font-black text-slate-400 uppercase italic">Q{pendingQ.qNum} - Page {imgIdx + 1}</p><button onClick={() => setPreviewImg(photoUrl)} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">View Page</button>
-                             {imgIdx === photoList.length - 1 && (<div className="flex gap-2 w-full mt-2"><input id={`mark-input-${r.id}-${pendingQ.qNum}`} type="number" placeholder="Marks" className="w-1/2 p-2 border-2 rounded-xl text-center font-black text-[10px] outline-none focus:border-orange-500 bg-white" /><button onClick={async () => {
+                           <div key={`${pIdx}-${imgIdx}`} className="min-w-[200px] bg-black border border-white/10 shadow-md rounded-2xl p-4 flex flex-col items-center gap-3 snap-center"><p className="text-[9px] font-black text-slate-500 uppercase italic">Q{pendingQ.qNum} - Page {imgIdx + 1}</p><button onClick={() => setPreviewImg(photoUrl)} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">View Page</button>
+                             {imgIdx === photoList.length - 1 && (<div className="flex gap-2 w-full mt-2"><input id={`mark-input-${r.id}-${pendingQ.qNum}`} type="number" placeholder="Marks" className="w-1/2 p-2 border border-slate-700 rounded-xl text-center font-black text-[10px] outline-none focus:border-orange-500 bg-black text-white" /><button onClick={async () => {
                                      const markVal = document.getElementById(`mark-input-${r.id}-${pendingQ.qNum}`).value;
                                      if (!markVal) return alert("Enter marks!");
                                      const updatedDetails = r.details.map(d => (d.pending && d.qNum === pendingQ.qNum) ? { ...d, status: true, mark: parseFloat(markVal), pending: false, selected: "PHOTO_DELETED" } : d);
@@ -405,7 +407,7 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
   );
 };
     
-// --- 🟡 Interactive Exam Hall ---
+// --- 🟡 Interactive Exam Hall (Anti-Refresh & Deselect Fixed) ---
 const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   const recoveryKey = `exam_recovery_${exam.studentCode}_${exam.id}`;
   const timerKey = `timer_end_${exam.studentCode}_${exam.id}`;
@@ -452,9 +454,8 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
       img.onload = () => {
         const canvas = document.createElement('canvas');
         const MAX_WIDTH = 800; 
-        const scaleSize = MAX_WIDTH / img.width;
         canvas.width = MAX_WIDTH;
-        canvas.height = img.height * scaleSize;
+        canvas.height = img.height * (MAX_WIDTH / img.width);
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5);
@@ -482,11 +483,8 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   const handleOptionSelect = (qNum, opt) => {
     setAnswers(prev => {
       const newAnswers = { ...prev };
-      if (prev[qNum] === opt) {
-        delete newAnswers[qNum];
-      } else {
-        newAnswers[qNum] = opt;
-      }
+      if (prev[qNum] === opt) { delete newAnswers[qNum]; } 
+      else { newAnswers[qNum] = opt; }
       return newAnswers;
     });
   };
@@ -508,11 +506,10 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
       const detailResults = answerKeyArray.map((key, index) => {
         const qNum = index + 1;
         const qMark = marksArray[index] !== undefined ? marksArray[index] : 1;
-        const isWritten = key === 'W';
-        const isCorrect = isWritten ? false : (answers[qNum] || '') === key;
+        const isCorrect = (answers[qNum] || '') === key;
         totalPossibleMarks += qMark;
-        if (!isWritten && isCorrect) totalObtainedMarks += qMark;
-        return { qNum, selected: answers[qNum] || 'None', correct: key, status: isCorrect, mark: qMark, type: isWritten ? 'written' : 'mcq', pending: isWritten };
+        if (key !== 'W' && isCorrect) totalObtainedMarks += qMark;
+        return { qNum, selected: answers[qNum] || 'None', correct: key, status: isCorrect, mark: qMark, type: key === 'W' ? 'written' : 'mcq', pending: key === 'W' };
       });
       const percent = totalPossibleMarks > 0 ? Math.round((totalObtainedMarks / totalPossibleMarks) * 100) : 0;
       const d = new Date();
@@ -533,24 +530,24 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   const formatTime = (s) => `${Math.floor(s/60)}:${s%60 < 10 ? '0'+(s%60) : s%60}`;
 
   if (isSubmitted) return (
-    <div className="fixed inset-0 bg-white z-[2000] flex flex-col items-center overflow-y-auto p-10 text-center animate-in zoom-in duration-500"><CheckCircle size={80} className="text-green-600 mb-6 animate-bounce shadow-2xl rounded-full" /><h2 className="text-3xl font-black text-slate-800 uppercase italic mb-8 tracking-tighter leading-none">Session Completed</h2><div className="bg-slate-50 p-10 rounded-[3rem] border-4 border-white mb-10 w-full max-sm shadow-2xl text-center"><p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 opacity-60">Result Transcript</p><h3 className="text-5xl font-black text-blue-700 italic tracking-tighter leading-none">{scoreData?.correct} / {scoreData?.total}</h3></div><button onClick={onFinish} className="bg-blue-700 text-white px-16 py-4 rounded-full font-black uppercase text-[12px] shadow-2xl">Close Arena</button></div>
+    <div className="fixed inset-0 bg-slate-950 z-[2000] flex flex-col items-center overflow-y-auto p-10 text-center animate-in zoom-in duration-500 text-white"><CheckCircle size={80} className="text-green-500 mb-6 animate-bounce shadow-2xl rounded-full" /><h2 className="text-3xl font-black uppercase italic mb-8 tracking-tighter leading-none">Session Completed</h2><div className="bg-slate-900 p-10 rounded-[3rem] border-4 border-slate-800 mb-10 w-full max-sm shadow-2xl text-center"><p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2 opacity-60">Result Transcript</p><h3 className="text-5xl font-black text-blue-400 italic tracking-tighter leading-none">{scoreData?.correct} / {scoreData?.total}</h3></div><button onClick={onFinish} className="bg-blue-700 text-white px-16 py-4 rounded-full font-black uppercase text-[12px] shadow-2xl">Close Arena</button></div>
   );
 
   return (
-    <div className="fixed inset-0 bg-slate-950 z-[100] flex flex-col overflow-hidden animate-in fade-in duration-500">
-      <div className="bg-white p-2 md:p-3 flex justify-between items-center border-b-8 border-yellow-400 shadow-2xl relative z-50"><div className="flex-1 min-w-0 pr-2"><h2 className="font-black text-slate-800 text-[10px] uppercase italic tracking-tighter leading-none truncate max-w-[150px]">{exam?.name}</h2><p className="text-[8px] md:text-[9px] text-blue-700 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName}</p></div><div className="flex items-center gap-6"><div className={`px-5 py-1.5 rounded-xl font-black text-2xl border-4 text-slate-800 border-slate-100`}>{formatTime(timeLeft)}</div><button onClick={() => { if(window.confirm("SUBMIT EXAM?")) submitExam(); }} className="bg-green-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg">SUBMIT</button></div></div>
-      <div className="flex-1 bg-slate-900 overflow-hidden relative"><iframe src={exam?.fileUrl?.replace('/view?usp=sharing', '/preview').replace('/view', '/preview')} className="w-full h-full border-none opacity-95" title="Paper" /><div className="absolute bottom-0 left-0 right-0 z-50 bg-slate-800/98 border-t-4 border-slate-700 backdrop-blur-xl p-3 md:p-4 shadow-[0_-15px_40px_rgba(0,0,0,0.6)]"><div className="max-w-4xl mx-auto"><div className="flex items-center justify-between mb-2 px-2"><span className="text-[9px] font-black text-blue-400 uppercase italic flex items-center gap-3"><PenTool size={16}/> RESPONSE INTERFACE</span>{activeQuestion && <button onClick={() => setActiveQuestion(null)} className="text-white bg-slate-600 px-3 py-1 rounded-lg font-black text-[10px] uppercase shadow-lg">Close</button>}</div>
+    <div className="fixed inset-0 bg-black z-[100] flex flex-col overflow-hidden animate-in fade-in duration-500">
+      <div className="bg-slate-900 p-2 md:p-3 flex justify-between items-center border-b-4 border-yellow-500 shadow-2xl relative z-50 text-white"><div className="flex-1 min-w-0 pr-2"><h2 className="font-black text-[10px] uppercase italic tracking-tighter leading-none truncate max-w-[150px]">{exam?.name}</h2><p className="text-[8px] md:text-[9px] text-blue-400 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName}</p></div><div className="flex items-center gap-6"><div className="px-5 py-1.5 rounded-xl font-black text-2xl border-4 text-white border-slate-800 bg-black">{formatTime(timeLeft)}</div><button onClick={() => { if(window.confirm("SUBMIT EXAM?")) submitExam(); }} className="bg-green-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg">SUBMIT</button></div></div>
+      <div className="flex-1 bg-slate-950 overflow-hidden relative"><iframe src={exam?.fileUrl?.replace('/view?usp=sharing', '/preview').replace('/view', '/preview')} className="w-full h-full border-none opacity-90" title="Paper" /><div className="absolute bottom-0 left-0 right-0 z-50 bg-slate-900/98 border-t-2 border-white/10 backdrop-blur-xl p-3 md:p-4 shadow-2xl"><div className="max-w-4xl mx-auto"><div className="flex items-center justify-between mb-2 px-2"><span className="text-[9px] font-black text-blue-400 uppercase italic flex items-center gap-3"><PenTool size={16}/> RESPONSE INTERFACE</span>{activeQuestion && <button onClick={() => setActiveQuestion(null)} className="text-white bg-slate-700 px-3 py-1 rounded-lg font-black text-[10px] uppercase shadow-lg">Close</button>}</div>
                {activeQuestion ? (
-                  <div className="flex flex-col items-center animate-in slide-in-from-bottom-2 pb-2"><p className="text-white font-black text-xs mb-4 italic uppercase opacity-60">{answerKeyArray[activeQuestion-1] === 'W' ? `Upload Pages for Q${activeQuestion}:` : `Choice for Q${activeQuestion}:`}</p>
+                  <div className="flex flex-col items-center animate-in slide-in-from-bottom-2 pb-2"><p className="text-slate-400 font-black text-xs mb-4 italic uppercase">{answerKeyArray[activeQuestion-1] === 'W' ? `Upload Pages for Q${activeQuestion}:` : `Choice for Q${activeQuestion}:`}</p>
                     {answerKeyArray[activeQuestion-1] === 'W' ? (
                       <div className="flex flex-col items-center gap-4"><div className="flex gap-2 flex-wrap justify-center">
                            {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].map((_, i) => (
-                             <div key={i} className="relative"><div className="bg-green-500 text-white text-[8px] font-black px-2 py-1 rounded-lg uppercase">Page {i+1} ✓</div><button onClick={() => removeImage(activeQuestion, i)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-0.5 shadow-lg active:scale-75 transition-all"><X size={12}/></button></div>))}</div>
-                        <div className="flex gap-4"><label className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase cursor-pointer shadow-xl flex items-center gap-2 active:scale-95 transition-all"><Camera size={16}/> {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 ? 'ADD ANOTHER PAGE' : 'CAPTURE PAGE'}<input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { handleImageUpload(activeQuestion, e.target.files[0]); e.target.value = null; }} /></label>{Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (<button onClick={() => setActiveQuestion(null)} className="bg-green-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl active:scale-95 transition-all">DONE</button>)}</div></div>
+                             <div key={i} className="relative"><div className="bg-green-600 text-white text-[8px] font-black px-2 py-1 rounded-lg uppercase">Page {i+1} ✓</div><button onClick={() => removeImage(activeQuestion, i)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-0.5 shadow-lg active:scale-75 transition-all"><X size={12}/></button></div>))}</div>
+                        <div className="flex gap-4"><label className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase cursor-pointer shadow-xl flex items-center gap-2 active:scale-95 transition-all"><Camera size={16}/> {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 ? 'ADD ANOTHER' : 'CAPTURE'}<input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { handleImageUpload(activeQuestion, e.target.files[0]); e.target.value = null; }} /></label>{Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (<button onClick={() => setActiveQuestion(null)} className="bg-green-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl">DONE</button>)}</div></div>
                     ) : (
-                      <div className="flex gap-5">{['A', 'B', 'C', 'D'].map(opt => (<button key={opt} onClick={() => handleOptionSelect(activeQuestion, opt)} className={`w-12 h-12 rounded-xl font-black text-xl flex items-center justify-center border-b-8 transition-all active:scale-90 ${answers[activeQuestion] === opt ? 'bg-blue-600 text-white border-blue-900 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'bg-slate-700 text-slate-300 border-slate-950 hover:bg-slate-600'}`}>{opt}</button>))}</div>)}</div>
+                      <div className="flex gap-5">{['A', 'B', 'C', 'D'].map(opt => (<button key={opt} onClick={() => handleOptionSelect(activeQuestion, opt)} className={`w-12 h-12 rounded-xl font-black text-xl flex items-center justify-center border-b-8 transition-all active:scale-90 ${answers[activeQuestion] === opt ? 'bg-blue-600 text-white border-blue-900 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'bg-slate-800 text-slate-400 border-black hover:bg-slate-700'}`}>{opt}</button>))}</div>)}</div>
                ) : (
-                 <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar snap-x items-center justify-start">{answerKeyArray.map((_, index) => { const num = index + 1; return (<button key={num} onClick={() => setActiveQuestion(num)} className={`min-w-[42px] h-[42px] rounded-xl font-black text-xs flex items-center justify-center transition-all snap-center border-b-4 shadow-lg ${answers[num] ? 'bg-green-600 text-white border-green-900' : 'bg-slate-700 text-slate-400 border-slate-900 hover:bg-slate-600 hover:text-white'}`}>{num}</button>);})}</div>)}</div></div></div></div>
+                 <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar snap-x items-center justify-start">{answerKeyArray.map((_, index) => { const num = index + 1; return (<button key={num} onClick={() => setActiveQuestion(num)} className={`min-w-[42px] h-[42px] rounded-xl font-black text-xs flex items-center justify-center transition-all snap-center border-b-4 shadow-lg ${answers[num] ? 'bg-green-600 text-white border-green-900' : 'bg-slate-800 text-slate-500 border-black hover:bg-slate-700 hover:text-white'}`}>{num}</button>);})}</div>)}</div></div></div></div>
   );
 };
 
@@ -564,35 +561,37 @@ const GrowthSectionView = ({ results, students }) => {
       {selectedReview && <ReviewResultModal result={selectedReview} onClose={() => setSelectedReview(null)} />}
       {!sel ? (
         <div className="grid gap-4 print:hidden">
-          {students.map((std) => (<button key={std.id} onClick={() => setSel(std.name)} className="w-full bg-white/80 p-5 rounded-[2rem] shadow-lg border-2 border-white flex justify-between items-center group active:scale-95 transition-all"><div className="flex items-center gap-4"><div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-700 shadow-inner group-hover:bg-blue-700 group-hover:text-white transition-all"><User size={18}/></div> <span className="font-black text-slate-800 uppercase text-[14px] italic tracking-tight break-words">{std.name}</span></div><ChevronRight size={24} className="text-slate-200 group-hover:text-blue-600" /></button>))}
+          {students.map((std) => (<button key={std.id} onClick={() => setSel(std.name)} className="w-full bg-black/60 backdrop-blur-xl p-5 rounded-[2rem] shadow-lg border border-white/10 flex justify-between items-center group active:scale-95 transition-all"><div className="flex items-center gap-4"><div className="w-10 h-10 bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-400 shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-all"><User size={18}/></div> <span className="font-black text-white uppercase text-[14px] italic tracking-tight break-words">{std.name}</span></div><ChevronRight size={24} className="text-slate-600 group-hover:text-blue-400" /></button>))}
         </div>
       ) : (
         <div className="space-y-6 animate-in slide-in-from-right-20 duration-700 print-full-report">
           <div className="flex justify-between items-center print:hidden">
-             <button onClick={() => setSel(null)} className="flex items-center gap-2 text-[12px] font-black text-blue-600 uppercase italic hover:underline ml-2"><ChevronLeft size={24}/> Return</button>
-             <button onClick={handlePrint} className="bg-slate-900 text-white px-5 py-2 rounded-full font-black text-[10px] uppercase flex items-center gap-2 shadow-xl"><Download size={16}/> Download PDF</button>
+             <button onClick={() => setSel(null)} className="flex items-center gap-2 text-[12px] font-black text-blue-400 uppercase italic hover:underline ml-2"><ChevronLeft size={24}/> Return</button>
+             <button onClick={handlePrint} className="bg-white text-black px-5 py-2 rounded-full font-black text-[10px] uppercase flex items-center gap-2 shadow-xl"><Download size={16}/> Download PDF</button>
           </div>
-          <div className="bg-white/90 rounded-[3rem] shadow-2xl overflow-hidden border-4 border-white/50 flex flex-col print-full-report">
+          <div className="bg-black/90 rounded-[3rem] shadow-2xl overflow-hidden border-2 border-white/10 flex flex-col print-full-report">
              <div className="bg-blue-700 p-8 text-white text-center relative overflow-hidden flex-shrink-0 print:border-b-4 print:border-blue-900">
                 <Trophy className="absolute -top-10 -right-10 opacity-10 rotate-12 print:hidden" size={150}/>
                 <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-2 leading-none break-words px-4 text-white">Performance Transcript</h2>
-                <div className="inline-block bg-white/20 px-6 py-1.5 rounded-full border border-white/30 max-w-[90%] overflow-hidden"><p className="text-sm font-black uppercase italic break-words text-white">{sel}</p></div>
+                <div className="inline-block bg-white/20 px-6 py-1.5 rounded-full border border-white/30 max-w-[90%] overflow-hidden">
+                   <p className="text-sm font-black uppercase italic break-words text-white">{sel}</p>
+                </div>
                 <div className="hidden print:block mt-4 text-[10px] font-bold uppercase tracking-widest text-blue-100">STUDENT: {sel} • MATH EXCELLENCE BY ANSHU SIR</div>
              </div>
-             <div className="overflow-auto p-4 md:p-6 space-y-4 bg-slate-50/30 print:bg-white print:overflow-visible h-auto min-h-screen print:min-h-0">
+             <div className="p-4 md:p-6 space-y-4 bg-white/5 print:bg-white print:overflow-visible h-auto">
                {results.filter(r => r.name === sel).sort((a,b)=> (b.timestamp || 0) - (a.timestamp || 0)).map(r => (
-                 <div key={r.id} className="min-w-[450px] md:min-w-0 bg-white rounded-[2rem] border-2 border-white shadow-sm flex items-center p-5 gap-6 hover:shadow-md transition-all group print-card">
+                 <div key={r.id} className="min-w-[450px] md:min-w-0 bg-slate-900/60 rounded-[2rem] border border-white/10 shadow-sm flex items-center p-5 gap-6 hover:shadow-md transition-all group print-card">
                    <div className="flex-1 min-w-0 border-l-8 border-blue-600 pl-5">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Exam Unit</p>
-                      <p className="text-sm md:text-lg font-black uppercase italic text-slate-800 leading-tight whitespace-normal break-words">{r.exam}</p>
-                      <p className="text-[9px] font-black text-blue-500 uppercase italic mt-1">{new Date(r.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • {new Date(r.timestamp).toLocaleDateString('en-GB')}</p>
+                      <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Exam Unit</p>
+                      <p className="text-sm md:text-lg font-black uppercase italic text-white leading-tight whitespace-normal break-words">{r.exam}</p>
+                      <p className="text-[9px] font-black text-blue-400 uppercase italic mt-1">{new Date(r.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • {new Date(r.timestamp).toLocaleDateString('en-GB')}</p>
                    </div>
-                   <div className="text-center px-4 border-l border-slate-100 min-w-[100px]">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase mb-0.5">Score</p>
-                      <p className="text-2xl md:text-3xl font-black italic text-blue-700 leading-none">{r.obtained}/{r.total}</p>
+                   <div className="text-center px-4 border-l border-white/10 min-w-[100px]">
+                      <p className="text-[9px] font-bold text-slate-500 uppercase mb-0.5">Score</p>
+                      <p className="text-2xl md:text-3xl font-black italic text-blue-400 leading-none">{r.obtained}/{r.total}</p>
                    </div>
                    <div className="flex-shrink-0 print:hidden">
-                      <button onClick={() => setSelectedReview(r)} className="bg-slate-50 text-blue-700 p-3 rounded-2xl border-2 border-white shadow-sm hover:bg-blue-700 hover:text-white transition-all"><Eye size={20}/></button>
+                      <button onClick={() => setSelectedReview(r)} className="bg-slate-800 text-blue-400 p-3 rounded-2xl border border-white/10 shadow-sm hover:bg-blue-600 hover:text-white transition-all"><Eye size={20}/></button>
                    </div>
                  </div>
                ))}
