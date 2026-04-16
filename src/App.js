@@ -75,7 +75,6 @@ const App = () => {
   const [students, setStudents] = useState([]);
   const [studentResults, setStudentResults] = useState([]);
   const [activityLogs, setActivityLogs] = useState([]);
-  const [pendingExam, setPendingExam] = useState(null);
 
   useEffect(() => {
     onSnapshot(collection(db, "liveMocks"), (s) => {
@@ -97,7 +96,7 @@ const App = () => {
   const handleStartExamFlow = (exam) => {
     const h = parseInt(exam.hours) || 0;
     const m = parseInt(exam.minutes) || 0;
-    setPendingExam({ ...exam, duration: (h * 3600) + (m * 60) || 3600 });
+    setCurrentExam({ ...exam, duration: (h * 3600) + (m * 60) || 3600 });
     setShowNameModal(true);
   };
 
@@ -109,7 +108,7 @@ const App = () => {
       alert("INVALID STUDENT CODE! PLEASE CONTACT ANSHU SIR.");
       return;
     }
-    setCurrentExam({ ...pendingExam, studentName: studentNameInput.trim(), studentCode: studentCodeInput.trim() });
+    setCurrentExam(prev => ({ ...prev, studentName: studentNameInput.trim(), studentCode: studentCodeInput.trim() }));
     setIsExamActive(true);
     setShowNameModal(false);
   };
@@ -412,7 +411,7 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
   );
 };
     
-// --- 🟡 Interactive Exam Hall ---
+// --- 🟡 Interactive Exam Hall (Deselect Logic Fixed) ---
 const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   const recoveryKey = `exam_recovery_${exam.studentCode}_${exam.id}`;
   const timerKey = `timer_end_${exam.studentCode}_${exam.id}`;
@@ -429,7 +428,6 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   });
 
   const [isSubmitted, setIsSubmitted] = useState(false);
-  
   const [answers, setAnswers] = useState(() => {
     const savedAnswers = localStorage.getItem(recoveryKey);
     return savedAnswers ? JSON.parse(savedAnswers) : {};
@@ -444,10 +442,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
-      if (!isSubmitted) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
+      if (!isSubmitted) { e.preventDefault(); e.returnValue = ''; }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -481,14 +476,25 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
     setAnswers(prev => {
       const existingPhotos = Array.isArray(prev[qNum]) ? prev[qNum] : [];
       const updatedPhotos = existingPhotos.filter((_, idx) => idx !== indexToRemove);
-      
-      // 🔴 Logic Fixed: If no photos left, remove the question key to turn button Gray
       if (updatedPhotos.length === 0) {
         const newAnswers = { ...prev };
         delete newAnswers[qNum];
         return newAnswers;
       }
       return { ...prev, [qNum]: updatedPhotos };
+    });
+  };
+
+  const handleOptionSelect = (qNum, opt) => {
+    setAnswers(prev => {
+      const newAnswers = { ...prev };
+      // 🔴 Deselect Logic: If already selected, remove it.
+      if (prev[qNum] === opt) {
+        delete newAnswers[qNum];
+      } else {
+        newAnswers[qNum] = opt;
+      }
+      return newAnswers;
     });
   };
 
@@ -540,7 +546,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   return (
     <div className="fixed inset-0 bg-slate-950 z-[100] flex flex-col overflow-hidden animate-in fade-in duration-500">
       <div className="bg-white p-2 md:p-3 flex justify-between items-center border-b-8 border-yellow-400 shadow-2xl relative z-50"><div className="flex-1 min-w-0 pr-2"><h2 className="font-black text-slate-800 text-[10px] uppercase italic tracking-tighter leading-none truncate max-w-[150px]">{exam?.name}</h2><p className="text-[8px] md:text-[9px] text-blue-700 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName}</p></div><div className="flex items-center gap-6"><div className={`px-5 py-1.5 rounded-xl font-black text-2xl border-4 text-slate-800 border-slate-100`}>{formatTime(timeLeft)}</div><button onClick={() => { if(window.confirm("SUBMIT EXAM?")) submitExam(); }} className="bg-green-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg">SUBMIT</button></div></div>
-      <div className="flex-1 bg-slate-900 overflow-hidden relative"><iframe src={exam?.fileUrl?.replace('/view?usp=sharing', '/preview').replace('/view', '/preview')} className="w-full h-full border-none opacity-95" title="Paper" /><div className="absolute bottom-0 left-0 right-0 z-50 bg-slate-800/98 border-t-4 border-slate-700 backdrop-blur-xl p-3 md:p-4 shadow-[0_-15px_40px_rgba(0,0,0,0.6)]"><div className="max-w-4xl mx-auto"><div className="flex items-center justify-between mb-2 px-2"><span className="text-[9px] font-black text-blue-400 uppercase italic flex items-center gap-3"><PenTool size={16}/> RESPONSE INTERFACE</span>{activeQuestion && <button onClick={() => setActiveQuestion(null)} className="text-slate-500 font-black text-[10px] uppercase border-b-2 border-slate-700">Close</button>}</div>
+      <div className="flex-1 bg-slate-900 overflow-hidden relative"><iframe src={exam?.fileUrl?.replace('/view?usp=sharing', '/preview').replace('/view', '/preview')} className="w-full h-full border-none opacity-95" title="Paper" /><div className="absolute bottom-0 left-0 right-0 z-50 bg-slate-800/98 border-t-4 border-slate-700 backdrop-blur-xl p-3 md:p-4 shadow-[0_-15px_40px_rgba(0,0,0,0.6)]"><div className="max-w-4xl mx-auto"><div className="flex items-center justify-between mb-2 px-2"><span className="text-[9px] font-black text-blue-400 uppercase italic flex items-center gap-3"><PenTool size={16}/> RESPONSE INTERFACE</span>{activeQuestion && <button onClick={() => setActiveQuestion(null)} className="text-white bg-slate-600 px-3 py-1 rounded-lg font-black text-[10px] uppercase shadow-lg">Close</button>}</div>
                {activeQuestion ? (
                   <div className="flex flex-col items-center animate-in slide-in-from-bottom-2 pb-2"><p className="text-white font-black text-xs mb-4 italic uppercase opacity-60">{answerKeyArray[activeQuestion-1] === 'W' ? `Upload Pages for Q${activeQuestion}:` : `Choice for Q${activeQuestion}:`}</p>
                     {answerKeyArray[activeQuestion-1] === 'W' ? (
@@ -549,13 +555,12 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
                              <div key={i} className="relative"><div className="bg-green-500 text-white text-[8px] font-black px-2 py-1 rounded-lg uppercase">Page {i+1} ✓</div><button onClick={() => removeImage(activeQuestion, i)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-0.5 shadow-lg active:scale-75 transition-all"><X size={12}/></button></div>))}</div>
                         <div className="flex gap-4"><label className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase cursor-pointer shadow-xl flex items-center gap-2 active:scale-95 transition-all"><Camera size={16}/> {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 ? 'ADD ANOTHER PAGE' : 'CAPTURE PAGE'}<input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { handleImageUpload(activeQuestion, e.target.files[0]); e.target.value = null; }} /></label>{Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (<button onClick={() => setActiveQuestion(null)} className="bg-green-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl active:scale-95 transition-all">DONE</button>)}</div></div>
                     ) : (
-                      <div className="flex gap-5">{['A', 'B', 'C', 'D'].map(opt => (<button key={opt} onClick={() => { setAnswers({...answers, [activeQuestion]: opt}); setActiveQuestion(null); }} className={`w-12 h-12 rounded-xl font-black text-xl flex items-center justify-center border-b-8 transition-all active:scale-90 ${answers[activeQuestion] === opt ? 'bg-blue-600 text-white border-blue-900 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'bg-slate-700 text-slate-300 border-slate-950 hover:bg-slate-600'}`}>{opt}</button>))}</div>)}</div>
+                      <div className="flex gap-5">{['A', 'B', 'C', 'D'].map(opt => (<button key={opt} onClick={() => handleOptionSelect(activeQuestion, opt)} className={`w-12 h-12 rounded-xl font-black text-xl flex items-center justify-center border-b-8 transition-all active:scale-90 ${answers[activeQuestion] === opt ? 'bg-blue-600 text-white border-blue-900 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'bg-slate-700 text-slate-300 border-slate-950 hover:bg-slate-600'}`}>{opt}</button>))}</div>)}</div>
                ) : (
                  <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar snap-x items-center justify-start">{answerKeyArray.map((_, index) => { const num = index + 1; return (<button key={num} onClick={() => setActiveQuestion(num)} className={`min-w-[42px] h-[42px] rounded-xl font-black text-xs flex items-center justify-center transition-all snap-center border-b-4 shadow-lg ${answers[num] ? 'bg-green-600 text-white border-green-900' : 'bg-slate-700 text-slate-400 border-slate-900 hover:bg-slate-600 hover:text-white'}`}>{num}</button>);})}</div>)}</div></div></div></div>
   );
 };
 
-// --- 📈 Growth Section ---
 const GrowthSectionView = ({ results, students }) => {
   const [sel, setSel] = useState(null);
   const [selectedReview, setSelectedReview] = useState(null);
