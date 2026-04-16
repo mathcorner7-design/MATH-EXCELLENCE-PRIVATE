@@ -208,7 +208,7 @@ const App = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full text-left print:hidden">
             {practiceSets.filter(p => p.isPublished).map(p => (
               <div key={p.id} className="bg-white p-4 rounded-2xl shadow flex justify-between items-center border border-slate-100 hover:border-blue-300">
-                <div className="flex-1 pr-4"><h3 className="font-bold uppercase text-xs italic break-words">{p.name}</h3><p className="text-[9px] font-bold text-slate-400 uppercase italic mt-1">Time: {p.hours || 0}h {m.minutes || 0}m</p></div>
+                <div className="flex-1 pr-4"><h3 className="font-bold uppercase text-xs italic break-words">{p.name}</h3><p className="text-[9px] font-bold text-slate-400 uppercase italic mt-1">Time: {p.hours || 0}h {p.minutes || 0}m</p></div>
                 <button onClick={() => handleStartExamFlow(p)} className="bg-blue-700 text-white px-6 py-2 rounded-full font-bold text-[9px] uppercase shadow-md h-fit">Start</button>
               </div>
             ))}
@@ -380,7 +380,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   );
 };
 
-// --- 🟡 ADMIN MARKSHEET MODAL ---
+// --- 🟡 Admin Marksheet Modal ---
 const AdminMarksheetModal = ({ student, results, onClose }) => {
   const [newRes, setNewRes] = useState({ exam: "", obtained: "", total: "", date: "" });
   const [previewImg, setPreviewImg] = useState(null);
@@ -412,7 +412,7 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
   );
 };
     
-// --- 🟡 Interactive Exam Hall (Recovery & Anti-Refresh Integrated) ---
+// --- 🟡 Interactive Exam Hall ---
 const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   const recoveryKey = `exam_recovery_${exam.studentCode}_${exam.id}`;
   const timerKey = `timer_end_${exam.studentCode}_${exam.id}`;
@@ -481,6 +481,13 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
     setAnswers(prev => {
       const existingPhotos = Array.isArray(prev[qNum]) ? prev[qNum] : [];
       const updatedPhotos = existingPhotos.filter((_, idx) => idx !== indexToRemove);
+      
+      // 🔴 Logic Fixed: If no photos left, remove the question key to turn button Gray
+      if (updatedPhotos.length === 0) {
+        const newAnswers = { ...prev };
+        delete newAnswers[qNum];
+        return newAnswers;
+      }
       return { ...prev, [qNum]: updatedPhotos };
     });
   };
@@ -548,6 +555,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   );
 };
 
+// --- 📈 Growth Section ---
 const GrowthSectionView = ({ results, students }) => {
   const [sel, setSel] = useState(null);
   const [selectedReview, setSelectedReview] = useState(null);
