@@ -7,10 +7,10 @@ import {
   Loader2, ChevronLeft, Trash2, UserPlus, History, UserCheck, X, CheckSquare, AlertCircle, ListChecks, Eye, Camera, Send, Link, Zap, Download
 } from 'lucide-react';
 
-// --- 🖼️ CONFIGURATION: আপনার GIF লিঙ্কটি এখানে দিন ---
-const APP_BACKGROUND_URL = "https://i.gifer.com/4RNk.gif"; 
+// --- 🖼️ CONFIGURATION ---
+const APP_BACKGROUND_URL = "https://i.gifer.com/fz6G.gif"; 
 
-// --- 🟢 Firebase Configuration ---
+// --- 🟢 Firebase Configuration (As provided) ---
 const firebaseConfig = {
   apiKey: "AIzaSyCTk1csUI0HeZhZvy6dOFwmLr-YVswPACyY",
   authDomain: "math-excellence-6d2b8.firebaseapp.com",
@@ -158,7 +158,7 @@ const App = () => {
         </div>
       )}
 
-      <header className="bg-black/60 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50 shadow-2xl px-6 py-2 flex justify-between items-center w-full max-w-6xl print:hidden">
+      <header className="bg-black/60 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50 shadow-2xl px-6 py-2 flex justify-between items-center w-full max-6xl print:hidden">
         <h1 className="text-lg font-black text-blue-400 uppercase italic tracking-tighter cursor-pointer" onClick={() => setActiveTab('home')}>MATH EXCELLENCE</h1>
         <p className="text-[9px] font-bold text-slate-500 italic">ANSHU SIR</p>
       </header>
@@ -229,11 +229,10 @@ const App = () => {
   );
 };
 
-// --- Teacher Zone Main View ---
+// --- Teacher Zone Main View (Added Negative Marking Option) ---
 const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, setTeacherPin, studentResults }) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isChangingPin, setIsChangingPin] = useState(false);
-  const [pinVal, setPinVal] = useState('');
   const [expandedId, setExpandedId] = useState(null);
 
   const [quickAddType, setQuickAddType] = useState('live');
@@ -243,6 +242,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   const [qaLink, setQaLink] = useState('');
   const [qaKey, setQaKey] = useState('');
   const [qaMarks, setQaMarks] = useState('');
+  const [qaNeg, setQaNeg] = useState('0'); // New: Negative Marking State
 
   const updateField = async (id, type, field, value) => { 
     const coll = type === 'live' ? 'liveMocks' : 'practiceSets';
@@ -259,11 +259,12 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
       fileUrl: qaLink.trim(), 
       answerKey: qaKey.toUpperCase(),
       questionMarks: qaMarks,
+      negativeMark: qaNeg || "0", // New
       isPublished: false,
       timestamp: Date.now()
     });
-    setQaName(''); setQaLink(''); setQaKey(''); setQaMarks('');
-    alert(`Success: Added to ${quickAddType === 'live' ? 'Live Mocks' : 'Practice Sets'}`);
+    setQaName(''); setQaLink(''); setQaKey(''); setQaMarks(''); setQaNeg('0');
+    alert(`Success: Added with Neg Marking: ${qaNeg}`);
   };
 
   const PaperManager = ({ title, items, type, color }) => (
@@ -282,7 +283,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                     <span className="text-xs font-black uppercase italic text-white break-words">{item.name}</span>
                   </div>
                   <p className="text-[8px] font-bold text-slate-500 uppercase italic ml-5 mt-1">
-                    Created: {item.timestamp ? `${new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • ${new Date(item.timestamp).toLocaleDateString('en-GB')}` : 'N/A'}
+                    Neg: {item.negativeMark || "0"} • {item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-GB') : 'N/A'}
                   </p>
                 </div>
               </div>
@@ -299,16 +300,9 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                    <input type="text" defaultValue={item.name} onBlur={(e) => updateField(item.id, type, 'name', e.target.value.toUpperCase())} className="w-full p-2.5 rounded-xl border border-white/10 bg-black text-white text-xs font-black outline-none focus:border-blue-500" />
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <div className="bg-black p-2.5 rounded-xl border border-white/10 shadow-sm">
-                    <p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1">Time Limit</p>
-                    <div className="flex items-center gap-1">
-                      <input type="number" defaultValue={item.hours} onBlur={(e) => updateField(item.id, type, 'hours', e.target.value)} className="w-10 text-center font-black bg-slate-900 rounded-lg outline-none text-white" /> <span className="font-bold text-[9px]">H</span> 
-                      <input type="number" defaultValue={item.minutes} onBlur={(e) => updateField(item.id, type, 'minutes', e.target.value)} className="w-10 text-center font-black bg-slate-900 rounded-lg outline-none text-white" /> <span className="font-bold text-[9px]">M</span>
-                    </div>
-                  </div>
-                  <div className="flex-1 bg-black p-2.5 rounded-xl border border-white/10 shadow-sm">
-                    <p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1">Google Drive Link</p>
-                    <input type="text" defaultValue={item.fileUrl} onBlur={(e) => updateField(item.id, type, 'fileUrl', e.target.value)} className="w-full p-2 rounded-lg border border-white/5 bg-black text-white text-[10px] outline-none font-bold" />
+                  <div className="bg-black p-2.5 rounded-xl border border-white/10 shadow-sm flex-1">
+                    <p className="text-[8px] font-black text-red-400 uppercase mb-1 ml-1">Negative Marking (e.g. 0.25)</p>
+                    <input type="number" step="0.01" defaultValue={item.negativeMark || 0} onBlur={(e) => updateField(item.id, type, 'negativeMark', e.target.value)} className="w-full text-center font-black bg-slate-900 rounded-lg outline-none text-white py-1" />
                   </div>
                 </div>
               </div>
@@ -331,10 +325,12 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
         </div>
         <div className="space-y-6">
           <div><p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1 italic leading-none">Exam Name</p><input type="text" value={qaName} onChange={(e) => setQaName(e.target.value)} className="w-full p-3.5 bg-black border border-white/10 rounded-2xl text-[10px] font-black outline-none shadow-inner focus:border-blue-500 text-white transition-all uppercase" placeholder="New Slot" /></div>
+          
           <div className="flex flex-col md:flex-row gap-4">
              <div className="bg-black p-3 rounded-2xl border border-white/10 shadow-inner min-w-[120px]"><p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1 italic">Time Limit</p><div className="flex items-center gap-1 font-black text-[10px] text-white"><input type="number" value={qaHours} onChange={(e) => setQaHours(e.target.value)} className="w-8 text-center bg-transparent outline-none" /> <span>H</span><input type="number" value={qaMinutes} onChange={(e) => setQaMinutes(e.target.value)} className="w-8 text-center bg-transparent outline-none" /> <span>M</span></div></div>
-             <div className="flex-1 bg-black p-3 rounded-2xl border border-white/10 shadow-inner"><p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1 italic tracking-widest">Google Drive Link</p><input type="text" value={qaLink} onChange={(e) => setQaLink(e.target.value)} className="w-full bg-transparent outline-none text-[9px] font-bold text-white" placeholder="Paste PDF/Doc Link" /></div>
+             <div className="flex-1 bg-black p-3 rounded-2xl border border-white/10 shadow-inner"><p className="text-[8px] font-black text-red-400 uppercase mb-1 ml-1 italic tracking-widest">Negative Mark (Ex: 0.25)</p><input type="number" step="0.01" value={qaNeg} onChange={(e) => setQaNeg(e.target.value)} className="w-full bg-transparent outline-none text-[10px] font-bold text-white" placeholder="0 for no negative" /></div>
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
              <div className="bg-black p-3 rounded-2xl border border-white/10 shadow-inner"><p className="text-[9px] font-black text-blue-400 uppercase mb-1 italic">Correct Key</p><input type="text" value={qaKey} onChange={(e) => setQaKey(e.target.value)} className="w-full bg-transparent outline-none font-black text-[10px] uppercase text-white" placeholder="e.g. A,B,W,D" /></div>
              <div className="bg-black p-3 rounded-2xl border border-white/10 shadow-inner"><p className="text-[9px] font-black text-yellow-500 uppercase mb-1 italic">Marks/Q</p><input type="text" value={qaMarks} onChange={(e) => setQaMarks(e.target.value)} className="w-full bg-transparent outline-none font-black text-[10px] text-white" placeholder="e.g. 1,1,5,1" /></div>
@@ -342,16 +338,10 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
           <button onClick={handleQuickAdd} className="w-full bg-blue-700 text-white py-4 rounded-[1.5rem] font-black text-[11px] uppercase shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3 border-b-4 border-blue-900 hover:bg-blue-600 italic tracking-tighter"><Send size={18}/> Deploy to Registry</button>
         </div>
       </div>
-
-      <div className="bg-black/60 backdrop-blur-xl p-4 rounded-2xl flex justify-between items-center w-full mb-8 border border-white/10 shadow-sm print:hidden">
-        <div className="flex gap-2">
-          <button onClick={() => setIsChangingPin(!isChangingPin)} className="px-5 py-2 rounded-full bg-blue-900/40 text-blue-400 text-[10px] font-black uppercase border border-blue-800/50">PIN</button>
-          <button onClick={async () => { if(window.confirm("Clear Logs?")) { const q = query(collection(db, "logs")); const snapshot = await getDocs(q); const batch = writeBatch(db); snapshot.docs.forEach((d) => batch.delete(d.ref)); await batch.commit(); } }} className="px-5 py-2 rounded-full bg-red-900/40 text-red-400 text-[10px] font-black uppercase border border-red-800/50">Clear Activity</button>
-        </div>
-      </div>
       
       <PaperManager title="Live Mock Exam" items={liveMocks} type="live" color="text-red-500" />
       <PaperManager title="Practice Sets" items={practiceSets} type="practice" color="text-blue-400" />
+      
       <div className="bg-black/60 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border-t-8 border-slate-900 w-full mb-20 text-center print:hidden border-x border-b border-white/5">
         <h3 className="font-black text-xs uppercase mb-8 flex items-center justify-center gap-3 italic text-blue-300"><Trophy size={28} className="text-yellow-500"/> Student Registry</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -375,7 +365,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   );
 };
 
-// --- 🟡 Admin Marksheet Modal (Dark Theme Fixed) ---
+// --- 🟡 Admin Marksheet Modal ---
 const AdminMarksheetModal = ({ student, results, onClose }) => {
   const [newRes, setNewRes] = useState({ exam: "", obtained: "", total: "", date: "" });
   const [previewImg, setPreviewImg] = useState(null);
@@ -383,9 +373,8 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
     <div className="fixed inset-0 bg-slate-950 z-[1200] p-6 overflow-y-auto animate-in slide-in-from-right-full duration-500 print:hidden text-white">
        {previewImg && <ImagePreviewModal src={previewImg} onClose={() => setPreviewImg(null)} />}
        <button onClick={onClose} className="font-black text-blue-400 mb-10 flex items-center gap-3 border-b-4 border-blue-400 w-fit uppercase text-[11px] italic tracking-tighter hover:text-blue-200 transition-all print:hidden"><ChevronLeft size={24}/> Return to Registry</button>
-       <div className="bg-slate-900/60 backdrop-blur-md p-10 rounded-[3rem] border border-white/10 shadow-3xl max-w-xl mx-auto space-y-10">
+       <div className="bg-slate-900/60 backdrop-blur-md p-6 md:p-10 rounded-[3rem] border border-white/10 shadow-3xl max-w-xl mx-auto space-y-10">
           <div className="flex items-center gap-5 border-b border-white/10 pb-6"><div className="w-16 h-16 bg-blue-700 rounded-[1.5rem] flex items-center justify-center text-white shadow-xl italic font-black text-2xl">{student?.name?.charAt(0)}</div><div><h3 className="text-3xl font-black uppercase italic tracking-tighter text-white leading-none">{student?.name}</h3><p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1 italic">Performance Logs</p></div></div>
-          <div className="p-8 bg-black rounded-[2.5rem] space-y-5 border border-white/10 print:hidden"><div className="grid grid-cols-1 gap-5 text-left"><input type="text" value={newRes.exam} onChange={(e) => setNewRes({...newRes, exam: e.target.value.toUpperCase()})} className="w-full p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-xs outline-none focus:border-blue-500" placeholder="Module Name" /><input type="date" value={newRes.date} onChange={(e) => setNewRes({...newRes, date: e.target.value})} className="w-full p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-xs outline-none" /><div className="flex gap-3"><input type="number" placeholder="Obt" value={newRes.obtained} onChange={(e) => setNewRes({...newRes, obtained: e.target.value})} className="w-1/2 p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-lg text-center outline-none focus:border-blue-500" /><input type="number" placeholder="Full" value={newRes.total} onChange={(e) => setNewRes({...newRes, total: e.target.value})} className="w-1/2 p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-lg text-center outline-none focus:border-blue-500" /></div></div><button onClick={async () => { if(newRes.exam && newRes.obtained && newRes.total && newRes.date) { const p = Math.round((parseFloat(newRes.obtained)/parseFloat(newRes.total))*100); await addDoc(collection(db, "results"), { ...newRes, name: student.name, percent: p, timestamp: Date.now() }); setNewRes({exam: "", obtained: "", total: "", date: ""}); alert("Saved!"); } }} className="w-full py-5 bg-blue-700 text-white rounded-[1.5rem] font-black uppercase text-xs shadow-xl active:scale-95 transition-all">Manual Entry</button></div>
           <div className="space-y-8 pt-8 border-t border-white/10">
             {results.filter(r => r.name === student?.name).sort((a,b)=>b.timestamp-a.timestamp).map(r => (
               <div key={r.id} className="p-6 bg-white/5 border border-white/10 rounded-[2.5rem] flex flex-col gap-6 shadow-sm hover:shadow-md transition-all group">
@@ -407,7 +396,7 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
   );
 };
     
-// --- 🟡 Interactive Exam Hall (Anti-Refresh & Deselect Fixed) ---
+// --- 🟡 Interactive Exam Hall (Negative Marking Applied) ---
 const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   const recoveryKey = `exam_recovery_${exam.studentCode}_${exam.id}`;
   const timerKey = `timer_end_${exam.studentCode}_${exam.id}`;
@@ -435,14 +424,6 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   useEffect(() => {
     localStorage.setItem(recoveryKey, JSON.stringify(answers));
   }, [answers, recoveryKey]);
-
-  useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      if (!isSubmitted) { e.preventDefault(); e.returnValue = ''; }
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isSubmitted]);
 
   const handleImageUpload = (qNum, file) => {
     if (!file) return;
@@ -491,6 +472,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
 
   const answerKeyArray = exam?.answerKey ? exam.answerKey.split(',').map(k => k.trim().toUpperCase()) : [];
   const marksArray = exam?.questionMarks ? exam.questionMarks.split(',').map(m => parseFloat(m.trim()) || 1) : [];
+  const negVal = parseFloat(exam?.negativeMark) || 0;
 
   useEffect(() => {
     let t;
@@ -506,11 +488,20 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
       const detailResults = answerKeyArray.map((key, index) => {
         const qNum = index + 1;
         const qMark = marksArray[index] !== undefined ? marksArray[index] : 1;
-        const isCorrect = (answers[qNum] || '') === key;
+        const studentAns = answers[qNum] || 'None';
+        const isCorrect = studentAns === key;
+        const isWrong = studentAns !== 'None' && studentAns !== key;
+
         totalPossibleMarks += qMark;
-        if (key !== 'W' && isCorrect) totalObtainedMarks += qMark;
-        return { qNum, selected: answers[qNum] || 'None', correct: key, status: isCorrect, mark: qMark, type: key === 'W' ? 'written' : 'mcq', pending: key === 'W' };
+
+        if (key !== 'W') {
+          if (isCorrect) totalObtainedMarks += qMark;
+          else if (isWrong) totalObtainedMarks -= negVal; // Negative Marking logic
+        }
+
+        return { qNum, selected: studentAns, correct: key, status: isCorrect, mark: qMark, type: key === 'W' ? 'written' : 'mcq', pending: key === 'W' };
       });
+
       const percent = totalPossibleMarks > 0 ? Math.round((totalObtainedMarks / totalPossibleMarks) * 100) : 0;
       const d = new Date();
       let finalStudentName = exam.studentName.toUpperCase();
@@ -551,51 +542,53 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   );
 };
 
+// --- 🟡 Growth Section View (Fixed Mobile View & Scrolling) ---
 const GrowthSectionView = ({ results, students }) => {
   const [sel, setSel] = useState(null);
   const [selectedReview, setSelectedReview] = useState(null);
   const handlePrint = () => { window.print(); };
 
   return (
-    <div className="max-w-2xl mx-auto w-full animate-in fade-in duration-500 text-left px-2">
+    <div className="max-w-2xl mx-auto w-full animate-in fade-in duration-500 text-left px-2 mb-20">
       {selectedReview && <ReviewResultModal result={selectedReview} onClose={() => setSelectedReview(null)} />}
       {!sel ? (
         <div className="grid gap-4 print:hidden">
           {students.map((std) => (<button key={std.id} onClick={() => setSel(std.name)} className="w-full bg-black/60 backdrop-blur-xl p-5 rounded-[2rem] shadow-lg border border-white/10 flex justify-between items-center group active:scale-95 transition-all"><div className="flex items-center gap-4"><div className="w-10 h-10 bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-400 shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-all"><User size={18}/></div> <span className="font-black text-white uppercase text-[14px] italic tracking-tight break-words">{std.name}</span></div><ChevronRight size={24} className="text-slate-600 group-hover:text-blue-400" /></button>))}
         </div>
       ) : (
-        <div className="space-y-6 animate-in slide-in-from-right-20 duration-700 print-full-report">
-          <div className="flex justify-between items-center print:hidden">
-             <button onClick={() => setSel(null)} className="flex items-center gap-2 text-[12px] font-black text-blue-400 uppercase italic hover:underline ml-2"><ChevronLeft size={24}/> Return</button>
-             <button onClick={handlePrint} className="bg-white text-black px-5 py-2 rounded-full font-black text-[10px] uppercase flex items-center gap-2 shadow-xl"><Download size={16}/> Download PDF</button>
+        <div className="space-y-6 animate-in slide-in-from-right-20 duration-700">
+          <div className="flex justify-between items-center print:hidden px-2">
+             <button onClick={() => setSel(null)} className="flex items-center gap-2 text-[12px] font-black text-blue-400 uppercase italic hover:underline"><ChevronLeft size={24}/> Return</button>
+             <button onClick={handlePrint} className="bg-white text-black px-5 py-2 rounded-full font-black text-[10px] uppercase flex items-center gap-2 shadow-xl"><Download size={16}/> PDF</button>
           </div>
-          <div className="bg-black/90 rounded-[3rem] shadow-2xl overflow-hidden border-2 border-white/10 flex flex-col print-full-report">
-             <div className="bg-blue-700 p-8 text-white text-center relative overflow-hidden flex-shrink-0 print:border-b-4 print:border-blue-900">
-                <Trophy className="absolute -top-10 -right-10 opacity-10 rotate-12 print:hidden" size={150}/>
-                <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-2 leading-none break-words px-4 text-white">Performance Transcript</h2>
-                <div className="inline-block bg-white/20 px-6 py-1.5 rounded-full border border-white/30 max-w-[90%] overflow-hidden">
-                   <p className="text-sm font-black uppercase italic break-words text-white">{sel}</p>
+          <div className="bg-black/90 rounded-[2.5rem] shadow-2xl overflow-hidden border-2 border-white/10 flex flex-col">
+             <div className="bg-blue-700 p-6 text-white text-center relative overflow-hidden">
+                <Trophy className="absolute -top-10 -right-10 opacity-10 rotate-12" size={120}/>
+                <h2 className="text-xl font-black uppercase italic tracking-tighter mb-2">Transcript</h2>
+                <div className="inline-block bg-white/20 px-4 py-1 rounded-full border border-white/30 truncate max-w-[90%]">
+                   <p className="text-xs font-black uppercase italic text-white">{sel}</p>
                 </div>
-                <div className="hidden print:block mt-4 text-[10px] font-bold uppercase tracking-widest text-blue-100">STUDENT: {sel} • MATH EXCELLENCE BY ANSHU SIR</div>
              </div>
-             <div className="p-4 md:p-6 space-y-4 bg-white/5 print:bg-white print:overflow-visible h-auto">
+             
+             {/* --- FIXED SCROLLABLE AREA FOR MOBILE --- */}
+             <div className="p-4 space-y-4 bg-white/5 overflow-y-auto max-h-[70vh] no-scrollbar">
                {results.filter(r => r.name === sel).sort((a,b)=> (b.timestamp || 0) - (a.timestamp || 0)).map(r => (
-                 <div key={r.id} className="min-w-[450px] md:min-w-0 bg-slate-900/60 rounded-[2rem] border border-white/10 shadow-sm flex items-center p-5 gap-6 hover:shadow-md transition-all group print-card">
-                   <div className="flex-1 min-w-0 border-l-8 border-blue-600 pl-5">
-                      <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Exam Unit</p>
-                      <p className="text-sm md:text-lg font-black uppercase italic text-white leading-tight whitespace-normal break-words">{r.exam}</p>
-                      <p className="text-[9px] font-black text-blue-400 uppercase italic mt-1">{new Date(r.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • {new Date(r.timestamp).toLocaleDateString('en-GB')}</p>
+                 <div key={r.id} className="w-full bg-slate-900/60 rounded-3xl border border-white/10 shadow-sm flex flex-row items-center p-4 gap-3 hover:shadow-md transition-all group print-card">
+                   <div className="flex-1 min-w-0 border-l-4 border-blue-600 pl-3">
+                      <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Exam</p>
+                      <p className="text-[13px] font-black uppercase italic text-white leading-tight break-words line-clamp-2">{r.exam}</p>
+                      <p className="text-[8px] font-black text-blue-400 uppercase italic mt-1">{new Date(r.timestamp).toLocaleDateString('en-GB')}</p>
                    </div>
-                   <div className="text-center px-4 border-l border-white/10 min-w-[100px]">
-                      <p className="text-[9px] font-bold text-slate-500 uppercase mb-0.5">Score</p>
-                      <p className="text-2xl md:text-3xl font-black italic text-blue-400 leading-none">{r.obtained}/{r.total}</p>
+                   <div className="text-center px-2 border-l border-white/10 flex-shrink-0 min-w-[65px]">
+                      <p className="text-[8px] font-bold text-slate-500 uppercase mb-0.5">Score</p>
+                      <p className="text-xl font-black italic text-blue-400 leading-none">{r.obtained}/{r.total}</p>
                    </div>
                    <div className="flex-shrink-0 print:hidden">
-                      <button onClick={() => setSelectedReview(r)} className="bg-slate-800 text-blue-400 p-3 rounded-2xl border border-white/10 shadow-sm hover:bg-blue-600 hover:text-white transition-all"><Eye size={20}/></button>
+                      <button onClick={() => setSelectedReview(r)} className="bg-slate-800 text-blue-400 p-2.5 rounded-xl border border-white/10 shadow-sm active:scale-90 transition-all"><Eye size={18}/></button>
                    </div>
                  </div>
                ))}
-               <div className="hidden print:block text-center mt-10 pt-5 border-t border-slate-100 italic text-[10px] text-slate-400">This is a computer-generated performance report from Math Excellence Portal.</div>
+               {results.filter(r => r.name === sel).length === 0 && <p className="text-center text-slate-600 font-bold uppercase text-[10px] py-10">No records found</p>}
              </div>
           </div>
         </div>
