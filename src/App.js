@@ -90,8 +90,19 @@ const App = () => {
     setShowNameModal(true);
   };
 
+  // 🔴 পরিবর্তিত সেকশন: স্টুডেন্ট কোড ম্যান্ডেটরি করা হয়েছে
   const finalizeExamStart = () => {
-    if (!studentNameInput.trim()) return;
+    if (!studentNameInput.trim()) return alert("PLEASE ENTER YOUR NAME");
+    if (!studentCodeInput.trim()) return alert("STUDENT CODE IS MANDATORY!");
+
+    // কোড চেক করা হচ্ছে রেজিস্ট্রি লিস্টে আছে কি না
+    const isRegistered = students.some(s => s.studentCode?.toString().trim() === studentCodeInput.trim());
+    
+    if (!isRegistered) {
+      alert("INVALID STUDENT CODE! PLEASE CONTACT ANSHU SIR.");
+      return;
+    }
+
     setCurrentExam({ ...pendingExam, studentName: studentNameInput.trim(), studentCode: studentCodeInput.trim() });
     setIsExamActive(true);
     setShowNameModal(false);
@@ -108,7 +119,8 @@ const App = () => {
             <h3 className="font-bold text-lg mb-6 uppercase tracking-tight italic">Student Login</h3>
             <div className="space-y-4">
               <input autoFocus type="text" value={studentNameInput} onChange={(e) => setStudentNameInput(e.target.value)} className="w-full p-3 rounded-xl border-2 font-bold text-center outline-none focus:border-blue-500 uppercase" placeholder="NAME" />
-              <input type="text" value={studentCodeInput} onChange={(e) => setStudentCodeInput(e.target.value)} className="w-full p-3 rounded-xl border-2 font-bold text-center outline-none focus:border-blue-500" placeholder="CODE (OPTIONAL)" />
+              <input type="text" value={studentCodeInput} onChange={(e) => setStudentCodeInput(e.target.value)} className="w-full p-3 rounded-xl border-2 font-bold text-center outline-none focus:border-blue-500" placeholder="ENTER UNIQUE CODE" />
+              <p className="text-[8px] text-red-500 font-bold uppercase italic">* Code is required to start exam</p>
             </div>
             <div className="flex gap-4 mt-8">
               <button onClick={() => setShowNameModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 font-bold text-[10px] uppercase">Cancel</button>
@@ -196,7 +208,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   const [pinVal, setPinVal] = useState('');
   const [expandedId, setExpandedId] = useState(null);
 
-  // 🟢 Quick Add State (All Fields from Photo)
+  // 🟢 Quick Add State (All Fields)
   const [quickAddType, setQuickAddType] = useState('live');
   const [qaName, setQaName] = useState('');
   const [qaHours, setQaHours] = useState('1');
@@ -223,7 +235,6 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
       isPublished: false,
       timestamp: Date.now()
     });
-    // Reset fields
     setQaName(''); setQaLink(''); setQaKey(''); setQaMarks('');
     alert(`Success: Added to ${quickAddType === 'live' ? 'Live Mocks' : 'Practice Sets'}`);
   };
@@ -288,7 +299,6 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
 
   return (
     <div className="w-full flex flex-col items-center">
-      {/* 🟠 NEW "KUI GET" (QUICK ADD) SECTION - BASED ON YOUR PHOTO */}
       <div className="bg-white p-6 rounded-[2.5rem] shadow-xl border-t-8 border-blue-700 w-full mb-8 text-left animate-in fade-in">
         <div className="flex justify-between items-center mb-6">
            <h3 className="font-black text-[10px] uppercase flex items-center gap-2 italic text-blue-700"><Zap size={20}/> KUI GET (Quick Add)</h3>
@@ -297,41 +307,17 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
               <button onClick={() => setQuickAddType('practice')} className={`px-4 py-1.5 rounded-lg font-black text-[8px] uppercase transition-all ${quickAddType === 'practice' ? 'bg-blue-700 text-white shadow-md' : 'text-slate-400'}`}>Practice</button>
            </div>
         </div>
-
         <div className="space-y-6">
-          <div>
-             <p className="text-[8px] font-black text-slate-400 uppercase mb-1 ml-1 italic tracking-widest leading-none">Exam Name</p>
-             <input type="text" value={qaName} onChange={(e) => setQaName(e.target.value)} className="w-full p-3.5 bg-slate-50 border-2 border-white rounded-2xl text-[10px] font-black outline-none shadow-inner focus:bg-white focus:border-blue-400 transition-all uppercase" placeholder="New Slot" />
-          </div>
-
+          <div><p className="text-[8px] font-black text-slate-400 uppercase mb-1 ml-1 italic leading-none">Exam Name</p><input type="text" value={qaName} onChange={(e) => setQaName(e.target.value)} className="w-full p-3.5 bg-slate-50 border-2 border-white rounded-2xl text-[10px] font-black outline-none shadow-inner focus:bg-white focus:border-blue-400 transition-all uppercase" placeholder="New Slot" /></div>
           <div className="flex flex-col md:flex-row gap-4">
-             <div className="bg-slate-50 p-3 rounded-2xl border-2 border-white shadow-inner min-w-[120px]">
-                <p className="text-[8px] font-black text-blue-700 uppercase mb-1 ml-1 italic">Time Limit</p>
-                <div className="flex items-center gap-1 font-black text-[10px]">
-                   <input type="number" value={qaHours} onChange={(e) => setQaHours(e.target.value)} className="w-8 text-center bg-transparent outline-none" /> <span>H</span>
-                   <input type="number" value={qaMinutes} onChange={(e) => setQaMinutes(e.target.value)} className="w-8 text-center bg-transparent outline-none" /> <span>M</span>
-                </div>
-             </div>
-             <div className="flex-1 bg-slate-50 p-3 rounded-2xl border-2 border-white shadow-inner">
-                <p className="text-[8px] font-black text-slate-400 uppercase mb-1 ml-1 italic tracking-widest">Google Drive Link</p>
-                <input type="text" value={qaLink} onChange={(e) => setQaLink(e.target.value)} className="w-full bg-transparent outline-none text-[9px] font-bold" placeholder="Paste PDF/Doc Link" />
-             </div>
+             <div className="bg-slate-50 p-3 rounded-2xl border-2 border-white shadow-inner min-w-[120px]"><p className="text-[8px] font-black text-blue-700 uppercase mb-1 ml-1 italic">Time Limit</p><div className="flex items-center gap-1 font-black text-[10px]"><input type="number" value={qaHours} onChange={(e) => setQaHours(e.target.value)} className="w-8 text-center bg-transparent outline-none" /> <span>H</span><input type="number" value={qaMinutes} onChange={(e) => setQaMinutes(e.target.value)} className="w-8 text-center bg-transparent outline-none" /> <span>M</span></div></div>
+             <div className="flex-1 bg-slate-50 p-3 rounded-2xl border-2 border-white shadow-inner"><p className="text-[8px] font-black text-slate-400 uppercase mb-1 ml-1 italic tracking-widest">Google Drive Link</p><input type="text" value={qaLink} onChange={(e) => setQaLink(e.target.value)} className="w-full bg-transparent outline-none text-[9px] font-bold" placeholder="Paste PDF/Doc Link" /></div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             <div className="bg-slate-50 p-3 rounded-2xl border-2 border-white shadow-inner">
-                <p className="text-[9px] font-black text-blue-700 uppercase mb-1 italic">Correct Key</p>
-                <input type="text" value={qaKey} onChange={(e) => setQaKey(e.target.value)} className="w-full bg-transparent outline-none font-black text-[10px] uppercase" placeholder="e.g. A,B,W,D" />
-             </div>
-             <div className="bg-slate-50 p-3 rounded-2xl border-2 border-white shadow-inner">
-                <p className="text-[9px] font-black text-yellow-700 uppercase mb-1 italic">Marks/Q</p>
-                <input type="text" value={qaMarks} onChange={(e) => setQaMarks(e.target.value)} className="w-full bg-transparent outline-none font-black text-[10px]" placeholder="e.g. 1,1,5,1" />
-             </div>
+             <div className="bg-slate-50 p-3 rounded-2xl border-2 border-white shadow-inner"><p className="text-[9px] font-black text-blue-700 uppercase mb-1 italic">Correct Key</p><input type="text" value={qaKey} onChange={(e) => setQaKey(e.target.value)} className="w-full bg-transparent outline-none font-black text-[10px] uppercase" placeholder="e.g. A,B,W,D" /></div>
+             <div className="bg-slate-50 p-3 rounded-2xl border-2 border-white shadow-inner"><p className="text-[9px] font-black text-yellow-700 uppercase mb-1 italic">Marks/Q</p><input type="text" value={qaMarks} onChange={(e) => setQaMarks(e.target.value)} className="w-full bg-transparent outline-none font-black text-[10px]" placeholder="e.g. 1,1,5,1" /></div>
           </div>
-
-          <button onClick={handleQuickAdd} className="w-full bg-slate-900 text-white py-4 rounded-[1.5rem] font-black text-[11px] uppercase shadow-xl active:scale-95 transition-all flex items-center justify-center gap-3 border-b-4 border-black hover:bg-blue-700 hover:border-blue-900 italic tracking-tighter">
-             <Send size={18}/> Deploy to Registry
-          </button>
+          <button onClick={handleQuickAdd} className="w-full bg-slate-900 text-white py-4 rounded-[1.5rem] font-black text-[11px] uppercase shadow-xl active:scale-95 transition-all flex items-center justify-center gap-3 border-b-4 border-black hover:bg-blue-700 hover:border-blue-900 italic tracking-tighter"><Send size={18}/> Deploy to Registry</button>
         </div>
       </div>
 
@@ -341,18 +327,14 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
           <button onClick={async () => { if(window.confirm("Clear Logs?")) { const q = query(collection(db, "logs")); const snapshot = await getDocs(q); const batch = writeBatch(db); snapshot.docs.forEach((d) => batch.delete(d.ref)); await batch.commit(); } }} className="px-5 py-2 rounded-full bg-red-100 text-red-700 text-[10px] font-black uppercase">Clear Activity</button>
         </div>
       </div>
-
       {isChangingPin && (
         <div className="max-w-sm w-full p-6 bg-blue-50 rounded-3xl border-2 border-blue-100 mb-8 animate-in slide-in-from-top-4">
            <input type="text" onChange={(e) => setPinVal(e.target.value)} className="w-full p-3 rounded-xl bg-white border-2 text-xl font-black text-center" placeholder="NEW PIN" />
            <button onClick={async () => { if(pinVal.length >= 4) { await setTeacherPin(pinVal); setIsChangingPin(false); alert("Updated!"); }}} className="w-full py-3 bg-blue-700 text-white rounded-lg mt-4 font-bold text-xs uppercase">Save</button>
         </div>
       )}
-
       <PaperManager title="Live Mock Exam" items={liveMocks} type="live" color="text-red-600" />
       <PaperManager title="Practice Sets" items={practiceSets} type="practice" color="text-blue-700" />
-
-      {/* Student Registry (Unchanged) */}
       <div className="bg-white p-8 rounded-[2.5rem] shadow-lg border-t-8 border-slate-900 w-full mb-20 text-center">
         <h3 className="font-black text-xs uppercase mb-8 flex items-center justify-center gap-3 italic text-slate-800"><Trophy size={28} className="text-yellow-600"/> Student Registry</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -380,76 +362,31 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
 const AdminMarksheetModal = ({ student, results, onClose }) => {
   const [newRes, setNewRes] = useState({ exam: "", obtained: "", total: "", date: "" });
   const [previewImg, setPreviewImg] = useState(null);
-
   return (
     <div className="fixed inset-0 bg-white z-[1200] p-6 overflow-y-auto animate-in slide-in-from-right-full duration-500">
        {previewImg && <ImagePreviewModal src={previewImg} onClose={() => setPreviewImg(null)} />}
        <button onClick={onClose} className="font-black text-blue-600 mb-10 flex items-center gap-3 border-b-4 border-blue-600 w-fit uppercase text-[11px] italic tracking-tighter hover:text-blue-800 transition-all"><ChevronLeft size={24}/> Return to Registry</button>
        <div className="bg-white p-10 rounded-[3rem] border-4 border-slate-50 shadow-3xl max-w-xl mx-auto space-y-10">
-          <div className="flex items-center gap-5 border-b-4 border-slate-50 pb-6">
-            <div className="w-16 h-16 bg-blue-700 rounded-[1.5rem] flex items-center justify-center text-white shadow-xl italic font-black text-2xl">{student?.name?.charAt(0)}</div>
-            <div><h3 className="text-3xl font-black uppercase italic tracking-tighter leading-none">{student?.name}</h3><p className="text-[11px] font-bold text-slate-300 uppercase tracking-widest mt-1 italic">Performance Logs</p></div>
-          </div>
-
-          <div className="p-8 bg-blue-50 rounded-[2.5rem] space-y-5 shadow-inner border-2 border-blue-100">
-             <div className="grid grid-cols-1 gap-5 text-left">
-               <input type="text" value={newRes.exam} onChange={(e) => setNewRes({...newRes, exam: e.target.value.toUpperCase()})} className="w-full p-4 rounded-xl border-2 font-black text-xs outline-none shadow-sm focus:border-blue-500" placeholder="Module Name" />
-               <input type="date" value={newRes.date} onChange={(e) => setNewRes({...newRes, date: e.target.value})} className="w-full p-4 rounded-xl border-2 font-black text-xs outline-none shadow-sm" />
-               <div className="flex gap-3"><input type="number" placeholder="Obt" value={newRes.obtained} onChange={(e) => setNewRes({...newRes, obtained: e.target.value})} className="w-1/2 p-4 rounded-xl border-2 font-black text-lg text-center outline-none shadow-sm focus:border-blue-500" /><input type="number" placeholder="Full" value={newRes.total} onChange={(e) => setNewRes({...newRes, total: e.target.value})} className="w-1/2 p-4 rounded-xl border-2 font-black text-lg text-center outline-none shadow-sm focus:border-blue-500" /></div>
-             </div>
-             <button onClick={async () => { if(newRes.exam && newRes.obtained && newRes.total && newRes.date) { const p = Math.round((parseFloat(newRes.obtained)/parseFloat(newRes.total))*100); await addDoc(collection(db, "results"), { ...newRes, name: student.name, percent: p, timestamp: Date.now() }); setNewRes({exam: "", obtained: "", total: "", date: ""}); alert("Saved!"); } }} className="w-full py-5 bg-blue-700 text-white rounded-[1.5rem] font-black uppercase text-xs shadow-xl active:scale-95 transition-all">Manual Entry</button>
-          </div>
-
+          <div className="flex items-center gap-5 border-b-4 border-slate-50 pb-6"><div className="w-16 h-16 bg-blue-700 rounded-[1.5rem] flex items-center justify-center text-white shadow-xl italic font-black text-2xl">{student?.name?.charAt(0)}</div><div><h3 className="text-3xl font-black uppercase italic tracking-tighter leading-none">{student?.name}</h3><p className="text-[11px] font-bold text-slate-300 uppercase tracking-widest mt-1 italic">Performance Logs</p></div></div>
+          <div className="p-8 bg-blue-50 rounded-[2.5rem] space-y-5 shadow-inner border-2 border-blue-100"><div className="grid grid-cols-1 gap-5 text-left"><input type="text" value={newRes.exam} onChange={(e) => setNewRes({...newRes, exam: e.target.value.toUpperCase()})} className="w-full p-4 rounded-xl border-2 font-black text-xs outline-none shadow-sm focus:border-blue-500" placeholder="Module Name" /><input type="date" value={newRes.date} onChange={(e) => setNewRes({...newRes, date: e.target.value})} className="w-full p-4 rounded-xl border-2 font-black text-xs outline-none shadow-sm" /><div className="flex gap-3"><input type="number" placeholder="Obt" value={newRes.obtained} onChange={(e) => setNewRes({...newRes, obtained: e.target.value})} className="w-1/2 p-4 rounded-xl border-2 font-black text-lg text-center outline-none shadow-sm focus:border-blue-500" /><input type="number" placeholder="Full" value={newRes.total} onChange={(e) => setNewRes({...newRes, total: e.target.value})} className="w-1/2 p-4 rounded-xl border-2 font-black text-lg text-center outline-none shadow-sm focus:border-blue-500" /></div></div><button onClick={async () => { if(newRes.exam && newRes.obtained && newRes.total && newRes.date) { const p = Math.round((parseFloat(newRes.obtained)/parseFloat(newRes.total))*100); await addDoc(collection(db, "results"), { ...newRes, name: student.name, percent: p, timestamp: Date.now() }); setNewRes({exam: "", obtained: "", total: "", date: ""}); alert("Saved!"); } }} className="w-full py-5 bg-blue-700 text-white rounded-[1.5rem] font-black uppercase text-xs shadow-xl active:scale-95 transition-all">Manual Entry</button></div>
           <div className="space-y-8 pt-8 border-t-4 border-slate-50">
             {results.filter(r => r.name === student?.name).sort((a,b)=>b.timestamp-a.timestamp).map(r => (
               <div key={r.id} className="p-6 bg-white border-2 border-slate-100 rounded-[2.5rem] flex flex-col gap-6 shadow-sm hover:shadow-md transition-all group">
-                <div className="flex justify-between items-start w-full">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg bg-blue-50 text-blue-700 border-2 border-white shadow-sm">{r.percent}%</div>
-                    <div className="flex-1 min-w-0 pr-2">
-                       <p className="text-sm font-black uppercase italic tracking-tighter leading-none break-words whitespace-normal">{r.exam}</p>
-                       <p className="text-[10px] font-bold text-slate-400 mt-1 italic">{r.date} • Score: {r.obtained}/{r.total}</p>
-                    </div>
-                  </div>
-                  <button onClick={async () => { if(window.confirm("Purge record?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-red-200 hover:text-red-500 active:scale-90 transition-all flex-shrink-0"><Trash2 size={24} /></button>
-                </div>
-
+                <div className="flex justify-between items-start w-full"><div className="flex items-center gap-4"><div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg bg-blue-50 text-blue-700 border-2 border-white shadow-sm">{r.percent}%</div><div className="flex-1 min-w-0 pr-2"><p className="text-sm font-black uppercase italic tracking-tighter leading-none break-words whitespace-normal">{r.exam}</p><p className="text-[10px] font-bold text-slate-400 mt-1 italic">{r.date} • Score: {r.obtained}/{r.total}</p></div></div><button onClick={async () => { if(window.confirm("Purge record?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-red-200 hover:text-red-500 active:scale-90 transition-all flex-shrink-0"><Trash2 size={24} /></button></div>
                 {r.details && r.details.some(d => d.pending) && (
-                  <div className="bg-orange-50 border-2 border-orange-100 rounded-[2rem] p-4 flex flex-col gap-3 shadow-inner">
-                    <p className="text-[10px] font-black text-orange-600 uppercase italic text-center animate-pulse tracking-widest">Action Required: Written Solutions</p>
-                    <div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory">
+                  <div className="bg-orange-50 border-2 border-orange-100 rounded-[2rem] p-4 flex flex-col gap-3 shadow-inner"><p className="text-[10px] font-black text-orange-600 uppercase italic text-center animate-pulse tracking-widest">Action Required: Written Solutions</p><div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory">
                       {r.details.filter(d => d.pending).map((pendingQ, pIdx) => {
                          const photoList = Array.isArray(pendingQ.selected) ? pendingQ.selected : [pendingQ.selected];
-                         
                          return photoList.map((photoUrl, imgIdx) => (
-                           <div key={`${pIdx}-${imgIdx}`} className="min-w-[200px] bg-white border-2 border-white shadow-md rounded-2xl p-4 flex flex-col items-center gap-3 snap-center">
-                             <p className="text-[9px] font-black text-slate-400 uppercase italic">Q{pendingQ.qNum} - Page {imgIdx + 1}</p>
-                             <button onClick={() => setPreviewImg(photoUrl)} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">View Page</button>
-                             
-                             {imgIdx === photoList.length - 1 && (
-                               <div className="flex gap-2 w-full mt-2">
-                                 <input id={`mark-input-${r.id}-${pendingQ.qNum}`} type="number" placeholder="Marks" className="w-1/2 p-2 border-2 rounded-xl text-center font-black text-[10px] outline-none focus:border-orange-500 bg-white" />
-                                 <button onClick={async () => {
+                           <div key={`${pIdx}-${imgIdx}`} className="min-w-[200px] bg-white border-2 border-white shadow-md rounded-2xl p-4 flex flex-col items-center gap-3 snap-center"><p className="text-[9px] font-black text-slate-400 uppercase italic">Q{pendingQ.qNum} - Page {imgIdx + 1}</p><button onClick={() => setPreviewImg(photoUrl)} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">View Page</button>
+                             {imgIdx === photoList.length - 1 && (<div className="flex gap-2 w-full mt-2"><input id={`mark-input-${r.id}-${pendingQ.qNum}`} type="number" placeholder="Marks" className="w-1/2 p-2 border-2 rounded-xl text-center font-black text-[10px] outline-none focus:border-orange-500 bg-white" /><button onClick={async () => {
                                      const markVal = document.getElementById(`mark-input-${r.id}-${pendingQ.qNum}`).value;
                                      if (!markVal) return alert("Enter marks!");
                                      const updatedDetails = r.details.map(d => (d.pending && d.qNum === pendingQ.qNum) ? { ...d, status: true, mark: parseFloat(markVal), pending: false, selected: "PHOTO_DELETED" } : d);
                                      const newObt = updatedDetails.reduce((sum, d) => sum + (d.status ? d.mark : 0), 0);
                                      await setDoc(doc(db, "results", r.id), { details: updatedDetails, obtained: newObt, percent: Math.round((newObt / r.total) * 100) }, { merge: true });
                                      alert(`Q${pendingQ.qNum} Marks Updated!`);
-                                   }} className="w-1/2 py-2 bg-orange-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">Save</button>
-                               </div>
-                             )}
-                           </div>
-                         ));
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-       </div>
-    </div>
+                                   }} className="w-1/2 py-2 bg-orange-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">Save</button></div>)}</div>));})}</div></div>)}</div>))}</div></div></div>
   );
 };
     
@@ -476,7 +413,6 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5);
-        
         setAnswers(prev => {
           const existingPhotos = Array.isArray(prev[qNum]) ? prev[qNum] : [];
           return { ...prev, [qNum]: [...existingPhotos, compressedBase64] };
@@ -521,7 +457,6 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
       let finalStudentName = exam.studentName.toUpperCase();
       const matchedStudent = studentsList.find(s => s.studentCode?.toString().trim() === exam.studentCode?.toString().trim());
       if (matchedStudent) finalStudentName = matchedStudent.name;
-
       await addDoc(collection(db, "logs"), { studentName: finalStudentName, examTitle: exam.name, timestamp: Date.now(), scoreDisplay: `${totalObtainedMarks} / ${totalPossibleMarks}` });
       await addDoc(collection(db, "results"), { name: finalStudentName, exam: exam.name, percent, obtained: totalObtainedMarks, total: totalPossibleMarks, date: d.toLocaleDateString('en-GB'), timestamp: Date.now(), details: detailResults });
       setScoreData({ correct: totalObtainedMarks, total: totalPossibleMarks, percent, details: detailResults });
@@ -532,86 +467,24 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   const formatTime = (s) => `${Math.floor(s/60)}:${s%60 < 10 ? '0'+(s%60) : s%60}`;
 
   if (isSubmitted) return (
-    <div className="fixed inset-0 bg-white z-[2000] flex flex-col items-center overflow-y-auto p-10 text-center animate-in zoom-in duration-500">
-      <CheckCircle size={80} className="text-green-600 mb-6 animate-bounce shadow-2xl rounded-full" />
-      <h2 className="text-3xl font-black text-slate-800 uppercase italic mb-8 tracking-tighter leading-none">Session Completed</h2>
-      <div className="bg-slate-50 p-10 rounded-[3rem] border-4 border-white mb-10 w-full max-w-sm shadow-2xl text-center">
-         <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 opacity-60">Result Transcript</p>
-         <h3 className="text-5xl font-black text-blue-700 italic tracking-tighter leading-none">{scoreData?.correct} / {scoreData?.total}</h3>
-      </div>
-      <button onClick={onFinish} className="bg-blue-700 text-white px-16 py-4 rounded-full font-black uppercase text-[12px] shadow-2xl">Close Arena</button>
-    </div>
+    <div className="fixed inset-0 bg-white z-[2000] flex flex-col items-center overflow-y-auto p-10 text-center animate-in zoom-in duration-500"><CheckCircle size={80} className="text-green-600 mb-6 animate-bounce shadow-2xl rounded-full" /><h2 className="text-3xl font-black text-slate-800 uppercase italic mb-8 tracking-tighter leading-none">Session Completed</h2><div className="bg-slate-50 p-10 rounded-[3rem] border-4 border-white mb-10 w-full max-w-sm shadow-2xl text-center"><p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 opacity-60">Result Transcript</p><h3 className="text-5xl font-black text-blue-700 italic tracking-tighter leading-none">{scoreData?.correct} / {scoreData?.total}</h3></div><button onClick={onFinish} className="bg-blue-700 text-white px-16 py-4 rounded-full font-black uppercase text-[12px] shadow-2xl">Close Arena</button></div>
   );
 
   return (
     <div className="fixed inset-0 bg-slate-950 z-[100] flex flex-col overflow-hidden animate-in fade-in duration-500">
-      <div className="bg-white p-2 md:p-3 flex justify-between items-center border-b-8 border-yellow-400 shadow-2xl relative z-50">
-        <div className="flex-1 min-w-0 pr-2"><h2 className="font-black text-slate-800 text-[10px] uppercase italic tracking-tighter leading-none truncate max-w-[150px]">{exam?.name}</h2><p className="text-[8px] md:text-[9px] text-blue-700 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName}</p></div>
-        <div className="flex items-center gap-6">
-          <div className={`px-5 py-1.5 rounded-xl font-black text-2xl border-4 text-slate-800 border-slate-100`}>{formatTime(timeLeft)}</div>
-          <button onClick={() => { if(window.confirm("SUBMIT EXAM?")) submitExam(); }} className="bg-green-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg">SUBMIT</button>
-        </div>
-      </div>
-      <div className="flex-1 bg-slate-900 overflow-hidden relative">
-         <iframe src={exam?.fileUrl?.replace('/view?usp=sharing', '/preview').replace('/view', '/preview')} className="w-full h-full border-none opacity-95" title="Paper" />
-         <div className="absolute bottom-0 left-0 right-0 z-50 bg-slate-800/98 border-t-4 border-slate-700 backdrop-blur-xl p-3 md:p-4 shadow-[0_-15px_40px_rgba(0,0,0,0.6)]">
-            <div className="max-w-4xl mx-auto">
-               <div className="flex items-center justify-between mb-2 px-2">
-                  <span className="text-[9px] font-black text-blue-400 uppercase italic flex items-center gap-3"><PenTool size={16}/> RESPONSE INTERFACE</span>
-                  {activeQuestion && <button onClick={() => setActiveQuestion(null)} className="text-slate-500 font-black text-[10px] uppercase border-b-2 border-slate-700">Close</button>}
-               </div>
+      <div className="bg-white p-2 md:p-3 flex justify-between items-center border-b-8 border-yellow-400 shadow-2xl relative z-50"><div className="flex-1 min-w-0 pr-2"><h2 className="font-black text-slate-800 text-[10px] uppercase italic tracking-tighter leading-none truncate max-w-[150px]">{exam?.name}</h2><p className="text-[8px] md:text-[9px] text-blue-700 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName}</p></div><div className="flex items-center gap-6"><div className={`px-5 py-1.5 rounded-xl font-black text-2xl border-4 text-slate-800 border-slate-100`}>{formatTime(timeLeft)}</div><button onClick={() => { if(window.confirm("SUBMIT EXAM?")) submitExam(); }} className="bg-green-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg">SUBMIT</button></div></div>
+      <div className="flex-1 bg-slate-900 overflow-hidden relative"><iframe src={exam?.fileUrl?.replace('/view?usp=sharing', '/preview').replace('/view', '/preview')} className="w-full h-full border-none opacity-95" title="Paper" /><div className="absolute bottom-0 left-0 right-0 z-50 bg-slate-800/98 border-t-4 border-slate-700 backdrop-blur-xl p-3 md:p-4 shadow-[0_-15px_40px_rgba(0,0,0,0.6)]"><div className="max-w-4xl mx-auto"><div className="flex items-center justify-between mb-2 px-2"><span className="text-[9px] font-black text-blue-400 uppercase italic flex items-center gap-3"><PenTool size={16}/> RESPONSE INTERFACE</span>{activeQuestion && <button onClick={() => setActiveQuestion(null)} className="text-slate-500 font-black text-[10px] uppercase border-b-2 border-slate-700">Close</button>}</div>
                {activeQuestion ? (
-                  <div className="flex flex-col items-center animate-in slide-in-from-bottom-2 pb-2">
-                    <p className="text-white font-black text-xs mb-4 italic uppercase opacity-60">
-                       {answerKeyArray[activeQuestion-1] === 'W' ? `Upload Pages for Q${activeQuestion}:` : `Choice for Q${activeQuestion}:`}
-                    </p>
+                  <div className="flex flex-col items-center animate-in slide-in-from-bottom-2 pb-2"><p className="text-white font-black text-xs mb-4 italic uppercase opacity-60">{answerKeyArray[activeQuestion-1] === 'W' ? `Upload Pages for Q${activeQuestion}:` : `Choice for Q${activeQuestion}:`}</p>
                     {answerKeyArray[activeQuestion-1] === 'W' ? (
-                      <div className="flex flex-col items-center gap-4">
-                        <div className="flex gap-2 flex-wrap justify-center">
+                      <div className="flex flex-col items-center gap-4"><div className="flex gap-2 flex-wrap justify-center">
                            {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].map((_, i) => (
-                             <div key={i} className="relative">
-                               <div className="bg-green-500 text-white text-[8px] font-black px-2 py-1 rounded-lg uppercase">Page {i+1} ✓</div>
-                               <button 
-                                 onClick={() => removeImage(activeQuestion, i)}
-                                 className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-0.5 shadow-lg active:scale-75 transition-all"
-                               >
-                                 <X size={12}/>
-                               </button>
-                             </div>
-                           ))}
-                        </div>
-                        <div className="flex gap-4">
-                           <label className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase cursor-pointer shadow-xl flex items-center gap-2 active:scale-95 transition-all">
-                              <Camera size={16}/> {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 ? 'ADD ANOTHER PAGE' : 'CAPTURE PAGE'}
-                              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { handleImageUpload(activeQuestion, e.target.files[0]); e.target.value = null; }} />
-                           </label>
-                           {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (
-                             <button onClick={() => setActiveQuestion(null)} className="bg-green-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl active:scale-95 transition-all">DONE</button>
-                           )}
-                        </div>
-                      </div>
+                             <div key={i} className="relative"><div className="bg-green-500 text-white text-[8px] font-black px-2 py-1 rounded-lg uppercase">Page {i+1} ✓</div><button onClick={() => removeImage(activeQuestion, i)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-0.5 shadow-lg active:scale-75 transition-all"><X size={12}/></button></div>))}</div>
+                        <div className="flex gap-4"><label className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase cursor-pointer shadow-xl flex items-center gap-2 active:scale-95 transition-all"><Camera size={16}/> {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 ? 'ADD ANOTHER PAGE' : 'CAPTURE PAGE'}<input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { handleImageUpload(activeQuestion, e.target.files[0]); e.target.value = null; }} /></label>{Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (<button onClick={() => setActiveQuestion(null)} className="bg-green-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl active:scale-95 transition-all">DONE</button>)}</div></div>
                     ) : (
-                      <div className="flex gap-5">
-                        {['A', 'B', 'C', 'D'].map(opt => (
-                          <button key={opt} onClick={() => { setAnswers({...answers, [activeQuestion]: opt}); setActiveQuestion(null); }} className={`w-12 h-12 rounded-xl font-black text-xl flex items-center justify-center border-b-8 transition-all active:scale-90 ${answers[activeQuestion] === opt ? 'bg-blue-600 text-white border-blue-900 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'bg-slate-700 text-slate-300 border-slate-950 hover:bg-slate-600'}`}>{opt}</button>
-                        ))}
-                      </div>
-                    )}
-                 </div>
+                      <div className="flex gap-5">{['A', 'B', 'C', 'D'].map(opt => (<button key={opt} onClick={() => { setAnswers({...answers, [activeQuestion]: opt}); setActiveQuestion(null); }} className={`w-12 h-12 rounded-xl font-black text-xl flex items-center justify-center border-b-8 transition-all active:scale-90 ${answers[activeQuestion] === opt ? 'bg-blue-600 text-white border-blue-900 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'bg-slate-700 text-slate-300 border-slate-950 hover:bg-slate-600'}`}>{opt}</button>))}</div>)}</div>
                ) : (
-                 <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar snap-x items-center justify-start">
-                    {answerKeyArray.map((_, index) => {
-                      const num = index + 1;
-                      return (
-                        <button key={num} onClick={() => setActiveQuestion(num)} className={`min-w-[42px] h-[42px] rounded-xl font-black text-xs flex items-center justify-center transition-all snap-center border-b-4 shadow-lg ${answers[num] ? 'bg-green-600 text-white border-green-900' : 'bg-slate-700 text-slate-400 border-slate-900 hover:bg-slate-600 hover:text-white'}`}>{num}</button>
-                      );
-                    })}
-                 </div>
-               )}
-            </div>
-         </div>
-      </div>
-    </div>
+                 <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar snap-x items-center justify-start">{answerKeyArray.map((_, index) => { const num = index + 1; return (<button key={num} onClick={() => setActiveQuestion(num)} className={`min-w-[42px] h-[42px] rounded-xl font-black text-xs flex items-center justify-center transition-all snap-center border-b-4 shadow-lg ${answers[num] ? 'bg-green-600 text-white border-green-900' : 'bg-slate-700 text-slate-400 border-slate-900 hover:bg-slate-600 hover:text-white'}`}>{num}</button>);})}</div>)}</div></div></div></div>
   );
 };
 
@@ -619,33 +492,14 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
 const GrowthSectionView = ({ results, students }) => {
   const [sel, setSel] = useState(null);
   const [selectedReview, setSelectedReview] = useState(null);
-
   return (
-    <div className="max-w-2xl mx-auto w-full animate-in fade-in duration-500 text-left px-2">
-      {selectedReview && <ReviewResultModal result={selectedReview} onClose={() => setSelectedReview(null)} />}
-      
+    <div className="max-w-2xl mx-auto w-full animate-in fade-in duration-500 text-left px-2">{selectedReview && <ReviewResultModal result={selectedReview} onClose={() => setSelectedReview(null)} />}
       {!sel ? (
-        <div className="grid gap-4">
-          {students.map((std) => (<button key={std.id} onClick={() => setSel(std.name)} className="w-full bg-white p-5 rounded-[2rem] shadow-lg border-2 border-white flex justify-between items-center group active:scale-95 transition-all"><div className="flex items-center gap-4"><div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-700 shadow-inner group-hover:bg-blue-700 group-hover:text-white transition-all"><User size={18}/></div> <span className="font-black text-slate-800 uppercase text-[14px] italic tracking-tight break-words">{std.name}</span></div><ChevronRight size={24} className="text-slate-200 group-hover:text-blue-600" /></button>))}
-        </div>
+        <div className="grid gap-4">{students.map((std) => (<button key={std.id} onClick={() => setSel(std.name)} className="w-full bg-white p-5 rounded-[2rem] shadow-lg border-2 border-white flex justify-between items-center group active:scale-95 transition-all"><div className="flex items-center gap-4"><div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-700 shadow-inner group-hover:bg-blue-700 group-hover:text-white transition-all"><User size={18}/></div> <span className="font-black text-slate-800 uppercase text-[14px] italic tracking-tight break-words">{std.name}</span></div><ChevronRight size={24} className="text-slate-200 group-hover:text-blue-600" /></button>))}</div>
       ) : (
-        <div className="space-y-6 animate-in slide-in-from-right-20 duration-700">
-          <button onClick={() => setSel(null)} className="flex items-center gap-2 text-[12px] font-black text-blue-600 uppercase italic hover:underline ml-2"><ChevronLeft size={24}/> Return</button>
-          <div className="bg-white rounded-[3rem] shadow-2xl overflow-hidden border-4 border-slate-100 flex flex-col max-h-[80vh]">
-             <div className="bg-blue-700 p-8 text-white text-center relative overflow-hidden flex-shrink-0"><Trophy className="absolute -top-10 -right-10 opacity-10 rotate-12" size={150}/><h2 className="text-2xl font-black uppercase italic tracking-tighter mb-2 leading-none break-words px-4 text-white">Performance Transcript</h2><div className="inline-block bg-white/20 px-6 py-1.5 rounded-full border border-white/30 max-w-[90%] overflow-hidden"><p className="text-sm font-black uppercase italic break-words text-white">{sel}</p></div></div>
-             <div className="overflow-auto p-4 md:p-6 space-y-4 bg-slate-50/50">
+        <div className="space-y-6 animate-in slide-in-from-right-20 duration-700"><button onClick={() => setSel(null)} className="flex items-center gap-2 text-[12px] font-black text-blue-600 uppercase italic hover:underline ml-2"><ChevronLeft size={24}/> Return</button><div className="bg-white rounded-[3rem] shadow-2xl overflow-hidden border-4 border-slate-100 flex flex-col max-h-[80vh]"><div className="bg-blue-700 p-8 text-white text-center relative overflow-hidden flex-shrink-0"><Trophy className="absolute -top-10 -right-10 opacity-10 rotate-12" size={150}/><h2 className="text-2xl font-black uppercase italic tracking-tighter mb-2 leading-none break-words px-4 text-white">Performance Transcript</h2><div className="inline-block bg-white/20 px-6 py-1.5 rounded-full border border-white/30 max-w-[90%] overflow-hidden"><p className="text-sm font-black uppercase italic break-words text-white">{sel}</p></div></div><div className="overflow-auto p-4 md:p-6 space-y-4 bg-slate-50/50">
                {results.filter(r => r.name === sel).sort((a,b)=> (b.timestamp || 0) - (a.timestamp || 0)).map(r => (
-                 <div key={r.id} className="min-w-[450px] md:min-w-0 bg-white rounded-[2rem] border-2 border-white shadow-sm flex items-center p-5 gap-6 hover:shadow-md transition-all group">
-                   <div className="flex-1 min-w-0 border-l-8 border-blue-600 pl-5"><p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Exam Unit</p><p className="text-sm md:text-lg font-black uppercase italic text-slate-800 leading-tight whitespace-normal break-words">{r.exam}</p></div>
-                   <div className="text-center px-4 border-l border-slate-100 min-w-[100px]"><p className="text-[9px] font-bold text-slate-400 uppercase mb-0.5">Score</p><p className="text-2xl md:text-3xl font-black italic text-blue-700 leading-none">{r.obtained}/{r.total}</p></div>
-                   <div className="flex-shrink-0"><button onClick={() => setSelectedReview(r)} className="bg-slate-50 text-blue-700 p-3 rounded-2xl border-2 border-white shadow-sm hover:bg-blue-700 hover:text-white transition-all"><Eye size={20}/></button></div>
-                 </div>
-               ))}
-             </div>
-          </div>
-        </div>
-      )}
-    </div>
+                 <div key={r.id} className="min-w-[450px] md:min-w-0 bg-white rounded-[2rem] border-2 border-white shadow-sm flex items-center p-5 gap-6 hover:shadow-md transition-all group"><div className="flex-1 min-w-0 border-l-8 border-blue-600 pl-5"><p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Exam Unit</p><p className="text-sm md:text-lg font-black uppercase italic text-slate-800 leading-tight whitespace-normal break-words">{r.exam}</p></div><div className="text-center px-4 border-l border-slate-100 min-w-[100px]"><p className="text-[9px] font-bold text-slate-400 uppercase mb-0.5">Score</p><p className="text-2xl md:text-3xl font-black italic text-blue-700 leading-none">{r.obtained}/{r.total}</p></div><div className="flex-shrink-0"><button onClick={() => setSelectedReview(r)} className="bg-slate-50 text-blue-700 p-3 rounded-2xl border-2 border-white shadow-sm hover:bg-blue-700 hover:text-white transition-all"><Eye size={20}/></button></div></div>))}</div></div></div>)}</div>
   );
 };
 
