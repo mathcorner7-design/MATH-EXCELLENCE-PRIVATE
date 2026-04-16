@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 // --- 🖼️ CONFIGURATION: আপনার ব্যাকগ্রাউন্ড ইমেজের লিঙ্ক এখানে দিন ---
-const APP_BACKGROUND_URL = "https://i.gifer.com/4xfd.gif"; 
+const APP_BACKGROUND_URL = "https://i.gifer.com/4A5.gif"; 
 
 // --- 🟢 Firebase Configuration ---
 const firebaseConfig = {
