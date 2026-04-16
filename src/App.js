@@ -78,8 +78,13 @@ const App = () => {
   const [pendingExam, setPendingExam] = useState(null);
 
   useEffect(() => {
-    onSnapshot(collection(db, "liveMocks"), (s) => setLiveMocks(s.docs.map(d => ({id: d.id, ...d.data()}))));
-    onSnapshot(collection(db, "practiceSets"), (s) => setPracticeSets(s.docs.map(d => ({id: d.id, ...d.data()}))));
+    // 🔴 Updated Queries to Sort by Timestamp (Newest First)
+    const qLive = query(collection(db, "liveMocks"), orderBy("timestamp", "desc"));
+    onSnapshot(qLive, (s) => setLiveMocks(s.docs.map(d => ({id: d.id, ...d.data()}))));
+
+    const qPractice = query(collection(db, "practiceSets"), orderBy("timestamp", "desc"));
+    onSnapshot(qPractice, (s) => setPracticeSets(s.docs.map(d => ({id: d.id, ...d.data()}))));
+
     onSnapshot(collection(db, "results"), (s) => setStudentResults(s.docs.map(d => ({id: d.id, ...d.data()}))));
     onSnapshot(collection(db, "students"), (s) => setStudents(s.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => a.name.localeCompare(b.name))));
     onSnapshot(doc(db, "settings", "adminConfig"), (d) => { if (d.exists()) setTeacherPin(d.data().pin); });
@@ -119,6 +124,8 @@ const App = () => {
           .print-full-report { display: block !important; position: static !important; width: 100% !important; height: auto !important; overflow: visible !important; }
           .print-card { border: 2px solid #ddd !important; break-inside: avoid; page-break-inside: avoid; margin-bottom: 15px !important; }
         }
+        /* Anti-jump scroll anchoring */
+        .no-scrollbar { scroll-anchor: none; }
       `}</style>
 
       {showNameModal && (
@@ -241,7 +248,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
       answerKey: qaKey.toUpperCase(),
       questionMarks: qaMarks,
       isPublished: false,
-      timestamp: Date.now() // 🔴 Timestamp added during creation
+      timestamp: Date.now()
     });
     setQaName(''); setQaLink(''); setQaKey(''); setQaMarks('');
     alert(`Success: Added to ${quickAddType === 'live' ? 'Live Mocks' : 'Practice Sets'}`);
@@ -262,7 +269,6 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.isPublished ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></div>
                     <span className="text-xs font-black uppercase italic text-slate-700 break-words">{item.name}</span>
                   </div>
-                  {/* 🔴 Added Date & Time here in Admin Manager */}
                   <p className="text-[8px] font-bold text-slate-400 uppercase italic ml-5 mt-1">
                     Created: {item.timestamp ? `${new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • ${new Date(item.timestamp).toLocaleDateString('en-GB')}` : 'N/A'}
                   </p>
@@ -278,7 +284,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
               <div className="p-5 border-t bg-slate-50/20 space-y-4 animate-in slide-in-from-top-2">
                 <div>
                    <p className="text-[8px] font-black text-slate-400 uppercase mb-1 ml-1">Exam Name</p>
-                   <input type="text" defaultValue={item.name} onBlur={(e) => updateField(item.id, type, 'name', e.target.value.toUpperCase())} className="w-full p-2.5 rounded-xl border-2 text-xs font-black outline-none bg-white focus:border-blue-400" placeholder="Exam Name" />
+                   <input type="text" defaultValue={item.name} onBlur={(e) => updateField(item.id, type, 'name', e.target.value.toUpperCase())} className="w-full p-2.5 rounded-xl border-2 text-xs font-black outline-none bg-white focus:border-blue-400" />
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <div className="bg-white p-2.5 rounded-xl border-2 border-blue-50 shadow-sm">
@@ -296,11 +302,11 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-white p-3 rounded-xl border-2 border-blue-50 shadow-sm">
                     <p className="text-[9px] font-black text-blue-700 uppercase mb-2 italic">Correct Key</p>
-                    <input type="text" defaultValue={item.answerKey || ""} onBlur={(e) => updateField(item.id, type, 'answerKey', e.target.value.toUpperCase())} className="w-full p-2 rounded-xl bg-blue-50/20 border font-black text-xs outline-none" placeholder="e.g. A,B,W,D" />
+                    <input type="text" defaultValue={item.answerKey || ""} onBlur={(e) => updateField(item.id, type, 'answerKey', e.target.value.toUpperCase())} className="w-full p-2 rounded-xl bg-blue-50/20 border font-black text-xs outline-none" />
                   </div>
                   <div className="bg-white p-3 rounded-xl border-2 border-yellow-50 shadow-sm">
                     <p className="text-[9px] font-black text-yellow-700 uppercase mb-2 italic">Marks/Q</p>
-                    <input type="text" defaultValue={item.questionMarks || ""} onBlur={(e) => updateField(item.id, type, 'questionMarks', e.target.value)} className="w-full p-2 rounded-xl bg-yellow-50/20 border font-black text-xs outline-none" placeholder="e.g. 1,1,5,1" />
+                    <input type="text" defaultValue={item.questionMarks || ""} onBlur={(e) => updateField(item.id, type, 'questionMarks', e.target.value)} className="w-full p-2 rounded-xl bg-yellow-50/20 border font-black text-xs outline-none" />
                   </div>
                 </div>
               </div>
