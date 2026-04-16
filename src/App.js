@@ -110,7 +110,6 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 select-none flex flex-col items-center overflow-x-hidden">
-      {/* 🟣 Print Helper Styles */}
       <style>{`
         @media print {
           body { background: white !important; overflow: visible !important; }
@@ -242,7 +241,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
       answerKey: qaKey.toUpperCase(),
       questionMarks: qaMarks,
       isPublished: false,
-      timestamp: Date.now()
+      timestamp: Date.now() // 🔴 Timestamp added during creation
     });
     setQaName(''); setQaLink(''); setQaKey(''); setQaMarks('');
     alert(`Success: Added to ${quickAddType === 'live' ? 'Live Mocks' : 'Practice Sets'}`);
@@ -258,9 +257,15 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
           <div key={item.id} className="bg-white rounded-2xl border-2 border-white shadow-sm overflow-hidden transition-all">
             <div onClick={() => setExpandedId(expandedId === item.id ? null : item.id)} className="p-4 flex justify-between items-center cursor-pointer hover:bg-slate-50 group">
               <div className="flex-1 pr-2">
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.isPublished ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></div>
-                  <span className="text-xs font-black uppercase italic text-slate-700 break-words">{item.name}</span>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.isPublished ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></div>
+                    <span className="text-xs font-black uppercase italic text-slate-700 break-words">{item.name}</span>
+                  </div>
+                  {/* 🔴 Added Date & Time here in Admin Manager */}
+                  <p className="text-[8px] font-bold text-slate-400 uppercase italic ml-5 mt-1">
+                    Created: {item.timestamp ? `${new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • ${new Date(item.timestamp).toLocaleDateString('en-GB')}` : 'N/A'}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -367,7 +372,6 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   );
 };
 
-// --- 🟡 ADMIN MARKSHEET MODAL (MULTI-PAGE FIXED) ---
 const AdminMarksheetModal = ({ student, results, onClose }) => {
   const [newRes, setNewRes] = useState({ exam: "", obtained: "", total: "", date: "" });
   const [previewImg, setPreviewImg] = useState(null);
@@ -498,19 +502,14 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   );
 };
 
-// --- 📈 Growth Section (UPDATED FOR FULL PDF REPORT) ---
 const GrowthSectionView = ({ results, students }) => {
   const [sel, setSel] = useState(null);
   const [selectedReview, setSelectedReview] = useState(null);
-
-  const handlePrint = () => {
-    window.print();
-  };
+  const handlePrint = () => { window.print(); };
 
   return (
     <div className="max-w-2xl mx-auto w-full animate-in fade-in duration-500 text-left px-2">
       {selectedReview && <ReviewResultModal result={selectedReview} onClose={() => setSelectedReview(null)} />}
-      
       {!sel ? (
         <div className="grid gap-4 print:hidden">
           {students.map((std) => (<button key={std.id} onClick={() => setSel(std.name)} className="w-full bg-white p-5 rounded-[2rem] shadow-lg border-2 border-white flex justify-between items-center group active:scale-95 transition-all"><div className="flex items-center gap-4"><div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-700 shadow-inner group-hover:bg-blue-700 group-hover:text-white transition-all"><User size={18}/></div> <span className="font-black text-slate-800 uppercase text-[14px] italic tracking-tight break-words">{std.name}</span></div><ChevronRight size={24} className="text-slate-200 group-hover:text-blue-600" /></button>))}
@@ -521,19 +520,13 @@ const GrowthSectionView = ({ results, students }) => {
              <button onClick={() => setSel(null)} className="flex items-center gap-2 text-[12px] font-black text-blue-600 uppercase italic hover:underline ml-2"><ChevronLeft size={24}/> Return</button>
              <button onClick={handlePrint} className="bg-slate-900 text-white px-5 py-2 rounded-full font-black text-[10px] uppercase flex items-center gap-2 shadow-xl"><Download size={16}/> Download PDF</button>
           </div>
-          
           <div className="bg-white rounded-[3rem] shadow-2xl overflow-hidden border-4 border-slate-100 flex flex-col print-full-report">
              <div className="bg-blue-700 p-8 text-white text-center relative overflow-hidden flex-shrink-0 print:border-b-4 print:border-blue-900">
                 <Trophy className="absolute -top-10 -right-10 opacity-10 rotate-12 print:hidden" size={150}/>
                 <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-2 leading-none break-words px-4 text-white">Performance Transcript</h2>
-                <div className="inline-block bg-white/20 px-6 py-1.5 rounded-full border border-white/30 max-w-[90%] overflow-hidden">
-                   <p className="text-sm font-black uppercase italic break-words text-white">{sel}</p>
-                </div>
-                {/* 🔴 Only visible in PDF */}
+                <div className="inline-block bg-white/20 px-6 py-1.5 rounded-full border border-white/30 max-w-[90%] overflow-hidden"><p className="text-sm font-black uppercase italic break-words text-white">{sel}</p></div>
                 <div className="hidden print:block mt-4 text-[10px] font-bold uppercase tracking-widest text-blue-100">STUDENT: {sel} • MATH EXCELLENCE BY ANSHU SIR</div>
              </div>
-             
-             {/* 🔴 Removed fixed height 'max-h-[80vh]' for print to show ALL exams */}
              <div className="overflow-auto p-4 md:p-6 space-y-4 bg-slate-50/50 print:bg-white print:overflow-visible h-auto min-h-screen print:min-h-0">
                {results.filter(r => r.name === sel).sort((a,b)=> (b.timestamp || 0) - (a.timestamp || 0)).map(r => (
                  <div key={r.id} className="min-w-[450px] md:min-w-0 bg-white rounded-[2rem] border-2 border-white shadow-sm flex items-center p-5 gap-6 hover:shadow-md transition-all group print-card">
@@ -551,11 +544,7 @@ const GrowthSectionView = ({ results, students }) => {
                    </div>
                  </div>
                ))}
-               
-               {/* 🔴 Only visible in PDF Footer */}
-               <div className="hidden print:block text-center mt-10 pt-5 border-t border-slate-100 italic text-[10px] text-slate-400">
-                  This is a computer-generated performance report from Math Excellence Portal.
-               </div>
+               <div className="hidden print:block text-center mt-10 pt-5 border-t border-slate-100 italic text-[10px] text-slate-400">This is a computer-generated performance report from Math Excellence Portal.</div>
              </div>
           </div>
         </div>
