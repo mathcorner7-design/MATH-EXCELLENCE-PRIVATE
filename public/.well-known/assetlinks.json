@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.math_excellence_private.twa",
+        "sha256_cert_fingerprints": ["52:C3:83:05:68:5C:4A:6A:A8:53:E4:95:02:B3:AE:AF:B9:74:54:78:F1:DE:BF:BA:4D:87:66:29:87:03:B5:42"]
+      }
+    }]
