@@ -587,7 +587,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   );
 };
 
-// --- 🟡 Growth Section View (Mobile Fixed) ---
+// --- 🟡 Growth Section View (Mobile Fixed with Attempt Tracking) ---
 const GrowthSectionView = ({ results, students }) => {
   const [sel, setSel] = useState(null);
   const [selectedReview, setSelectedReview] = useState(null);
@@ -615,22 +615,45 @@ const GrowthSectionView = ({ results, students }) => {
                 </div>
              </div>
              <div className="p-4 md:p-6 space-y-4 bg-white/5 print:bg-white print:overflow-visible h-auto">
-               {results.filter(r => r.name === sel).sort((a,b)=> (b.timestamp || 0) - (a.timestamp || 0)).map(r => (
-                 <div key={r.id} className="w-full bg-slate-900/60 rounded-[2rem] border border-white/10 shadow-sm flex items-center p-4 md:p-5 gap-3 md:gap-6 hover:shadow-md transition-all group print-card">
-                   <div className="flex-1 min-w-0 border-l-4 md:border-l-8 border-blue-600 pl-3 md:pl-5">
-                      <p className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Exam Unit</p>
-                      <p className="text-xs md:text-lg font-black uppercase italic text-white leading-tight whitespace-normal break-words">{r.exam}</p>
-                      <p className="text-[8px] md:text-[9px] font-black text-blue-400 uppercase italic mt-1">{new Date(r.timestamp).toLocaleDateString('en-GB')}</p>
-                   </div>
-                   <div className="text-center px-2 md:px-4 border-l border-white/10 min-w-[70px] md:min-w-[100px]">
-                      <p className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase mb-0.5">Score</p>
-                      <p className="text-xl md:text-3xl font-black italic text-blue-400 leading-none">{r.obtained}/{r.total}</p>
-                   </div>
-                   <div className="flex-shrink-0 print:hidden">
-                      <button onClick={() => setSelectedReview(r)} className="bg-slate-800 text-blue-400 p-2 md:p-3 rounded-2xl border border-white/10 shadow-sm hover:bg-blue-600 hover:text-white transition-all"><Eye size={18}/></button>
-                   </div>
-                 </div>
-               ))}
+               {(() => {
+                 // ১. ফিল্টার এবং টাইম অনুযায়ী সর্টিং (পুরানো থেকে নতুন)
+                 const studentResults = results
+                   .filter(r => r.name === sel)
+                   .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+                 // ২. এটেম্পট কাউন্ট করার ম্যাপ
+                 const examAttemptsMap = {};
+                 const resultsWithAttempts = studentResults.map(r => {
+                   examAttemptsMap[r.exam] = (examAttemptsMap[r.exam] || 0) + 1;
+                   return { ...r, attemptNo: examAttemptsMap[r.exam] };
+                 });
+
+                 // ৩. রিভার্স করে দেখানো (যাতে নতুনটা উপরে থাকে)
+                 return resultsWithAttempts.reverse().map((r) => {
+                   const isMultiple = studentResults.filter(sr => sr.exam === r.exam).length > 1;
+
+                   return (
+                     <div key={r.id} className="w-full bg-slate-900/60 rounded-[2rem] border border-white/10 shadow-sm flex items-center p-4 md:p-5 gap-3 md:gap-6 hover:shadow-md transition-all group print-card">
+                       <div className="flex-1 min-w-0 border-l-4 md:border-l-8 border-blue-600 pl-3 md:pl-5">
+                          <p className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">
+                            Exam Unit {isMultiple && <span className="text-yellow-500 ml-2">| ATTEMPT {r.attemptNo}</span>}
+                          </p>
+                          <p className="text-xs md:text-lg font-black uppercase italic text-white leading-tight whitespace-normal break-words">{r.exam}</p>
+                          <p className="text-[8px] md:text-[9px] font-black text-blue-400 uppercase italic mt-1">
+                            {new Date(r.timestamp).toLocaleDateString('en-GB')} • {new Date(r.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                          </p>
+                       </div>
+                       <div className="text-center px-2 md:px-4 border-l border-white/10 min-w-[70px] md:min-w-[100px]">
+                          <p className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase mb-0.5">Score</p>
+                          <p className="text-xl md:text-3xl font-black italic text-blue-400 leading-none">{r.obtained}/{r.total}</p>
+                       </div>
+                       <div className="flex-shrink-0 print:hidden">
+                          <button onClick={() => setSelectedReview(r)} className="bg-slate-800 text-blue-400 p-2 md:p-3 rounded-2xl border border-white/10 shadow-sm hover:bg-blue-600 hover:text-white transition-all"><Eye size={18}/></button>
+                       </div>
+                     </div>
+                   );
+                 });
+               })()}
              </div>
           </div>
         </div>
