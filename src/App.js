@@ -196,9 +196,9 @@ const App = () => {
         {activeTab === 'live' && (
           <div className="space-y-4 w-full text-left print:hidden">
             <h2 className="font-bold uppercase text-blue-300 border-b border-white/10 pb-2 text-[10px] flex items-center gap-2 bg-black/40 p-2 rounded-lg backdrop-blur-md"><Clock size={14} className="text-red-500"/> Ongoing Live Mocks</h2>
-            {liveMocks.filter(m => m.isPublished).map(m => (
+            {liveMocks.filter(m => m.isPublished).map((m, i) => (
               <div key={m.id} className="bg-black/60 backdrop-blur-xl p-4 rounded-2xl shadow-xl flex justify-between items-center border border-white/10">
-                <div className="flex-1 pr-4"><h3 className="text-sm font-black uppercase italic tracking-tighter text-white break-words">{m.name}</h3><p className="text-[9px] font-bold text-red-500 uppercase italic mt-1">Duration: {m.hours || 0}h {m.minutes || 0}m</p></div>
+                <div className="flex-1 pr-4"><h3 className="text-sm font-black uppercase italic tracking-tighter text-white break-words">{i + 1}. {m.name}</h3><p className="text-[9px] font-bold text-red-500 uppercase italic mt-1">Duration: {m.hours || 0}h {m.minutes || 0}m</p></div>
                 <button onClick={() => handleStartExamFlow(m)} className="bg-red-600 text-white px-6 py-2 rounded-full font-bold text-[9px] uppercase shadow-lg h-fit">Attend</button>
               </div>
             ))}
@@ -216,9 +216,9 @@ const App = () => {
         
         {activeTab === 'practice' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full text-left print:hidden">
-            {practiceSets.filter(p => p.isPublished).map(p => (
+            {practiceSets.filter(p => p.isPublished).map((p, i) => (
               <div key={p.id} className="bg-black/60 backdrop-blur-xl p-4 rounded-2xl shadow flex justify-between items-center border border-white/10 hover:border-blue-500/50 transition-all">
-                <div className="flex-1 pr-4"><h3 className="font-bold uppercase text-xs italic text-white break-words">{p.name}</h3><p className="text-[9px] font-bold text-slate-500 uppercase italic mt-1">Time: {p.hours || 0}h {p.minutes || 0}m</p></div>
+                <div className="flex-1 pr-4"><h3 className="font-bold uppercase text-xs italic text-white break-words">{i + 1}. {p.name}</h3><p className="text-[9px] font-bold text-slate-500 uppercase italic mt-1">Time: {p.hours || 0}h {p.minutes || 0}m</p></div>
                 <button onClick={() => handleStartExamFlow(p)} className="bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-[9px] uppercase shadow-md h-fit">Start</button>
               </div>
             ))}
@@ -274,14 +274,14 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
         <h3 className={`font-black uppercase text-xs italic ${color}`}>{title} Manager ({items.length})</h3>
       </div>
       <div className="max-h-[500px] overflow-y-auto p-4 space-y-3 bg-white/5 no-scrollbar">
-        {items.map(item => (
+        {items.map((item, index) => (
           <div key={item.id} className="bg-slate-900/60 rounded-2xl border border-white/10 overflow-hidden transition-all">
             <div onClick={() => setExpandedId(expandedId === item.id ? null : item.id)} className="p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 group">
               <div className="flex-1 pr-2">
                 <div className="flex flex-col">
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.isPublished ? 'bg-green-500 animate-pulse' : 'bg-slate-700'}`}></div>
-                    <span className="text-xs font-black uppercase italic text-white break-words">{item.name}</span>
+                    <span className="text-xs font-black uppercase italic text-white break-words">{index + 1}. {item.name}</span>
                   </div>
                   <p className="text-[8px] font-bold text-slate-500 uppercase italic ml-5 mt-1">
                     Created: {item.timestamp ? `${new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • ${new Date(item.timestamp).toLocaleDateString('en-GB')}` : 'N/A'}
@@ -587,7 +587,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   );
 };
 
-// --- 🟡 Growth Section View (Mobile Fixed with Attempt Tracking) ---
+// --- 🟡 Growth Section View ---
 const GrowthSectionView = ({ results, students }) => {
   const [sel, setSel] = useState(null);
   const [selectedReview, setSelectedReview] = useState(null);
@@ -616,19 +616,16 @@ const GrowthSectionView = ({ results, students }) => {
              </div>
              <div className="p-4 md:p-6 space-y-4 bg-white/5 print:bg-white print:overflow-visible h-auto">
                {(() => {
-                 // ১. ফিল্টার এবং টাইম অনুযায়ী সর্টিং (পুরানো থেকে নতুন)
                  const studentResults = results
                    .filter(r => r.name === sel)
                    .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
-                 // ২. এটেম্পট কাউন্ট করার ম্যাপ
                  const examAttemptsMap = {};
                  const resultsWithAttempts = studentResults.map(r => {
                    examAttemptsMap[r.exam] = (examAttemptsMap[r.exam] || 0) + 1;
                    return { ...r, attemptNo: examAttemptsMap[r.exam] };
                  });
 
-                 // ৩. রিভার্স করে দেখানো (যাতে নতুনটা উপরে থাকে)
                  return resultsWithAttempts.reverse().map((r) => {
                    const isMultiple = studentResults.filter(sr => sr.exam === r.exam).length > 1;
 
