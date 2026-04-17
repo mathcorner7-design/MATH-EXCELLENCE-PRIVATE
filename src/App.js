@@ -24,6 +24,30 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// --- 🔵 Countdown Component for Live Mocks ---
+const LiveCountdown = ({ timestamp, onExpire }) => {
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const diff = (timestamp + 6 * 3600000) - Date.now();
+      if (diff <= 0) {
+        clearInterval(timer);
+        setTimeLeft("00h 00m 00s");
+        onExpire && onExpire();
+      } else {
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        setTimeLeft(`${h}h ${m < 10 ? '0' + m : m}m ${s < 10 ? '0' + s : s}s`);
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [timestamp, onExpire]);
+
+  return <p className="text-[9px] font-black text-yellow-400 uppercase italic mt-1 animate-pulse">Ends in: {timeLeft}</p>;
+};
+
 // --- 🔵 Modal for Image Preview ---
 const ImagePreviewModal = ({ src, onClose }) => {
   if (!src) return null;
@@ -126,7 +150,7 @@ const App = () => {
     setShowNameModal(false);
   };
 
-  // Logic to separate Ongoing Live and Shifted Live
+  // Separating Live and Practice Logic
   const ongoingLive = liveMocks.filter(m => m.isPublished && (Date.now() - (m.timestamp || 0) < 6 * 3600000));
   const shiftedLive = liveMocks.filter(m => m.isPublished && (Date.now() - (m.timestamp || 0) >= 6 * 3600000));
 
@@ -195,7 +219,7 @@ const App = () => {
                <GraduationCap size={48} className="text-blue-400 mx-auto mb-3 animate-bounce-slow" />
                <h2 className="text-xl md:text-3xl font-black uppercase italic tracking-tight leading-tight text-white">Elevate Your Mathematics <br/> <span className="text-blue-400 underline decoration-yellow-400 decoration-2 underline-offset-8">with Anshu Sir</span></h2>
                <div className="mt-10 p-6 bg-white/5 rounded-3xl border border-white/10 shadow-inner">
-                  <p className="text-slate-400 font-bold uppercase italic text-[11px] mb-2 tracking-widest">For More Query Contact Anshu Sir</p>
+                  <p className="text-slate-400 font-bold uppercase italic text-[11px] mb-2 tracking-widest">For Further Queries, Contact Anshu Sir</p>
                   <a href="tel:9002892918" className="text-3xl md:text-5xl font-black text-yellow-400 italic tracking-tighter flex items-center justify-center gap-3 drop-shadow-xl hover:scale-105 transition-transform">
                     <Phone size={32} className="text-blue-500 animate-pulse"/> 9002892918
                   </a>
@@ -218,14 +242,17 @@ const App = () => {
         {activeTab === 'live' && (
           <div className="space-y-4 w-full text-left print:hidden">
             <h2 className="font-bold uppercase text-blue-300 border-b border-white/10 pb-2 text-[10px] flex items-center gap-2 bg-black/40 p-2 rounded-lg backdrop-blur-md"><Clock size={14} className="text-red-500"/> Ongoing Live Mocks</h2>
-            {ongoingLive.map((m, i) => (
+            {ongoingLive.length > 0 ? ongoingLive.map((m, i) => (
               <div key={m.id} className="bg-black/60 backdrop-blur-xl p-4 rounded-2xl shadow-xl flex justify-between items-center border border-white/10">
-                <div className="flex-1 pr-4"><h3 className="text-sm font-black uppercase italic tracking-tighter text-white break-words">{i + 1}. {m.name}</h3><p className="text-[9px] font-bold text-red-500 uppercase italic mt-1">Duration: {m.hours || 0}h {m.minutes || 0}m</p></div>
+                <div className="flex-1 pr-4">
+                  <h3 className="text-sm font-black uppercase italic tracking-tighter text-white break-words">{i + 1}. {m.name}</h3>
+                  <LiveCountdown timestamp={m.timestamp} />
+                </div>
                 <button onClick={() => handleStartExamFlow(m)} className={`px-6 py-2 rounded-full font-black text-[9px] uppercase shadow-lg h-fit flex items-center gap-2 ${m.isGuestEnabled ? 'bg-red-600 text-white' : 'bg-slate-800 text-blue-400 border border-blue-900/50'}`}>
                   {!m.isGuestEnabled && <Lock size={12}/>} {m.isGuestEnabled ? 'Attend' : 'Protected'}
                 </button>
               </div>
-            ))}
+            )) : <p className="text-[10px] text-slate-500 italic p-4 text-center">No active sessions at the moment.</p>}
           </div>
         )}
 
@@ -244,6 +271,8 @@ const App = () => {
               const allMocks = [...practiceSets.filter(p => p.isPublished), ...shiftedLive];
               const classes = [...new Set(allMocks.map(m => m.class || 'Other'))].sort((a,b) => parseInt(a) - parseInt(b));
               
+              if (allMocks.length === 0) return <p className="text-center text-slate-500 italic text-[10px]">No practice sets available.</p>;
+
               return classes.map(cls => (
                 <div key={cls} className="space-y-4">
                   <h2 className="font-black uppercase text-blue-400 border-b-2 border-blue-900/50 pb-2 text-xs flex items-center gap-2 italic tracking-widest pl-2">
@@ -292,7 +321,8 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
 
   const updateField = async (id, type, field, value) => { 
     const coll = type === 'live' ? 'liveMocks' : 'practiceSets';
-    await setDoc(doc(db, coll, id), { [field]: value }, { merge: true }); 
+    const finalVal = (field === 'isPublished' && value === true) ? { [field]: value, timestamp: Date.now() } : { [field]: value };
+    await setDoc(doc(db, coll, id), finalVal, { merge: true }); 
   };
 
   const handleQuickAdd = async () => {
@@ -333,7 +363,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                     {item.isGuestEnabled && <span className="text-[7px] bg-green-600 px-1.5 py-0.5 rounded text-white font-black italic">GUEST ON</span>}
                   </div>
                   <p className="text-[8px] font-bold text-slate-500 uppercase italic ml-5 mt-1">
-                    Created: {item.timestamp ? `${new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • ${new Date(item.timestamp).toLocaleDateString('en-GB')}` : 'N/A'}
+                    Last Change: {item.timestamp ? `${new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • ${new Date(item.timestamp).toLocaleDateString('en-GB')}` : 'N/A'}
                   </p>
                 </div>
               </div>
