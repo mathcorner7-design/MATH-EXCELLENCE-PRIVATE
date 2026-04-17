@@ -4,7 +4,7 @@ import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setD
 import { 
   Trophy, BookOpen, TrendingUp, User, Clock, ChevronRight, GraduationCap, PlusCircle, 
   FileText, Lock, Award, Timer, Settings2, CheckCircle, PenTool, ShieldAlert, 
-  Loader2, ChevronLeft, Trash2, UserPlus, History, UserCheck, X, CheckSquare, AlertCircle, ListChecks, Eye, Camera, Send, Link, Zap, Download, Unlock
+  Loader2, ChevronLeft, Trash2, UserPlus, History, UserCheck, X, CheckSquare, AlertCircle, ListChecks, Eye, Camera, Send, Link, Zap, Download, Unlock, Phone
 } from 'lucide-react';
 
 // --- 🖼️ CONFIGURATION ---
@@ -117,7 +117,6 @@ const App = () => {
         alert("INVALID STUDENT CODE! PLEASE CONTACT ANSHU SIR.");
         return;
       }
-      // Force Registered Name instead of Input Name
       setCurrentExam(prev => ({ ...prev, studentName: matchedStudent.name, studentCode: studentCodeInput.trim(), isGuest: false }));
     } else {
       setCurrentExam(prev => ({ ...prev, studentName: studentNameInput.trim().toUpperCase(), studentCode: studentCodeInput.trim() || 'GUEST', isGuest: true }));
@@ -154,7 +153,7 @@ const App = () => {
 
       {showNameModal && (
         <div className="fixed inset-0 bg-black/90 z-[1000] flex items-center justify-center p-6 backdrop-blur-md print:hidden">
-          <div className="bg-slate-900 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border-2 border-slate-800">
+          <div className="bg-slate-900 rounded-3xl p-8 max-sm w-full text-center shadow-2xl border-2 border-slate-800">
             {currentExam?.isGuestEnabled ? <Unlock size={40} className="text-green-500 mx-auto mb-4" /> : <Lock size={40} className="text-blue-500 mx-auto mb-4" />}
             <h3 className="font-bold text-lg mb-2 uppercase tracking-tight italic text-white">{currentExam?.isGuestEnabled ? 'Guest Entry' : 'Student Login'}</h3>
             <p className="text-[9px] text-slate-500 mb-6 uppercase">{currentExam?.isGuestEnabled ? 'No code required for guests' : 'Private Exam: Code Required'}</p>
@@ -191,7 +190,12 @@ const App = () => {
             <div className="bg-black/60 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border-2 border-white/10">
                <GraduationCap size={48} className="text-blue-400 mx-auto mb-3 animate-bounce-slow" />
                <h2 className="text-xl md:text-3xl font-black uppercase italic tracking-tight leading-tight text-white">Elevate Your Mathematics <br/> <span className="text-blue-400 underline decoration-yellow-400 decoration-2 underline-offset-8">with Anshu Sir</span></h2>
-               <button onClick={() => setActiveTab('live')} className="mt-8 bg-blue-700 text-white px-8 py-2.5 rounded-full font-bold text-[9px] uppercase shadow-xl hover:bg-blue-800 transition-all">Start Session</button>
+               <div className="mt-10 p-6 bg-white/5 rounded-3xl border border-white/10 shadow-inner">
+                  <p className="text-slate-400 font-bold uppercase italic text-[11px] mb-2 tracking-widest">For More Query Contact Anshu Sir</p>
+                  <a href="tel:9002892918" className="text-3xl md:text-5xl font-black text-yellow-400 italic tracking-tighter flex items-center justify-center gap-3 drop-shadow-xl hover:scale-105 transition-transform">
+                    <Phone size={32} className="text-blue-500 animate-pulse"/> 9002892918
+                  </a>
+               </div>
             </div>
             <div className="bg-black/60 backdrop-blur-xl p-5 rounded-3xl shadow-md border border-white/10 text-left w-full">
               <h3 className="font-bold text-xs uppercase mb-3 border-b border-white/10 pb-2 flex items-center gap-2 italic text-blue-300"><History size={16} className="text-blue-400"/> Activity Stream</h3>
@@ -384,7 +388,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
              <div className="bg-black p-3 rounded-2xl border border-white/10 shadow-inner"><p className="text-[9px] font-black text-blue-400 uppercase mb-1 italic">Correct Key</p><input type="text" value={qaKey} onChange={(e) => setQaKey(e.target.value)} className="w-full bg-transparent outline-none font-black text-[10px] uppercase text-white" placeholder="e.g. A,B,W,D" /></div>
-             <div className="bg-black p-3 rounded-2xl border border-white/10 shadow-inner"><p className="text-[9px] font-black text-yellow-500 uppercase mb-1 italic">Marks/Q</p><input type="text" value={qaMarks} onChange={(e) => setQaMarks(e.target.value)} className="w-full bg-transparent outline-none font-black text-[10px] text-white" placeholder="e.g. 1,1,5,1" /></div>
+             <div className="bg-black p-3 rounded-2xl border border-white/10 shadow-inner"><p className="text-[9px] font-black text-yellow-500 uppercase mb-1 italic">Marks/Q</p><input type="text" value={qaKey} onChange={(e) => setQaKey(e.target.value)} className="w-full bg-transparent outline-none font-black text-[10px] text-white" placeholder="e.g. 1,1,5,1" /></div>
           </div>
           <div className="bg-black p-3 rounded-2xl border border-white/10 shadow-inner">
              <p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1 italic tracking-widest">Google Drive Link</p>
@@ -416,9 +420,10 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {students.map((std) => (
             <div key={std.id} className="relative group p-5 bg-white/5 border border-white/10 rounded-[2rem] flex flex-col items-center shadow-lg hover:bg-white/10 transition-all">
-              <p className="text-md font-black uppercase italic tracking-tighter text-white">{std.name}</p>
+              <input type="text" defaultValue={std.name} onBlur={async (e) => { if(e.target.value !== std.name) await setDoc(doc(db, "students", std.id), { name: e.target.value.toUpperCase() }, { merge: true }); }} className="bg-transparent text-center text-md font-black uppercase italic tracking-tighter text-white outline-none focus:bg-white/10 rounded-lg px-2" />
               <div className="mt-2 flex items-center gap-2 bg-blue-950 px-3 py-1 rounded-full border border-blue-900">
-                 <Lock size={10} className="text-blue-400"/><p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">CODE: {std.studentCode || 'N/A'}</p>
+                 <Lock size={10} className="text-blue-400"/>
+                 <input type="text" defaultValue={std.studentCode} onBlur={async (e) => { if(e.target.value !== std.studentCode) await setDoc(doc(db, "students", std.id), { studentCode: e.target.value }, { merge: true }); }} className="bg-transparent text-[10px] font-black text-blue-400 uppercase tracking-widest outline-none w-20 text-center" />
               </div>
               <div className="flex gap-3 mt-6">
                 <button onClick={() => setSelectedStudent(std)} className="px-5 py-1.5 bg-slate-800 border border-slate-700 rounded-full text-[10px] font-black uppercase hover:bg-blue-600 hover:text-white transition-all shadow-sm italic">Reports</button>
@@ -634,14 +639,36 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
 const GrowthSectionView = ({ results, students }) => {
   const [sel, setSel] = useState(null);
   const [selectedReview, setSelectedReview] = useState(null);
+  const [vCode, setVCode] = useState('');
+  const [isVerified, setIsVerified] = useState(false);
+
   const handlePrint = () => { window.print(); };
+
+  const handleVerify = () => {
+    const student = students.find(s => s.name === sel);
+    if (student && student.studentCode?.toString().trim() === vCode.trim()) {
+      setIsVerified(true);
+    } else {
+      alert("INVALID CODE! ACCESS DENIED.");
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto w-full animate-in fade-in duration-500 text-left px-2">
       {selectedReview && <ReviewResultModal result={selectedReview} onClose={() => setSelectedReview(null)} />}
       {!sel ? (
         <div className="grid gap-4 print:hidden">
-          {students.map((std) => (<button key={std.id} onClick={() => setSel(std.name)} className="w-full bg-black/60 backdrop-blur-xl p-5 rounded-[2rem] shadow-lg border border-white/10 flex justify-between items-center group active:scale-95 transition-all"><div className="flex items-center gap-4"><div className="w-10 h-10 bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-400 shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-all"><User size={18}/></div> <span className="font-black text-white uppercase text-[14px] italic tracking-tight break-words">{std.name}</span></div><ChevronRight size={24} className="text-slate-600 group-hover:text-blue-400" /></button>))}
+          {students.map((std) => (<button key={std.id} onClick={() => { setSel(std.name); setIsVerified(false); setVCode(''); }} className="w-full bg-black/60 backdrop-blur-xl p-5 rounded-[2rem] shadow-lg border border-white/10 flex justify-between items-center group active:scale-95 transition-all"><div className="flex items-center gap-4"><div className="w-10 h-10 bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-400 shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-all"><User size={18}/></div> <span className="font-black text-white uppercase text-[14px] italic tracking-tight break-words">{std.name}</span></div><ChevronRight size={24} className="text-slate-600 group-hover:text-blue-400" /></button>))}
+        </div>
+      ) : !isVerified ? (
+        <div className="bg-slate-900/80 p-10 rounded-[3rem] border border-white/10 text-center animate-in zoom-in">
+           <Lock size={48} className="text-blue-500 mx-auto mb-4" />
+           <h3 className="font-black text-white uppercase italic mb-6">Verify Access: {sel}</h3>
+           <input type="password" value={vCode} onChange={(e) => setVCode(e.target.value)} placeholder="ENTER YOUR UNIQUE CODE" className="w-full p-4 bg-black border-2 border-slate-700 rounded-2xl text-center font-black text-white outline-none focus:border-blue-500 mb-6" />
+           <div className="flex gap-4">
+              <button onClick={() => setSel(null)} className="flex-1 py-4 bg-slate-800 rounded-2xl font-black uppercase text-[10px]">Back</button>
+              <button onClick={handleVerify} className="flex-1 py-4 bg-blue-700 rounded-2xl font-black uppercase text-[10px] shadow-lg">Verify</button>
+           </div>
         </div>
       ) : (
         <div className="space-y-6 animate-in slide-in-from-right-20 duration-700 print-full-report">
