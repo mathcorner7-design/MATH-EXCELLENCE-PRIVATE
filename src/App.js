@@ -161,7 +161,7 @@ const App = () => {
             
             const daysLeft = getRemainingDays(matchedStudent.subscriptionEnd);
             if (matchedStudent.isAccessEnabled === false || daysLeft <= 0) {
-                alert("YOUR SUBSCRIPTION EXPIRED! PLEASE RENEW YOUR SUBSCRIPTION.");
+                alert("ACCESS EXPIRED! PLEASE RENEW YOUR SUBSCRIPTION.");
                 return;
             }
 
@@ -198,7 +198,10 @@ const App = () => {
             <style>{`
                 @media print { body { background: white !important; overflow: visible !important; } header, nav, .print-hide, button, .lucide { display: none !important; } .min-h-screen { min-height: auto !important; background: none !important; } main { padding: 0 !important; width: 100% !important; max-width: 100% !important; color: black !important; } .print-full-report { display: block !important; position: static !important; width: 100% !important; height: auto !important; overflow: visible !important; } .print-card { border: 2px solid #ddd !important; break-inside: avoid; page-break-inside: avoid; margin-bottom: 15px !important; color: black !important; background: white !important; } .text-white { color: black !important; } }
                 main { overflow-anchor: none; }
+                .no-scrollbar::-webkit-scrollbar { display: none; }
+                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
             `}</style>
+            
             {showNameModal && (
                 <div className="fixed inset-0 bg-black/90 z-[1000] flex items-center justify-center p-6 backdrop-blur-md print:hidden">
                     <div className="bg-slate-900 rounded-3xl p-8 max-sm w-full text-center shadow-2xl border-2 border-slate-800">
@@ -218,10 +221,12 @@ const App = () => {
                     </div>
                 </div>
             )}
+
             <header className="bg-black/60 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50 shadow-2xl px-6 py-2 flex justify-between items-center w-full max-w-6xl print:hidden">
                 <h1 className="text-lg font-black text-blue-400 uppercase italic tracking-tighter cursor-pointer" onClick={() => setActiveTab('home')}>MATH EXCELLENCE</h1>
                 <p className="text-[9px] font-bold text-slate-500 italic">ANSHU SIR</p>
             </header>
+
             <nav className="bg-blue-700/80 backdrop-blur-xl text-white w-full sticky top-[45px] z-40 flex justify-center shadow-lg print:hidden">
                 <div className="max-w-6xl w-full flex overflow-x-auto no-scrollbar">
                     {[{ id: 'home', label: 'Home', icon: <History size={14} /> }, { id: 'live', label: 'Live Mock', icon: <Clock size={14} /> }, { id: 'practice', label: 'Practice', icon: <BookOpen size={14} /> }, { id: 'growth', label: 'Growth', icon: <TrendingUp size={14} /> }, { id: 'teacher', label: 'Admin', icon: <User size={14} /> }].map((item) => (
@@ -229,12 +234,19 @@ const App = () => {
                     ))}
                 </div>
             </nav>
+
             <main className="w-full max-w-5xl p-4 mb-20 flex flex-col items-center">
                 {activeTab === 'home' && (
                     <div className="space-y-6 animate-in fade-in w-full text-center print:hidden">
+                        {/* Hero Section */}
                         <div className="bg-black/60 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border-2 border-white/10">
-                            <GraduationCap size={48} className="text-blue-400 mx-auto mb-3 animate-bounce-slow" />
+                            <div className="flex justify-center mb-6">
+                                <div className="bg-blue-600/20 p-4 rounded-full border border-blue-500/30">
+                                    <GraduationCap size={48} className="text-blue-400 animate-bounce-slow" />
+                                </div>
+                            </div>
                             <h2 className="text-xl md:text-3xl font-black uppercase italic tracking-tight leading-tight text-white">Elevate Your Mathematics <br /> <span className="text-blue-400 underline decoration-yellow-400 decoration-2 underline-offset-8">with Anshu Sir</span></h2>
+                            
                             <div className="mt-10 p-6 bg-white/5 rounded-3xl border border-white/10 shadow-inner">
                                 <p className="text-slate-400 font-bold uppercase italic text-[11px] mb-4 tracking-widest">To become a Registered Student, please contact Anshu Sir</p>
                                 <div className="flex flex-col md:flex-row items-center justify-center gap-6">
@@ -247,19 +259,41 @@ const App = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Features Section */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {[
+                                { label: 'Real-time Mock', icon: <Clock className="text-red-400" />, color: 'bg-red-400/10' },
+                                { label: 'Written Review', icon: <PenTool className="text-blue-400" />, color: 'bg-blue-400/10' },
+                                { label: 'Growth Tracking', icon: <TrendingUp className="text-green-400" />, color: 'bg-green-400/10' },
+                                { label: 'Secure Portal', icon: <Lock className="text-yellow-400" />, color: 'bg-yellow-400/10' }
+                            ].map((f, idx) => (
+                                <div key={idx} className="bg-black/60 p-4 rounded-2xl border border-white/10 flex flex-col items-center gap-2">
+                                    <div className={`${f.color} p-2 rounded-lg`}>{f.icon}</div>
+                                    <span className="text-[8px] font-black uppercase text-slate-400">{f.label}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Activity Logs */}
                         <div className="bg-black/60 backdrop-blur-xl p-5 rounded-3xl shadow-md border border-white/10 text-left w-full">
                             <h3 className="font-bold text-xs uppercase mb-3 border-b border-white/10 pb-2 flex items-center gap-2 italic text-blue-300"><History size={16} className="text-blue-400" /> Activity Stream</h3>
                             <div className="space-y-3">
                                 {activityLogs.slice(0, 10).map(log => (
                                     <div key={log.id} className="p-2.5 bg-white/5 rounded-xl flex justify-between items-center border-l-4 border-blue-600 shadow-sm transition-all hover:bg-white/10">
-                                        <div><p className="text-[10px] font-black uppercase text-white">{log.studentName}</p><p className="text-[8px] font-bold text-slate-400 uppercase italic">{log.examTitle} • {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(log.timestamp).toLocaleDateString('en-GB')}</p></div>
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase text-white">{log.studentName}</p>
+                                            <p className="text-[8px] font-bold text-slate-400 uppercase italic">{log.examTitle} • {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(log.timestamp).toLocaleDateString('en-GB')}</p>
+                                        </div>
                                         <div className="text-right text-[7px] font-bold text-slate-500 uppercase leading-tight">RECENT <br /> ACTIVITY</div>
                                     </div>
                                 ))}
+                                {activityLogs.length === 0 && <p className="text-[9px] text-slate-600 italic text-center p-4">No recent activity logged</p>}
                             </div>
                         </div>
                     </div>
                 )}
+                
                 {activeTab === 'live' && (
                     <div className="space-y-4 w-full text-left print:hidden">
                         <h2 className="font-bold uppercase text-blue-300 border-b border-white/10 pb-2 text-[10px] flex items-center gap-2 bg-black/40 p-2 rounded-lg backdrop-blur-md"><Clock size={14} className="text-red-500" /> Ongoing Live Mocks</h2>
@@ -280,6 +314,7 @@ const App = () => {
                         )) : <p className="text-[10px] text-slate-500 italic p-4 text-center">No active sessions at the moment.</p>}
                     </div>
                 )}
+                
                 {activeTab === 'teacher' && (
                     !currentUser ? (
                         <div className="max-w-md w-full mx-auto mt-20 p-10 bg-slate-950 backdrop-blur-xl rounded-3xl shadow-2xl text-center border-t-8 border-blue-700 border-x border-b border-white/10 print:hidden">
@@ -312,7 +347,9 @@ const App = () => {
                         </div>
                     )
                 )}
+
                 {activeTab === 'growth' && <GrowthSectionView results={studentResults} students={students} />}
+
                 {activeTab === 'practice' && (
                     <div className="w-full space-y-8 print:hidden">
                         {(() => {
@@ -351,6 +388,7 @@ const App = () => {
     );
 };
 
+// Teacher Zone and other components (as defined in previous working version)
 const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, setTeacherPin, studentResults }) => {
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [isChangingPin, setIsChangingPin] = useState(false);
