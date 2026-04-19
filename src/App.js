@@ -23,7 +23,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app); 
 const auth = getAuth(app); // Auth instance
 const provider = new GoogleAuthProvider();
-
+provider.setCustomParameters({ prompt: 'select_account' });
 // --- 🔵 Countdown Component for Live Mocks --- 
 const LiveCountdown = ({ timestamp, onExpire }) => { 
   const [timeLeft, setTimeLeft] = useState(""); 
