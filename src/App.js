@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, deleteDoc, getDocs, writeBatch, getDoc } from "firebase/firestore";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "firebase/auth";
-import { Trophy, BookOpen, TrendingUp, User, Clock, ChevronRight, GraduationCap, PlusCircle, FileText, Lock, Award, Timer, Settings2, CheckCircle, PenTool, ShieldAlert, Loader2, ChevronLeft, Trash2, UserPlus, History, UserCheck, X, CheckSquare, AlertCircle, ListChecks, Eye, Camera, Send, Link, Zap, Download, Unlock, Phone, SignalHigh, LogOut, Calendar, UserX } from 'lucide-react';
+import { Trophy, BookOpen, TrendingUp, User, Clock, ChevronRight, GraduationCap, PlusCircle, FileText, Lock, Award, Timer, Settings2, CheckCircle, PenTool, ShieldAlert, Loader2, ChevronLeft, Trash2, UserPlus, History, UserCheck, X, CheckSquare, AlertCircle, ListChecks, Eye, Camera, Send, Link, Zap, Download, Unlock, Phone, SignalHigh, LogOut, UserX } from 'lucide-react';
 
+// --- 🖼️ CONFIGURATION ---
 const APP_BACKGROUND_URL = "https://i.gifer.com/4RNk.gif";
 
+// --- 🟢 Firebase Configuration ---
 const firebaseConfig = {
     apiKey: "AIzaSyCTk1csUI0HeZhZvy6dOFwmLr-YVsWPAcY",
     authDomain: "math-excellence-6d2b8.firebaseapp.com",
@@ -22,12 +24,14 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 
+// --- Helper Functions ---
 const getRemainingDays = (expiryDate) => {
     if (!expiryDate) return 0;
     const diff = new Date(expiryDate) - new Date();
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 };
 
+// --- 🔵 Countdown Component ---
 const LiveCountdown = ({ timestamp, onExpire }) => {
     const [timeLeft, setTimeLeft] = useState("");
     useEffect(() => {
@@ -158,13 +162,12 @@ const App = () => {
                 alert("INVALID STUDENT CODE! PLEASE CONTACT ANSHU SIR.");
                 return;
             }
-            
+            // Subscription Check
             const daysLeft = getRemainingDays(matchedStudent.subscriptionEnd);
             if (matchedStudent.isAccessEnabled === false || daysLeft <= 0) {
                 alert("ACCESS EXPIRED! PLEASE RENEW YOUR SUBSCRIPTION.");
                 return;
             }
-
             setCurrentExam(prev => ({ ...prev, studentName: matchedStudent.name, studentCode: studentCodeInput.trim(), isGuest: false }));
         } else {
             setCurrentExam(prev => ({ ...prev, studentName: studentNameInput.trim().toUpperCase(), studentCode: studentCodeInput.trim() || 'GUEST', isGuest: true }));
@@ -227,10 +230,26 @@ const App = () => {
                 <p className="text-[9px] font-bold text-slate-500 italic">ANSHU SIR</p>
             </header>
 
-            <nav className="bg-blue-700/80 backdrop-blur-xl text-white w-full sticky top-[45px] z-40 flex justify-center shadow-lg print:hidden">
+            {/* --- NEW DESIGNED NAVIGATION --- */}
+            <nav className="bg-blue-700/90 backdrop-blur-2xl text-white w-full sticky top-[45px] z-40 flex justify-center shadow-[0_10px_30px_rgba(0,0,0,0.5)] print:hidden border-b border-blue-500/30">
                 <div className="max-w-6xl w-full flex overflow-x-auto no-scrollbar">
-                    {[{ id: 'home', label: 'Home', icon: <History size={14} /> }, { id: 'live', label: 'Live Mock', icon: <Clock size={14} /> }, { id: 'practice', label: 'Practice', icon: <BookOpen size={14} /> }, { id: 'growth', label: 'Growth', icon: <TrendingUp size={14} /> }, { id: 'teacher', label: 'Admin', icon: <User size={14} /> }].map((item) => (
-                        <button key={item.id} onClick={() => setActiveTab(item.id)} className={`flex-1 flex items-center justify-center gap-1.5 px-4 py-3.5 font-bold text-[9px] uppercase border-b-4 transition-all ${activeTab === item.id ? 'border-yellow-400 bg-white/10' : 'border-transparent'}`}>{item.icon} {item.label}</button>
+                    {[
+                        { id: 'home', label: 'Home', icon: <History size={16} /> },
+                        { id: 'live', label: 'Live Mock', icon: <Clock size={16} /> },
+                        { id: 'practice', label: 'Practice', icon: <BookOpen size={16} /> },
+                        { id: 'growth', label: 'Growth', icon: <TrendingUp size={16} /> },
+                        { id: 'teacher', label: 'Admin', icon: <User size={16} /> }
+                    ].map((item) => (
+                        <button 
+                            key={item.id} 
+                            onClick={() => setActiveTab(item.id)} 
+                            className={`flex-1 flex flex-col items-center justify-center gap-1 px-4 py-3 font-black text-[9px] uppercase transition-all duration-300 relative group
+                            ${activeTab === item.id ? 'text-yellow-400' : 'text-blue-100 hover:text-white'}`}
+                        >
+                            <span className={`transition-transform duration-300 ${activeTab === item.id ? 'scale-125' : 'group-hover:scale-110'}`}>{item.icon}</span>
+                            {item.label}
+                            {activeTab === item.id && <div className="absolute bottom-0 left-2 right-2 h-1 bg-yellow-400 rounded-t-full shadow-[0_0_10px_#facc15]"></div>}
+                        </button>
                     ))}
                 </div>
             </nav>
@@ -238,57 +257,59 @@ const App = () => {
             <main className="w-full max-w-5xl p-4 mb-20 flex flex-col items-center">
                 {activeTab === 'home' && (
                     <div className="space-y-6 animate-in fade-in w-full text-center print:hidden">
-                        {/* Hero Section */}
                         <div className="bg-black/60 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border-2 border-white/10">
-                            <div className="flex justify-center mb-6">
-                                <div className="bg-blue-600/20 p-4 rounded-full border border-blue-500/30">
-                                    <GraduationCap size={48} className="text-blue-400 animate-bounce-slow" />
-                                </div>
-                            </div>
+                            <GraduationCap size={48} className="text-blue-400 mx-auto mb-3 animate-bounce-slow" />
                             <h2 className="text-xl md:text-3xl font-black uppercase italic tracking-tight leading-tight text-white">Elevate Your Mathematics <br /> <span className="text-blue-400 underline decoration-yellow-400 decoration-2 underline-offset-8">with Anshu Sir</span></h2>
-                            
                             <div className="mt-10 p-6 bg-white/5 rounded-3xl border border-white/10 shadow-inner">
                                 <p className="text-slate-400 font-bold uppercase italic text-[11px] mb-4 tracking-widest">To become a Registered Student, please contact Anshu Sir</p>
                                 <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-                                    <a href="tel:9002892918" className="text-3xl font-black text-yellow-400 italic tracking-tighter flex items-center gap-3 drop-shadow-xl hover:scale-105 transition-transform">
-                                        <Phone size={28} className="text-blue-500 animate-pulse" /> 9002892918
-                                    </a>
-                                    <a href="https://wa.me/919002892918" target="_blank" rel="noreferrer" className="text-3xl font-black text-green-400 italic tracking-tighter flex items-center gap-3 drop-shadow-xl hover:scale-105 transition-transform">
-                                        <Send size={28} className="text-green-500" /> WhatsApp
-                                    </a>
+                                    <a href="tel:9002892918" className="text-3xl font-black text-yellow-400 italic tracking-tighter flex items-center gap-3 drop-shadow-xl hover:scale-105 transition-transform"> <Phone size={28} className="text-blue-500 animate-pulse" /> 9002892918 </a>
+                                    <a href="https://wa.me/919002892918" target="_blank" rel="noreferrer" className="text-3xl font-black text-green-400 italic tracking-tighter flex items-center gap-3 drop-shadow-xl hover:scale-105 transition-transform"> <Send size={28} className="text-green-500" /> WhatsApp </a>
                                 </div>
                             </div>
+                            <div className="mt-10 overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
+                                <table className="w-full text-left text-[11px] md:text-xs">
+                                    <thead>
+                                        <tr className="bg-blue-700/50 text-white uppercase italic font-black">
+                                            <th className="p-4 border-b border-white/10">Features</th>
+                                            <th className="p-4 border-b border-white/10 text-center text-slate-300">Guest Student</th>
+                                            <th className="p-4 border-b border-white/10 text-center text-yellow-400">Registered Student</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-black/40 font-bold text-slate-300">
+                                        <tr className="border-b border-white/5">
+                                            <td className="p-4 uppercase italic">Exam Access</td>
+                                            <td className="p-4 text-center">Limited Mock</td>
+                                            <td className="p-4 text-center text-green-400">Unlimited Mocks & Features</td>
+                                        </tr>
+                                        <tr className="border-b border-white/5">
+                                            <td className="p-4 uppercase italic">Test Format</td>
+                                            <td className="p-4 text-center">Only MCQ</td>
+                                            <td className="p-4 text-center text-green-400">MCQ + Written Test Review</td>
+                                        </tr>
+                                        <tr className="border-b border-white/5">
+                                            <td className="p-4 uppercase italic">Performance Reports</td>
+                                            <td className="p-4 text-center">Only Marks</td>
+                                            <td className="p-4 text-center text-green-400">Full Review of All Exams</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="p-4 uppercase italic">Live Arena</td>
+                                            <td className="p-4 text-center text-red-500/70">No Live Mock</td>
+                                            <td className="p-4 text-center text-green-400">Access to Live Mocks</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-
-                        {/* Features Section */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {[
-                                { label: 'Real-time Mock', icon: <Clock className="text-red-400" />, color: 'bg-red-400/10' },
-                                { label: 'Written Review', icon: <PenTool className="text-blue-400" />, color: 'bg-blue-400/10' },
-                                { label: 'Growth Tracking', icon: <TrendingUp className="text-green-400" />, color: 'bg-green-400/10' },
-                                { label: 'Secure Portal', icon: <Lock className="text-yellow-400" />, color: 'bg-yellow-400/10' }
-                            ].map((f, idx) => (
-                                <div key={idx} className="bg-black/60 p-4 rounded-2xl border border-white/10 flex flex-col items-center gap-2">
-                                    <div className={`${f.color} p-2 rounded-lg`}>{f.icon}</div>
-                                    <span className="text-[8px] font-black uppercase text-slate-400">{f.label}</span>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Activity Logs */}
                         <div className="bg-black/60 backdrop-blur-xl p-5 rounded-3xl shadow-md border border-white/10 text-left w-full">
                             <h3 className="font-bold text-xs uppercase mb-3 border-b border-white/10 pb-2 flex items-center gap-2 italic text-blue-300"><History size={16} className="text-blue-400" /> Activity Stream</h3>
                             <div className="space-y-3">
                                 {activityLogs.slice(0, 10).map(log => (
                                     <div key={log.id} className="p-2.5 bg-white/5 rounded-xl flex justify-between items-center border-l-4 border-blue-600 shadow-sm transition-all hover:bg-white/10">
-                                        <div>
-                                            <p className="text-[10px] font-black uppercase text-white">{log.studentName}</p>
-                                            <p className="text-[8px] font-bold text-slate-400 uppercase italic">{log.examTitle} • {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(log.timestamp).toLocaleDateString('en-GB')}</p>
-                                        </div>
+                                        <div><p className="text-[10px] font-black uppercase text-white">{log.studentName}</p><p className="text-[8px] font-bold text-slate-400 uppercase italic">{log.examTitle} • {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(log.timestamp).toLocaleDateString('en-GB')}</p></div>
                                         <div className="text-right text-[7px] font-bold text-slate-500 uppercase leading-tight">RECENT <br /> ACTIVITY</div>
                                     </div>
                                 ))}
-                                {activityLogs.length === 0 && <p className="text-[9px] text-slate-600 italic text-center p-4">No recent activity logged</p>}
                             </div>
                         </div>
                     </div>
@@ -306,15 +327,12 @@ const App = () => {
                                     </div>
                                     <LiveCountdown timestamp={m.timestamp} />
                                 </div>
-                                <button onClick={() => handleStartExamFlow(m)} className={`px-6 py-2 rounded-full font-black text-[9px] uppercase shadow-lg h-fit flex items-center gap-2 ${m.isGuestEnabled ? 'bg-red-600 text-white' : 'bg-slate-800 text-blue-400 border border-blue-900/50'}`}>
-                                    {!m.isGuestEnabled && <Lock size={12} />}
-                                    {m.isGuestEnabled ? 'Attend' : 'Protected'}
-                                </button>
+                                <button onClick={() => handleStartExamFlow(m)} className={`px-6 py-2 rounded-full font-black text-[9px] uppercase shadow-lg h-fit flex items-center gap-2 ${m.isGuestEnabled ? 'bg-red-600 text-white' : 'bg-slate-800 text-blue-400 border border-blue-900/50'}`}> {!m.isGuestEnabled && <Lock size={12} />} {m.isGuestEnabled ? 'Attend' : 'Protected'} </button>
                             </div>
                         )) : <p className="text-[10px] text-slate-500 italic p-4 text-center">No active sessions at the moment.</p>}
                     </div>
                 )}
-                
+
                 {activeTab === 'teacher' && (
                     !currentUser ? (
                         <div className="max-w-md w-full mx-auto mt-20 p-10 bg-slate-950 backdrop-blur-xl rounded-3xl shadow-2xl text-center border-t-8 border-blue-700 border-x border-b border-white/10 print:hidden">
@@ -358,9 +376,7 @@ const App = () => {
                             if (allMocks.length === 0) return <p className="text-center text-slate-500 italic text-[10px]">No practice sets available.</p>;
                             return classes.map(cls => (
                                 <div key={cls} className="space-y-4">
-                                    <h2 className="font-black uppercase text-blue-400 border-b-2 border-blue-900/50 pb-2 text-xs flex items-center gap-2 italic tracking-widest pl-2">
-                                        <BookOpen size={16} /> Class {cls}
-                                    </h2>
+                                    <h2 className="font-black uppercase text-blue-400 border-b-2 border-blue-900/50 pb-2 text-xs flex items-center gap-2 italic tracking-widest pl-2"> <BookOpen size={16} /> Class {cls} </h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {allMocks.filter(m => (m.class || 'Other') === cls).map((p, i) => (
                                             <div key={p.id} className="bg-black/60 backdrop-blur-xl p-4 rounded-2xl shadow flex justify-between items-center border border-white/10 hover:border-blue-500/50 transition-all">
@@ -371,10 +387,7 @@ const App = () => {
                                                     </div>
                                                     <p className="text-[9px] font-bold text-slate-500 uppercase italic mt-1">Time: {p.hours || 0}h {p.minutes || 0}m</p>
                                                 </div>
-                                                <button onClick={() => handleStartExamFlow(p)} className={`px-6 py-2 rounded-full font-black text-[9px] uppercase shadow-md h-fit flex items-center gap-2 ${p.isGuestEnabled ? 'bg-blue-600 text-white' : 'bg-slate-800 text-blue-400 border border-blue-900/50'}`}>
-                                                    {!p.isGuestEnabled && <Lock size={12} />}
-                                                    {p.isGuestEnabled ? 'Start' : 'Protected'}
-                                                </button>
+                                                <button onClick={() => handleStartExamFlow(p)} className={`px-6 py-2 rounded-full font-black text-[9px] uppercase shadow-md h-fit flex items-center gap-2 ${p.isGuestEnabled ? 'bg-blue-600 text-white' : 'bg-slate-800 text-blue-400 border border-blue-900/50'}`}> {!p.isGuestEnabled && <Lock size={12} />} {p.isGuestEnabled ? 'Start' : 'Protected'} </button>
                                             </div>
                                         ))}
                                     </div>
@@ -388,7 +401,6 @@ const App = () => {
     );
 };
 
-// Teacher Zone and other components (as defined in previous working version)
 const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, setTeacherPin, studentResults }) => {
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [isChangingPin, setIsChangingPin] = useState(false);
@@ -492,31 +504,12 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
     return (
         <div className="w-full flex flex-col items-center">
             <div className="bg-slate-950/80 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-2xl border-t-8 border-blue-700 w-full mb-8 text-left animate-in fade-in print:hidden border-x border-b border-white/5">
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="font-black text-[10px] uppercase flex items-center gap-2 italic text-blue-400"><Zap size={20} /> KUI GET (Quick Add)</h3>
-                    <div className="flex gap-1 p-1 bg-black rounded-xl border border-white/5">
-                        <button onClick={() => setQuickAddType('live')} className={`px-4 py-1.5 rounded-lg font-black text-[8px] uppercase transition-all ${quickAddType === 'live' ? 'bg-red-600 text-white shadow-md' : 'text-slate-500'}`}>Live</button>
-                        <button onClick={() => setQuickAddType('practice')} className={`px-4 py-1.5 rounded-lg font-black text-[8px] uppercase transition-all ${quickAddType === 'practice' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500'}`}>Practice</button>
-                    </div>
-                </div>
+                <div className="flex justify-between items-center mb-6"> <h3 className="font-black text-[10px] uppercase flex items-center gap-2 italic text-blue-400"><Zap size={20} /> KUI GET (Quick Add)</h3> <div className="flex gap-1 p-1 bg-black rounded-xl border border-white/5"> <button onClick={() => setQuickAddType('live')} className={`px-4 py-1.5 rounded-lg font-black text-[8px] uppercase transition-all ${quickAddType === 'live' ? 'bg-red-600 text-white shadow-md' : 'text-slate-500'}`}>Live</button> <button onClick={() => setQuickAddType('practice')} className={`px-4 py-1.5 rounded-lg font-black text-[8px] uppercase transition-all ${quickAddType === 'practice' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500'}`}>Practice</button> </div> </div>
                 <div className="space-y-6">
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <div className="flex items-center gap-2">
-                            <input type="checkbox" checked={qaGuest} onChange={(e) => setQaGuest(e.target.checked)} className="accent-blue-500" />
-                            <p className="text-[9px] font-black text-slate-400 uppercase italic">Enable Guest Access</p>
-                        </div>
-                        <div>
-                            <p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1">Class</p>
-                            <select value={qaClass} onChange={(e) => setQaClass(e.target.value)} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-[10px] font-black outline-none">
-                                {[5, 6, 7, 8, 9, 10, 11, 12].map(c => <option key={c} value={c}>{c}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <p className="text-[8px] font-black text-yellow-500 uppercase mb-1 ml-1">Level</p>
-                            <select value={qaLevel} onChange={(e) => setQaLevel(e.target.value)} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-[10px] font-black outline-none">
-                                {['Easy', 'Moderate', 'Hard'].map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)}
-                            </select>
-                        </div>
+                        <div className="flex items-center gap-2"> <input type="checkbox" checked={qaGuest} onChange={(e) => setQaGuest(e.target.checked)} className="accent-blue-500" /> <p className="text-[9px] font-black text-slate-400 uppercase italic">Enable Guest Access</p> </div>
+                        <div> <p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1">Class</p> <select value={qaClass} onChange={(e) => setQaClass(e.target.value)} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-[10px] font-black outline-none"> {[5, 6, 7, 8, 9, 10, 11, 12].map(c => <option key={c} value={c}>{c}</option>)} </select> </div>
+                        <div> <p className="text-[8px] font-black text-yellow-500 uppercase mb-1 ml-1">Level</p> <select value={qaLevel} onChange={(e) => setQaLevel(e.target.value)} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-[10px] font-black outline-none"> {['Easy', 'Moderate', 'Hard'].map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)} </select> </div>
                     </div>
                     <div><p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1 italic leading-none">Exam Name</p><input type="text" value={qaName} onChange={(e) => setQaName(e.target.value)} className="w-full p-3.5 bg-black border border-white/10 rounded-2xl text-[10px] font-black outline-none shadow-inner focus:border-blue-500 text-white transition-all uppercase" placeholder="New Slot" /></div>
                     <div className="flex flex-col md:flex-row gap-4">
@@ -527,10 +520,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                         <div className="bg-black p-3 rounded-2xl border border-white/10 shadow-inner"><p className="text-[9px] font-black text-blue-400 uppercase mb-1 italic">Correct Key</p><input type="text" value={qaKey} onChange={(e) => setQaKey(e.target.value)} className="w-full bg-transparent outline-none font-black text-[10px] uppercase text-white" placeholder="e.g. A,B,W,D" /></div>
                         <div className="bg-black p-3 rounded-2xl border border-white/10 shadow-inner"><p className="text-[9px] font-black text-yellow-500 uppercase mb-1 italic">Marks/Q</p><input type="text" value={qaMarks} onChange={(e) => setQaMarks(e.target.value)} className="w-full bg-transparent outline-none font-black text-[10px] text-white" placeholder="e.g. 1,1,5,1" /></div>
                     </div>
-                    <div className="bg-black p-3 rounded-2xl border border-white/10 shadow-inner">
-                        <p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1 italic tracking-widest">Google Drive Link</p>
-                        <input type="text" value={qaLink} onChange={(e) => setQaLink(e.target.value)} className="w-full bg-transparent outline-none text-[9px] font-bold text-white" placeholder="Paste PDF/Doc Link" />
-                    </div>
+                    <div className="bg-black p-3 rounded-2xl border border-white/10 shadow-inner"> <p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1 italic tracking-widest">Google Drive Link</p> <input type="text" value={qaLink} onChange={(e) => setQaLink(e.target.value)} className="w-full bg-transparent outline-none text-[9px] font-bold text-white" placeholder="Paste PDF/Doc Link" /> </div>
                     <button onClick={handleQuickAdd} className="w-full bg-blue-700 text-white py-4 rounded-[1.5rem] font-black text-[11px] uppercase shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3 border-b-4 border-blue-900 hover:bg-blue-600 italic tracking-tighter"><Send size={18} /> Deploy to Registry</button>
                 </div>
             </div>
@@ -555,10 +545,9 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
             <div className="bg-black/60 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border-t-8 border-slate-900 w-full mb-20 text-center print:hidden border-x border-b border-white/5">
                 <h3 className="font-black text-xs uppercase mb-8 flex items-center justify-center gap-3 italic text-blue-300"><Trophy size={28} className="text-yellow-500" /> Student Registry</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {students.map((std) => {
-                        const daysRemaining = getRemainingDays(std.subscriptionEnd);
-                        return (
+                    {students.map((std) => (
                         <div key={std.id} className="relative group p-5 bg-white/5 border border-white/10 rounded-[2rem] flex flex-col items-center shadow-lg hover:bg-white/10 transition-all">
+                            {/* --- Enable/Disable Toggle --- */}
                             <button 
                                 onClick={async () => await setDoc(doc(db, "students", std.id), { isAccessEnabled: std.isAccessEnabled === false ? true : false }, { merge: true })}
                                 className={`absolute top-4 right-4 p-2 rounded-full transition-all ${std.isAccessEnabled === false ? 'bg-red-900/40 text-red-500' : 'bg-green-900/40 text-green-500'}`}
@@ -572,16 +561,17 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                                 <input type="text" defaultValue={std.studentCode} onBlur={async (e) => { if (e.target.value !== std.studentCode) await setDoc(doc(db, "students", std.id), { studentCode: e.target.value }, { merge: true }); }} className="bg-transparent text-[10px] font-black text-blue-400 uppercase tracking-widest outline-none w-20 text-center" />
                             </div>
 
+                            {/* --- Subscription Date Editor --- */}
                             <div className="mt-4 w-full px-2">
-                                <p className="text-[8px] font-black text-slate-500 uppercase mb-1 italic">Valid Until:</p>
+                                <p className="text-[8px] font-black text-slate-500 uppercase mb-1 italic text-left">Valid Until:</p>
                                 <input 
                                     type="date" 
                                     defaultValue={std.subscriptionEnd || ""} 
                                     onChange={async (e) => await setDoc(doc(db, "students", std.id), { subscriptionEnd: e.target.value }, { merge: true })}
                                     className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-1.5 text-[10px] font-bold text-white outline-none"
                                 />
-                                <p className={`text-[9px] font-black mt-1 uppercase italic ${daysRemaining <= 5 ? 'text-red-500 animate-pulse' : 'text-green-500'}`}>
-                                    {daysRemaining} Days Left
+                                <p className={`text-[9px] font-black mt-1 uppercase italic text-left ${getRemainingDays(std.subscriptionEnd) <= 5 ? 'text-red-500' : 'text-green-500'}`}>
+                                    {getRemainingDays(std.subscriptionEnd)} Days Left
                                 </p>
                             </div>
 
@@ -590,8 +580,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                                 <button onClick={async (e) => { if (window.confirm(`Delete ${std.name}?`)) await deleteDoc(doc(db, "students", std.id)); }} className="p-2 bg-red-950/40 text-red-500 rounded-full border border-red-900/50 active:scale-90"><Trash2 size={16} /></button>
                             </div>
                         </div>
-                        );
-                    })}
+                    ))}
                     <button onClick={async () => { const n = prompt("Student Name:"); const c = prompt("Unique Code (Phone last 4):"); if (n) await addDoc(collection(db, "students"), { name: n.toUpperCase(), studentCode: c || "", subscriptionEnd: "2026-12-31", isAccessEnabled: true }); }} className="p-8 border-4 border-dashed border-white/10 rounded-[2.5rem] text-[12px] font-black text-slate-600 uppercase hover:text-blue-500 transition-all">+ REGISTER</button>
                 </div>
             </div>
@@ -821,7 +810,7 @@ const GrowthSectionView = ({ results, students }) => {
                         <div className="bg-blue-700 p-8 text-white text-center relative overflow-hidden flex-shrink-0 print:border-b-4 print:border-blue-900">
                             <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-2 leading-none break-words px-4 text-white">Performance Transcript</h2>
                             <div className="inline-block bg-white/20 px-6 py-1.5 rounded-full border border-white/30 max-w-[90%] overflow-hidden"><p className="text-sm font-black uppercase italic break-words text-white">{sel}</p></div>
-                            <p className="mt-3 text-[10px] font-black uppercase italic text-yellow-300 tracking-widest">
+                            <p className="mt-3 text-[10px] font-black uppercase italic text-yellow-300 tracking-widest text-center">
                                 Valid Remaining: {getRemainingDays(students.find(s => s.name === sel)?.subscriptionEnd)} Days
                             </p>
                         </div>
