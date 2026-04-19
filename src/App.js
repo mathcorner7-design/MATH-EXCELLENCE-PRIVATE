@@ -670,14 +670,22 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
     return () => clearInterval(t);
   }, [timeLeft, isSubmitted]);
 
-  const submitExam = async () => {
+ const submitExam = async () => {
     try {
-      const examStartTimeLocal = localStorage.getItem(`start_time_${exam.id}`) || Date.now();
-      const timeDiff = Date.now() - examStartTimeLocal;
-      const minutesTaken = Math.floor(timeDiff / 60000);
-      const secondsTaken = Math.floor((timeDiff % 60000) / 1000);
-      const timeDuration = `${minutesTaken}m ${secondsTaken}s`;
+      // ১. এখানে ' এর বদলে ` (Backtick) ব্যবহার করা হয়েছে
+            const startTimeKey = `timer_end_${exam.studentCode}_${exam.id}`;
+      const savedTimerEnd = localStorage.getItem(startTimeKey);
+      
+      const startTime = savedTimerEnd 
+          ? (parseInt(savedTimerEnd) - (parseInt(exam?.duration) * 1000))
+          : examStartTime;
 
+      const timeDiff = Date.now() - startTime;
+      const actualDiff = timeDiff > 0 ? timeDiff : 1000;
+
+      const minutesTaken = Math.floor(actualDiff / 60000);
+      const secondsTaken = Math.floor((actualDiff % 60000) / 1000);
+      const timeDuration = `${minutesTaken}m ${secondsTaken}s`;
       let totalObtainedMarks = 0;
       let totalPossibleMarks = 0;
       const detailResults = answerKeyArray.map((key, index) => {
