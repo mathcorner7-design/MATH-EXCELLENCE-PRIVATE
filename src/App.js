@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, deleteDoc, getDocs, writeBatch, getDoc } from "firebase/firestore";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "firebase/auth";
-import { Trophy, BookOpen, TrendingUp, User, Clock, ChevronRight, GraduationCap, PlusCircle, FileText, Lock, Award, Timer, Settings2, CheckCircle, PenTool, ShieldAlert, Loader2, ChevronLeft, Trash2, UserPlus, History, UserCheck, X, CheckSquare, AlertCircle, ListChecks, Eye, Camera, Send, Link, Zap, Download, Unlock, Phone, SignalHigh, LogOut, Calendar, ShieldCheck, ShieldX } from 'lucide-react';
+import { Trophy, BookOpen, TrendingUp, User, Clock, ChevronRight, GraduationCap, PlusCircle, FileText, Lock, Award, Timer, Settings2, CheckCircle, PenTool, ShieldAlert, Loader2, ChevronLeft, Trash2, UserPlus, History, UserCheck, X, CheckSquare, AlertCircle, ListChecks, Eye, Camera, Send, Link, Zap, Download, Unlock, Phone, SignalHigh, LogOut, Calendar, UserX } from 'lucide-react';
 
 const APP_BACKGROUND_URL = "https://i.gifer.com/4RNk.gif";
 
@@ -22,7 +22,6 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 
-// --- Helper to calculate remaining days ---
 const getRemainingDays = (expiryDate) => {
     if (!expiryDate) return 0;
     const diff = new Date(expiryDate) - new Date();
@@ -160,10 +159,9 @@ const App = () => {
                 return;
             }
             
-            // --- Subscription Check ---
             const daysLeft = getRemainingDays(matchedStudent.subscriptionEnd);
             if (matchedStudent.isAccessEnabled === false || daysLeft <= 0) {
-                alert("ACCESS EXPIRED! PLEASE RENEW YOUR SUBSCRIPTION.");
+                alert("YOUR SUBSCRIPTION EXPIRED! PLEASE RENEW YOUR SUBSCRIPTION.");
                 return;
             }
 
@@ -523,12 +521,11 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                         const daysRemaining = getRemainingDays(std.subscriptionEnd);
                         return (
                         <div key={std.id} className="relative group p-5 bg-white/5 border border-white/10 rounded-[2rem] flex flex-col items-center shadow-lg hover:bg-white/10 transition-all">
-                            {/* --- Enable/Disable Switch --- */}
                             <button 
                                 onClick={async () => await setDoc(doc(db, "students", std.id), { isAccessEnabled: std.isAccessEnabled === false ? true : false }, { merge: true })}
                                 className={`absolute top-4 right-4 p-2 rounded-full transition-all ${std.isAccessEnabled === false ? 'bg-red-900/40 text-red-500' : 'bg-green-900/40 text-green-500'}`}
                             >
-                                {std.isAccessEnabled === false ? <ShieldX size={16} /> : <ShieldCheck size={16} />}
+                                {std.isAccessEnabled === false ? <UserX size={16} /> : <UserCheck size={16} />}
                             </button>
 
                             <input type="text" defaultValue={std.name} onBlur={async (e) => { if (e.target.value !== std.name) await setDoc(doc(db, "students", std.id), { name: e.target.value.toUpperCase() }, { merge: true }); }} className="bg-transparent text-center text-md font-black uppercase italic tracking-tighter text-white outline-none focus:bg-white/10 rounded-lg px-2" />
@@ -537,7 +534,6 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                                 <input type="text" defaultValue={std.studentCode} onBlur={async (e) => { if (e.target.value !== std.studentCode) await setDoc(doc(db, "students", std.id), { studentCode: e.target.value }, { merge: true }); }} className="bg-transparent text-[10px] font-black text-blue-400 uppercase tracking-widest outline-none w-20 text-center" />
                             </div>
 
-                            {/* --- Subscription Editor --- */}
                             <div className="mt-4 w-full px-2">
                                 <p className="text-[8px] font-black text-slate-500 uppercase mb-1 italic">Valid Until:</p>
                                 <input 
@@ -693,7 +689,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
         try {
             const startTimeKey = `timer_end_${exam.studentCode}_${exam.id}`;
             const savedTimerEnd = localStorage.getItem(startTimeKey);
-            const startTime = savedTimerEnd ? (parseInt(savedTimerEnd) - (parseInt(exam?.duration) * 1000)) : examStartTime;
+            const startTime = savedTimerEnd ? (parseInt(savedTimerEnd) - (parseInt(exam?.duration) * 1000)) : Date.now();
             const timeDiff = Date.now() - startTime;
             const actualDiff = timeDiff > 0 ? timeDiff : 1000;
             const minutesTaken = Math.floor(actualDiff / 60000);
@@ -771,7 +767,6 @@ const GrowthSectionView = ({ results, students }) => {
                             <span className="font-black text-white uppercase text-[14px] italic tracking-tight break-words">{std.name}</span>
                         </div>
                         <div className="flex items-center gap-3">
-                            {/* --- Student Days Count Display --- */}
                             <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase italic ${getRemainingDays(std.subscriptionEnd) <= 5 ? 'bg-red-900/40 text-red-500' : 'bg-blue-950 text-blue-400'}`}>
                                 {getRemainingDays(std.subscriptionEnd)}D Left
                             </div>
@@ -788,7 +783,6 @@ const GrowthSectionView = ({ results, students }) => {
                         <div className="bg-blue-700 p-8 text-white text-center relative overflow-hidden flex-shrink-0 print:border-b-4 print:border-blue-900">
                             <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-2 leading-none break-words px-4 text-white">Performance Transcript</h2>
                             <div className="inline-block bg-white/20 px-6 py-1.5 rounded-full border border-white/30 max-w-[90%] overflow-hidden"><p className="text-sm font-black uppercase italic break-words text-white">{sel}</p></div>
-                            {/* --- Days Left in Header --- */}
                             <p className="mt-3 text-[10px] font-black uppercase italic text-yellow-300 tracking-widest">
                                 Valid Remaining: {getRemainingDays(students.find(s => s.name === sel)?.subscriptionEnd)} Days
                             </p>
