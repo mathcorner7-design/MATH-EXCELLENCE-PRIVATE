@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'; 
 import { initializeApp } from "firebase/app"; 
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, deleteDoc, getDocs, writeBatch } from "firebase/firestore"; 
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, deleteDoc, getDocs, writeBatch, getDoc } from "firebase/firestore"; 
 // --- New Auth Imports ---
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "firebase/auth";
 import { Trophy, BookOpen, TrendingUp, User, Clock, ChevronRight, GraduationCap, PlusCircle, FileText, Lock, Award, Timer, Settings2, CheckCircle, PenTool, ShieldAlert, Loader2, ChevronLeft, Trash2, UserPlus, History, UserCheck, X, CheckSquare, AlertCircle, ListChecks, Eye, Camera, Send, Link, Zap, Download, Unlock, Phone, SignalHigh, LogOut } from 'lucide-react'; 
@@ -90,7 +90,7 @@ const App = () => {
   const [showNameModal, setShowNameModal] = useState(false); 
   const [studentNameInput, setStudentNameInput] = useState(''); 
   const [studentCodeInput, setStudentCodeInput] = useState(''); 
-  const [teacherPin, setTeacherPin] = useState('1234567890'); 
+  const [teacherPin, setTeacherPin] = useState(''); 
   const [isTeacherAuthenticated, setIsTeacherAuthenticated] = useState(false); 
   const [currentUser, setCurrentUser] = useState(null); // Auth State
   const [liveMocks, setLiveMocks] = useState([]); 
@@ -98,7 +98,21 @@ const App = () => {
   const [students, setStudents] = useState([]); 
   const [studentResults, setStudentResults] = useState([]); 
   const [activityLogs, setActivityLogs] = useState([]); 
-
+// Firebase থেকে পিন আনার নতুন লজিক
+  useEffect(() => {
+    const fetchPin = async () => {
+      try {
+        const docRef = doc(db, 'settings', 'adminConfig');
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setTeacherPin(docSnap.data().pin);
+        }
+      } catch (error) {
+        console.error("Error fetching pin:", error);
+      }
+    };
+    fetchPin();
+  }, []);
   useEffect(() => { 
     // Auth Listener
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
