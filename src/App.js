@@ -284,7 +284,7 @@ const App = () => {
         ))}
     </div>
 </nav>
-            <main className="w-full max-w-5xl pt-36 mb-20 flex flex-col items-center">
+            <main className="w-full max-w-5xl pt-32 mb-20 flex flex-col items-center">
                 {activeTab === 'home' && (
                     <div className="space-y-6 animate-in fade-in w-full text-center print:hidden">
                         <div className="bg-black/60 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border-2 border-white/10">
