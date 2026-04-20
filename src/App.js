@@ -242,38 +242,45 @@ const App = () => {
                 <h1 className="text-lg font-black text-blue-400 uppercase italic tracking-tighter cursor-pointer" onClick={() => setActiveTab('home')}>MATH EXCELLENCE</h1>
                 <p className="text-[9px] font-bold text-slate-500 italic">ANSHU SIR</p>
             </header>
-          <nav className="fixed top-[55px] left-1/2 -translate-x-1/2 z-40 w-[96%] max-w-[500px] px-1 py-1 print:hidden">
-    <div className="bg-black/60 backdrop-blur-2xl border border-white/20 rounded-[1.2rem] shadow-[0_10px_30px_rgba(0,0,0,0.8)] flex justify-between items-center p-1.5 gap-1">
+          <nav className="fixed top-[55px] left-1/2 -translate-x-1/2 z-40 w-[96%] max-w-[650px] px-1 py-2 print:hidden">
+    <div className="bg-black/70 backdrop-blur-2xl border border-white/20 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.9)] flex justify-between items-center p-2 gap-1.5">
         {[
-            { id: 'home', label: 'Home', icon: <Home size={18} /> },
-            { id: 'live', label: 'Live', icon: <Radio size={18} className={activeTab === 'live' ? "animate-pulse" : ""} /> },
-            { id: 'practice', label: 'Practice', icon: <BookOpen size={18} /> },
-            { id: 'growth', label: 'Growth', icon: <TrendingUp size={18} /> },
-            { id: 'teacher', label: 'Admin', icon: <User size={18} /> }
+            { id: 'home', label: 'Home', icon: <Home size={22} /> },
+            { id: 'live', label: 'Live', icon: <Radio size={22} /> },
+            { id: 'practice', label: 'Practice', icon: <BookOpen size={22} /> },
+            { id: 'growth', label: 'Growth', icon: <TrendingUp size={22} /> },
+            { id: 'teacher', label: 'Admin', icon: <User size={22} /> }
         ].map((item) => (
             <button 
                 key={item.id} 
                 onClick={() => setActiveTab(item.id)} 
-                className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-xl transition-all duration-500 relative group ${
+                className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-3 px-1 rounded-[1.5rem] transition-all duration-300 relative group ${
                     activeTab === item.id 
-                    ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)] scale-105' 
-                    : 'text-slate-400 hover:text-white hover:bg-white/10'
+                    ? 'bg-blue-600 text-white shadow-[0_0_25px_rgba(37,99,235,0.8)] scale-105 active:scale-95' 
+                    : 'text-slate-400 hover:text-white hover:bg-white/10 hover:-translate-y-2'
                 }`}
             >
-                <span className={`transition-transform duration-500 ${
-                    activeTab === item.id ? 'scale-110 animate-pulse' : 'group-hover:scale-110'
+                {/* আইকন অ্যানিমেশন: ঘুরবে এবং লাফাবে */}
+                <span className={`transition-all duration-700 ease-in-out ${
+                    activeTab === item.id 
+                    ? 'scale-125 animate-bounce' 
+                    : 'group-hover:rotate-[360deg] group-hover:scale-125'
                 }`}>
                     {item.icon}
                 </span>
                 
-                <span className={`text-[9px] font-black uppercase italic tracking-tighter transition-all duration-500 ${
-                    activeTab === item.id ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'
+                {/* টেক্সট অ্যানিমেশন: একটু গ্লো করবে */}
+                <span className={`text-[10px] font-black uppercase italic tracking-tighter transition-all duration-300 ${
+                    activeTab === item.id 
+                    ? 'opacity-100 scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]' 
+                    : 'opacity-70 group-hover:opacity-100 group-hover:text-blue-400'
                 }`}>
                     {item.label}
                 </span>
 
+                {/* নিওন আন্ডারলাইন অ্যানিমেশন */}
                 {activeTab === item.id && (
-                    <span className="absolute bottom-0.5 w-1 h-1 bg-white rounded-full shadow-[0_0_10px_white]"></span>
+                    <span className="absolute bottom-1 w-6 h-1 bg-white rounded-full shadow-[0_0_15px_white] animate-pulse"></span>
                 )}
             </button>
         ))}
