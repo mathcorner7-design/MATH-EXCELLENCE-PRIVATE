@@ -242,51 +242,49 @@ const App = () => {
                 <h1 className="text-lg font-black text-blue-400 uppercase italic tracking-tighter cursor-pointer" onClick={() => setActiveTab('home')}>MATH EXCELLENCE</h1>
                 <p className="text-[9px] font-bold text-slate-500 italic">ANSHU SIR</p>
             </header>
-          <nav className="fixed top-[55px] left-1/2 -translate-x-1/2 z-40 w-[96%] max-w-[650px] px-1 py-2 print:hidden">
-    <div className="bg-black/70 backdrop-blur-2xl border border-white/20 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.9)] flex justify-between items-center p-2 gap-1.5">
+          <nav className="fixed top-[50px] left-1/2 -translate-x-1/2 z-40 w-[96%] max-w-[600px] px-1 py-1 print:hidden">
+    <div className="bg-black/70 backdrop-blur-2xl border border-white/20 rounded-[1.5rem] shadow-[0_15px_40px_rgba(0,0,0,0.8)] flex justify-between items-center p-1.5 gap-1">
         {[
-            { id: 'home', label: 'Home', icon: <Home size={22} /> },
-            { id: 'live', label: 'Live', icon: <Radio size={22} /> },
-            { id: 'practice', label: 'Practice', icon: <BookOpen size={22} /> },
-            { id: 'growth', label: 'Growth', icon: <TrendingUp size={22} /> },
-            { id: 'teacher', label: 'Admin', icon: <User size={22} /> }
+            { id: 'home', label: 'Home', icon: <Home size={20} /> },
+            { id: 'live', label: 'Live', icon: <Radio size={20} /> },
+            { id: 'practice', label: 'Practice', icon: <BookOpen size={20} /> },
+            { id: 'growth', label: 'Growth', icon: <TrendingUp size={20} /> },
+            { id: 'teacher', label: 'Admin', icon: <User size={20} /> }
         ].map((item) => (
             <button 
                 key={item.id} 
                 onClick={() => setActiveTab(item.id)} 
-                className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-3 px-1 rounded-[1.5rem] transition-all duration-300 relative group ${
+                className={`flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all duration-300 relative group ${
                     activeTab === item.id 
-                    ? 'bg-blue-600 text-white shadow-[0_0_25px_rgba(37,99,235,0.8)] scale-105 active:scale-95' 
-                    : 'text-slate-400 hover:text-white hover:bg-white/10 hover:-translate-y-2'
+                    ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.6)] scale-105' 
+                    : 'text-slate-400 hover:text-white hover:bg-white/10'
                 }`}
             >
-                {/* আইকন অ্যানিমেশন: ঘুরবে এবং লাফাবে */}
-                <span className={`transition-all duration-700 ease-in-out ${
+                {/* আইকন এনিমেশন - ঠিক আগের মতোই মারাত্মক থাকবে */}
+                <span className={`transition-all duration-500 ease-in-out ${
                     activeTab === item.id 
-                    ? 'scale-125 animate-bounce' 
-                    : 'group-hover:rotate-[360deg] group-hover:scale-125'
+                    ? 'scale-110 animate-bounce' 
+                    : 'group-hover:rotate-[360deg] group-hover:scale-110'
                 }`}>
                     {item.icon}
                 </span>
                 
-                {/* টেক্সট অ্যানিমেশন: একটু গ্লো করবে */}
-                <span className={`text-[10px] font-black uppercase italic tracking-tighter transition-all duration-300 ${
-                    activeTab === item.id 
-                    ? 'opacity-100 scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]' 
-                    : 'opacity-70 group-hover:opacity-100 group-hover:text-blue-400'
+                {/* টেক্সট সাইজ একটু কমিয়ে স্লাইম করা হয়েছে */}
+                <span className={`text-[9px] font-black uppercase italic tracking-tighter transition-all duration-300 ${
+                    activeTab === item.id ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'
                 }`}>
                     {item.label}
                 </span>
 
-                {/* নিওন আন্ডারলাইন অ্যানিমেশন */}
+                {/* এক্টিভ ইন্ডিকেটর - ছোট বিন্দু */}
                 {activeTab === item.id && (
-                    <span className="absolute bottom-1 w-6 h-1 bg-white rounded-full shadow-[0_0_15px_white] animate-pulse"></span>
+                    <span className="absolute bottom-0.5 w-4 h-0.5 bg-white rounded-full animate-pulse"></span>
                 )}
             </button>
         ))}
     </div>
 </nav>
-            <main className="w-full max-w-5xl pt-24 mb-20 flex flex-col items-center">
+            <main className="w-full max-w-5xl pt-36 mb-20 flex flex-col items-center">
                 {activeTab === 'home' && (
                     <div className="space-y-6 animate-in fade-in w-full text-center print:hidden">
                         <div className="bg-black/60 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border-2 border-white/10">
