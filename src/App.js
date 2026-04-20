@@ -293,12 +293,12 @@ const App = () => {
                                         <tr className="border-b border-white/5">
                                             <td className="p-4 uppercase italic">Test Format</td>
                                             <td className="p-4 text-center">Only MCQ</td>
-                                            <td className="p-4 text-center text-green-400">MCQ + Written Test Review</td>
+                                            <td className="p-4 text-center text-green-400">MCQ + Written Test With Review</td>
                                         </tr>
                                         <tr className="border-b border-white/5">
                                             <td className="p-4 uppercase italic">Performance Reports</td>
-                                            <td className="p-4 text-center">Only Marks</td>
-                                            <td className="p-4 text-center text-green-400">Full Review of All Exams</td>
+                                            <td className="p-4 text-center">Only Marks And quick Review </td>
+                                            <td className="p-4 text-center text-green-400">Mraks With Detailed Review of All Questions And Previous Exams</td>
                                         </tr>
                                         <tr>
                                             <td className="p-4 uppercase italic">Live Arena</td>
