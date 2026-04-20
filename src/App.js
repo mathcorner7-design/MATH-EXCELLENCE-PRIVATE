@@ -246,7 +246,7 @@ const App = () => {
     <div className="bg-black/60 backdrop-blur-2xl border border-white/20 rounded-[1.5rem] shadow-[0_15px_40px_rgba(0,0,0,0.8)] flex justify-between items-center p-2 gap-1">
         {[
             { id: 'home', label: 'Home', icon: <Home size={22} /> },
-            { id: 'live', label: 'Live', icon: <Radio size={22} className={activeTab === 'live' ? "animate-pulse text-red-500" : ""} /> },
+            { id: 'live', label: 'Live', icon: <Radio size={22} /> },
             { id: 'practice', label: 'Practice', icon: <BookOpen size={22} /> },
             { id: 'growth', label: 'Growth', icon: <TrendingUp size={22} /> },
             { id: 'teacher', label: 'Admin', icon: <User size={22} /> }
@@ -254,26 +254,31 @@ const App = () => {
             <button 
                 key={item.id} 
                 onClick={() => setActiveTab(item.id)} 
-                className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-3 px-1 rounded-2xl transition-all duration-500 ease-out relative group ${
+                className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 px-1 rounded-2xl transition-all duration-500 relative group ${
                     activeTab === item.id 
                     ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.6)] scale-105' 
-                    : 'text-slate-400 hover:text-white hover:bg-white/10'
+                    : 'text-slate-400 hover:text-white hover:bg-white/10 hover:-translate-y-1'
                 }`}
             >
-                <span className={`transition-transform duration-500 ${
-                    activeTab === item.id ? 'scale-110 animate-pulse' : 'group-hover:scale-110'
+                {/* আইকন অ্যানিমেশন */}
+                <span className={`transition-all duration-500 ${
+                    activeTab === item.id 
+                    ? 'scale-125 animate-pulse' 
+                    : 'group-hover:scale-125 group-hover:rotate-6'
                 }`}>
                     {item.icon}
                 </span>
                 
-                <span className={`text-[10px] font-black uppercase italic tracking-tighter whitespace-nowrap transition-all duration-500 ${
-                    activeTab === item.id ? 'opacity-100' : 'opacity-80 group-hover:opacity-100'
+                {/* টেক্সট অ্যানিমেশন */}
+                <span className={`text-[10px] font-black uppercase italic tracking-tighter transition-all duration-500 ${
+                    activeTab === item.id ? 'opacity-100 scale-110' : 'opacity-70 group-hover:opacity-100 group-hover:scale-105'
                 }`}>
                     {item.label}
                 </span>
 
+                {/* উজ্জ্বল ইন্ডিকেটর */}
                 {activeTab === item.id && (
-                    <span className="absolute bottom-1 w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_10px_white]"></span>
+                    <span className="absolute bottom-1 w-1 h-1 bg-white rounded-full shadow-[0_0_10px_white] animate-ping"></span>
                 )}
             </button>
         ))}
