@@ -238,10 +238,15 @@ const App = () => {
                     </div>
                 </div>
             )}
-            <header className="bg-black/60 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50 shadow-2xl px-6 py-2 flex justify-between items-center w-full max-w-6xl print:hidden">
-                <h1 className="text-lg font-black text-blue-400 uppercase italic tracking-tighter cursor-pointer" onClick={() => setActiveTab('home')}>MATH EXCELLENCE</h1>
-                <p className="text-[9px] font-bold text-slate-500 italic">ANSHU SIR</p>
-            </header>
+                   {/* --- BRAND HEADER --- */}
+        <header className="fixed top-0 left-0 w-full z-50 h-[55px] bg-black/60 backdrop-blur-md border-b border-white/10 flex items-center justify-center overflow-hidden">
+            <div className="relative">
+                <h1 className="text-xl md:text-2xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-blue-400 bg-[length:200%_auto] animate-pulse">
+                    Math Excellence
+                </h1>
+                <div className="absolute -bottom-1 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent animate-pulse"></div>
+            </div>
+        </header>
           <nav className="fixed top-[50px] left-1/2 -translate-x-1/2 z-40 w-[96%] max-w-[600px] px-1 py-1 print:hidden">
     <div className="bg-black/70 backdrop-blur-2xl border border-white/20 rounded-[1.5rem] shadow-[0_15px_40px_rgba(0,0,0,0.8)] flex justify-between items-center p-1.5 gap-1">
         {[
