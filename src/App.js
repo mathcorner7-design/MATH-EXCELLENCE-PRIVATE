@@ -636,7 +636,7 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
         }
     };
 
-        return (
+    return (
         <>
             <div className="fixed inset-0 bg-slate-950 z-[1200] p-6 overflow-y-auto animate-in slide-in-from-right-full duration-500 print:hidden text-white">
                 {previewImg && <ImagePreviewModal src={previewImg} onClose={() => setPreviewImg(null)} />}
@@ -689,7 +689,6 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
             </div>
         </>
     );
-};
 };
 const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
     const recoveryKey = `exam_recovery_${exam.studentCode}_${exam.id}`;
