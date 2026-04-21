@@ -421,54 +421,66 @@ const App = () => {
               const classes = [...new Set(allMocks.map(m => m.class || 'Other'))].sort((a, b) => parseInt(a) - parseInt(b));
               if (allMocks.length === 0) return <p className="text-center text-slate-500 italic text-[10px]">No practice sets available.</p>;
               return classes.map(cls => {
-                const isOpen = openClass === cls;
-                return (
-                  <div key={cls} className="space-y-2">
-                    <div onClick={() => setOpenClass(isOpen ? null : cls)} className="cursor-pointer flex justify-between items-center font-black uppercase text-blue-400 border-b-2 border-blue-900/50 pb-2 text-xs italic tracking-widest pl-2" >
-                      <div className="flex items-center gap-2"> <BookOpen size={16} /> Class {cls} </div>
-                      <ChevronRight size={16} className={`transition-transform ${isOpen ? 'rotate-90' : ''}`} />
-                    </div>
-                    {isOpen && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                        {allMocks.filter(m => (m.class || 'Other') === cls).map((p, i) => (
-                          <div 
-                            key={p.id} 
-                            onClick={() => {
-                              const s = p.status || (p.isGuestEnabled ? 'public' : 'premium');
-                              if (s === 'locked') return; 
-                              handleStartExamFlow(p);
-                            }}
-                            className={`w-full p-6 rounded-[2rem] shadow-xl flex justify-between items-center border transition-all cursor-pointer relative overflow-hidden group 
-                              ${(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' ? 'bg-white/5 border-white/5 opacity-60 cursor-not-allowed' : 'bg-black/60 backdrop-blur-xl border-white/10 active:scale-95 hover:border-blue-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
-                          >
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-sm font-black uppercase italic tracking-tighter text-white">{i + 1}. {p.name}</h3>
-                                <LevelBadge level={p.level} />
-                              </div>
-                              <p className="text-[9px] font-bold text-slate-500 uppercase italic mt-1">Time: {p.hours || 0}h {p.minutes || 0}m</p>
-                              <p className={`text-[8px] font-black uppercase italic mt-2 tracking-widest ${
-                                (p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'public' ? 'text-green-500' : 
-                                (p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'premium' ? 'text-yellow-500' : 'text-red-500'
-                              }`}>
-                                {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'public' && "🌍 Public Exam"}
-                                {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'premium' && "💎 Premium Access"}
-                                {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' && "🔒 Locked: Will open after specific time"}
-                              </p>
-                            </div>
-                            <ChevronRight size={24} className="text-white/20 group-hover:text-blue-500 transition-colors" />
-                          </div>
-                        ))}
+  const isOpen = openClass === cls;
+  const classExams = allMocks.filter(m => (m.class || 'Other') === cls);
+  // চ্যাপ্টার অনুযায়ী গ্রুপ করা (Status এর মতোই Fallback লজিক)
+  const chapters = [...new Set(classExams.map(m => m.chapter || 'GENERAL'))];
+
+  return (
+    <div key={cls} className="space-y-4">
+      <div onClick={() => setOpenClass(isOpen ? null : cls)} className="cursor-pointer flex justify-between items-center font-black uppercase text-blue-400 border-b-2 border-blue-900/50 pb-2 text-xs italic tracking-widest pl-2" >
+        <div className="flex items-center gap-2"> <BookOpen size={16} /> Class {cls} </div>
+        <ChevronRight size={16} className={`transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+      </div>
+
+      {isOpen && (
+        <div className="space-y-8 mt-4 pl-2">
+          {chapters.map(chName => (
+            <div key={chName} className="space-y-3">
+              {/* চ্যাপ্টারের সুন্দর হেডিং */}
+              <h4 className="text-[10px] font-black text-purple-400 uppercase italic flex items-center gap-2 tracking-widest">
+                <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+                {chName}
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {classExams.filter(e => (e.chapter || 'GENERAL') === chName).map((p, i) => (
+                  <div 
+                    key={p.id} 
+                    onClick={() => {
+                      const s = p.status || (p.isGuestEnabled ? 'public' : 'premium');
+                      if (s === 'locked') return; 
+                      handleStartExamFlow(p);
+                    }}
+                    className={`w-full p-5 rounded-[1.8rem] shadow-xl flex justify-between items-center border transition-all cursor-pointer relative overflow-hidden group 
+                      ${(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' ? 'bg-white/5 border-white/5 opacity-60' : 'bg-black/40 border-white/10 active:scale-95 shadow-lg'}`}
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-sm font-black uppercase italic tracking-tighter text-white">{i + 1}. {p.name}</h3>
+                        <LevelBadge level={p.level} />
                       </div>
-                    )}
+                      <p className="text-[9px] font-bold text-slate-500 uppercase mt-1">Time: {p.hours || 0}h {p.minutes || 0}m</p>
+                      <p className={`text-[8px] font-black uppercase italic mt-2 tracking-widest ${
+                        (p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'public' ? 'text-green-500' : 
+                        (p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'premium' ? 'text-yellow-500' : 'text-red-500'
+                      }`}>
+                        {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'public' && "🌍 Public"}
+                        {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'premium' && "💎 Premium"}
+                        {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' && "🔒 Locked"}
+                      </p>
+                    </div>
+                    <ChevronRight size={20} className="text-white/10 group-hover:text-blue-400" />
                   </div>
-                );
-              });
-            })()}
-          </div>
-        )}
-      </main>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
+  );
+});
   );
 };
 
@@ -486,6 +498,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   const [qaMarks, setQaMarks] = useState('');
   const [qaNeg, setQaNeg] = useState('0');
   const [qaStatus, setQaStatus] = useState('public');
+  const [qaChapter, setQaChapter] = useState('');
   const [qaClass, setQaClass] = useState('10');
   const [qaLevel, setQaLevel] = useState('Moderate');
 
@@ -498,7 +511,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   const handleQuickAdd = async () => {
     if (!qaName.trim()) return alert("Exam Name Required!");
     const coll = quickAddType === 'live' ? 'liveMocks' : 'practiceSets';
-    await addDoc(collection(db, coll), { name: qaName.toUpperCase(), hours: qaHours, minutes: qaMinutes, fileUrl: qaLink.trim(), answerKey: qaKey.toUpperCase(), questionMarks: qaMarks, negativeMark: qaNeg || "0", isPublished: false, status: qaStatus, class: qaClass, level: qaLevel, timestamp: Date.now() });
+    await addDoc(collection(db, coll), { name: qaName.toUpperCase(), hours: qaHours, minutes: qaMinutes, fileUrl: qaLink.trim(), answerKey: qaKey.toUpperCase(), questionMarks: qaMarks, negativeMark: qaNeg || "0", isPublished: false, status: qaStatus, chapter: qaChapter.trim().toUpperCase() || 'GENERAL', class: qaClass, level: qaLevel, timestamp: Date.now() });
     setQaName(''); setQaLink(''); setQaKey(''); setQaMarks(''); setQaNeg('0'); setQaStatus('public');
     alert(`Success: Added to Registry`);
   };
@@ -550,6 +563,10 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
 </div>
                         <div><p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1">Class</p><select value={item.class || '10'} onChange={(e) => updateField(item.id, item.source, 'class', e.target.value)} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-xs font-black">{[5,6,7,8,9,10,11,12].map(c => <option key={c} value={c}>{c}</option>)}</select></div>
                         <div className="md:col-span-2"> <p className="text-[8px] font-black text-yellow-500 uppercase mb-1 ml-1">Complexity Level</p> <select value={item.level || 'Moderate'} onChange={(e) => updateField(item.id, item.source, 'level', e.target.value)} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-xs font-black"> {['Easy', 'Moderate', 'Hard'].map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)} </select> </div>
+                    <div className="md:col-span-4 mt-2">
+  <p className="text-[8px] font-black text-purple-400 uppercase mb-1 ml-1 italic">Edit Chapter Name</p>
+  <input type="text" defaultValue={item.chapter || ''} onBlur={(e) => updateField(item.id, item.source, 'chapter', e.target.value.trim().toUpperCase())} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-[10px] font-black outline-none focus:border-purple-500" placeholder="ENTER CHAPTER NAME" />
+</div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div><p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1">Exam Name</p><input type="text" defaultValue={item.name} onBlur={(e) => updateField(item.id, item.source, 'name', e.target.value.toUpperCase())} className="w-full p-2.5 rounded-xl border border-white/10 bg-black text-white text-xs font-black outline-none focus:border-blue-500" /></div>
@@ -597,6 +614,10 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
             <div> <p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1">Class</p> <select value={qaClass} onChange={(e) => setQaClass(e.target.value)} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-[10px] font-black outline-none"> {[5, 6, 7, 8, 9, 10, 11, 12].map(c => <option key={c} value={c}>{c}</option>)} </select> </div>
             <div> <p className="text-[8px] font-black text-yellow-500 uppercase mb-1 ml-1">Level</p> <select value={qaLevel} onChange={(e) => setQaLevel(e.target.value)} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-[10px] font-black outline-none"> {['Easy', 'Moderate', 'Hard'].map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)} </select> </div>
           </div>
+    <div>
+  <p className="text-[8px] font-black text-purple-400 uppercase mb-1 ml-1 italic leading-none">Chapter Name</p>
+  <input type="text" value={qaChapter} onChange={(e) => setQaChapter(e.target.value)} className="w-full p-3.5 bg-black border border-white/10 rounded-2xl text-[10px] font-black outline-none focus:border-purple-500 text-white transition-all uppercase" placeholder="E.G. CALCULUS, ALGEBRA" />
+</div>
           <div><p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1 italic leading-none">Exam Name</p><input type="text" value={qaName} onChange={(e) => setQaName(e.target.value)} className="w-full p-3.5 bg-black border border-white/10 rounded-2xl text-[10px] font-black outline-none shadow-inner focus:border-blue-500 text-white transition-all uppercase" placeholder="New Slot" /></div>
           <div className="flex flex-col md:flex-row gap-4">
             <div className="bg-black p-3 rounded-2xl border border-white/10 shadow-inner min-w-[120px]"><p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1 italic">Time Limit</p><div className="flex items-center gap-1 font-black text-[10px] text-white"><input type="number" value={qaHours} onChange={(e) => setQaHours(e.target.value)} className="w-8 text-center bg-transparent outline-none" /> <span>H</span><input type="number" value={qaMinutes} onChange={(e) => setQaMinutes(e.target.value)} className="w-8 text-center bg-transparent outline-none" /> <span>M</span></div></div>
