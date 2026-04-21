@@ -488,7 +488,77 @@ const App = () => {
     </div>
   );
 };
+// --- Teacher Zone Main View ---
+const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, setTeacherPin, studentResults, ads, qaStatus, setQaStatus, qaChapter, setQaChapter }) => {
+  const [quickAddType, setQuickAddType] = useState('live');
+  const [qaName, setQaName] = useState('');
+  const [qaHours, setQaHours] = useState('1');
+  const [qaMinutes, setQaMinutes] = useState('0');
+  const [qaLink, setQaLink] = useState('');
+  const [qaKey, setQaKey] = useState('');
+  const [qaMarks, setQaMarks] = useState('');
+  const [qaNeg, setQaNeg] = useState('0');
+  const [qaClass, setQaClass] = useState('10');
+  const [qaLevel, setQaLevel] = useState('Moderate');
 
+  const updateField = async (id, type, field, value) => {
+    const coll = type === 'live' ? 'liveMocks' : 'practiceSets';
+    await setDoc(doc(db, coll, id), { [field]: value }, { merge: true });
+  };
+
+  const handleQuickAdd = async () => {
+    if (!qaName.trim()) return alert("Exam Name Required!");
+    const coll = quickAddType === 'live' ? 'liveMocks' : 'practiceSets';
+    await addDoc(collection(db, coll), {
+      name: qaName.toUpperCase(),
+      hours: qaHours,
+      minutes: qaMinutes,
+      fileUrl: qaLink.trim(),
+      answerKey: qaKey.toUpperCase(),
+      questionMarks: qaMarks,
+      negativeMark: qaNeg || "0",
+      isPublished: false,
+      status: qaStatus,
+      chapter: qaChapter.trim().toUpperCase() || 'GENERAL',
+      class: qaClass,
+      level: qaLevel,
+      timestamp: Date.now()
+    });
+    setQaName(''); setQaLink(''); setQaKey(''); setQaMarks(''); setQaChapter('');
+    alert("Added Successfully!");
+  };
+
+  return (
+    <div className="w-full max-w-4xl mx-auto p-4 space-y-6 animate-in fade-in">
+      <div className="bg-slate-900/60 p-6 rounded-[2rem] border border-white/10 shadow-2xl">
+        <h3 className="text-blue-400 font-black uppercase italic mb-4 flex items-center gap-2"><PlusCircle size={20}/> Quick Add Exam</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <select value={quickAddType} onChange={(e) => setQuickAddType(e.target.value)} className="p-3 bg-black border border-white/10 rounded-xl text-white text-xs font-black uppercase italic">
+            <option value="live">Live Exam Arena</option>
+            <option value="practice">Practice Section</option>
+          </select>
+          <input type="text" placeholder="EXAM NAME" value={qaName} onChange={(e) => setQaName(e.target.value)} className="p-3 bg-black border border-white/10 rounded-xl text-white text-xs font-black uppercase outline-none focus:border-blue-500" />
+          <input type="text" placeholder="CHAPTER NAME (e.g. CALCULUS)" value={qaChapter} onChange={(e) => setQaChapter(e.target.value)} className="p-3 bg-black border border-white/10 rounded-xl text-white text-xs font-black uppercase outline-none focus:border-purple-500" />
+          <div className="flex gap-2">
+            <input type="number" placeholder="HH" value={qaHours} onChange={(e) => setQaHours(e.target.value)} className="w-full p-3 bg-black border border-white/10 rounded-xl text-white text-xs text-center" />
+            <input type="number" placeholder="MM" value={qaMinutes} onChange={(e) => setQaMinutes(e.target.value)} className="w-full p-3 bg-black border border-white/10 rounded-xl text-white text-xs text-center" />
+          </div>
+          <select value={qaStatus} onChange={(e) => setQaStatus(e.target.value)} className="p-3 bg-black border border-white/10 rounded-xl text-white text-xs font-black uppercase">
+            <option value="public">Public (Guest Access)</option>
+            <option value="premium">Premium (Registered Only)</option>
+            <option value="locked">Locked (Manual Open)</option>
+          </select>
+          <select value={qaClass} onChange={(e) => setQaClass(e.target.value)} className="p-3 bg-black border border-white/10 rounded-xl text-white text-xs font-black uppercase">
+             {[...Array(13)].map((_, i) => <option key={i} value={i+1}>Class {i+1}</option>)}
+             <option value="Other">Other</option>
+          </select>
+        </div>
+        <button onClick={handleQuickAdd} className="w-full mt-4 bg-blue-600 hover:bg-blue-500 p-4 rounded-xl font-black uppercase text-xs shadow-lg transition-all active:scale-95">Deploy to Registry</button>
+      </div>
+      <p className="text-center text-[10px] text-slate-500 font-black uppercase italic">Registry Management Mode Active</p>
+    </div>
+  );
+};
 // --- Growth Section View ---
 const GrowthSectionView = ({ results, students }) => {
   const [sel, setSel] = useState(null);
