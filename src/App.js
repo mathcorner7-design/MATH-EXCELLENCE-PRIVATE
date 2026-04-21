@@ -414,10 +414,10 @@ const App = () => {
           )
         )}
         {activeTab === 'growth' && <GrowthSectionView results={studentResults} students={students} />}
-        {activeTab === 'practice' && (
+                {activeTab === 'practice' && (
           <div className="w-full space-y-8 print:hidden">
             {(() => {
-             const allMocks = [...practiceSets.filter(p => p.isPublished), ...shiftedLive.filter(m => m.isPublished)];
+              const allMocks = [...practiceSets.filter(p => p.isPublished), ...shiftedLive.filter(m => m.isPublished)];
               const classes = [...new Set(allMocks.map(m => m.class || 'Other'))].sort((a, b) => parseInt(a) - parseInt(b));
               if (allMocks.length === 0) return <p className="text-center text-slate-500 italic text-[10px]">No practice sets available.</p>;
               return classes.map(cls => {
@@ -430,35 +430,33 @@ const App = () => {
                     </div>
                     {isOpen && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                       {allMocks.filter(m => (m.class || 'Other') === cls).map((p, i) => (
-  <div 
-    key={p.id} 
-    onClick={() => {
-      const s = p.status || (p.isGuestEnabled ? 'public' : 'premium');
-      if (s === 'locked') return; 
-      handleStartExamFlow(p);
-    }}
-    className={`w-full p-6 rounded-[2rem] shadow-xl flex justify-between items-center border transition-all cursor-pointer relative overflow-hidden group 
-      ${(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' ? 'bg-white/5 border-white/5 opacity-60 cursor-not-allowed' : 'bg-black/60 backdrop-blur-xl border-white/10 active:scale-95 hover:border-blue-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
-  >
-    <div className="flex-1">
-      <div className="flex items-center gap-2 mb-1">
-        <h3 className="text-sm font-black uppercase italic tracking-tighter text-white">{i + 1}. {p.name}</h3>
-        <LevelBadge level={p.level} />
-      </div>
-      <p className="text-[9px] font-bold text-slate-500 uppercase italic mt-1">Time: {p.hours || 0}h {p.minutes || 0}m</p>
-      <p className={`text-[8px] font-black uppercase italic mt-2 tracking-widest ${
-        (p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'public' ? 'text-green-500' : 
-        (p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'premium' ? 'text-yellow-500' : 'text-red-500'
-      }`}>
-        {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'public' && "🌍 Public Exam"}
-        {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'premium' && "💎 Premium Access"}
-        {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' && "🔒 Locked: Will open after specific time"}
-      </p>
-    </div>
-    <ChevronRight size={24} className="text-white/20 group-hover:text-blue-500 transition-colors" />
-  </div>
-))}
+                        {allMocks.filter(m => (m.class || 'Other') === cls).map((p, i) => (
+                          <div 
+                            key={p.id} 
+                            onClick={() => {
+                              const s = p.status || (p.isGuestEnabled ? 'public' : 'premium');
+                              if (s === 'locked') return; 
+                              handleStartExamFlow(p);
+                            }}
+                            className={`w-full p-6 rounded-[2rem] shadow-xl flex justify-between items-center border transition-all cursor-pointer relative overflow-hidden group 
+                              ${(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' ? 'bg-white/5 border-white/5 opacity-60 cursor-not-allowed' : 'bg-black/60 backdrop-blur-xl border-white/10 active:scale-95 hover:border-blue-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
+                          >
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="text-sm font-black uppercase italic tracking-tighter text-white">{i + 1}. {p.name}</h3>
+                                <LevelBadge level={p.level} />
+                              </div>
+                              <p className="text-[9px] font-bold text-slate-500 uppercase italic mt-1">Time: {p.hours || 0}h {p.minutes || 0}m</p>
+                              <p className={`text-[8px] font-black uppercase italic mt-2 tracking-widest ${
+                                (p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'public' ? 'text-green-500' : 
+                                (p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'premium' ? 'text-yellow-500' : 'text-red-500'
+                              }`}>
+                                {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'public' && "🌍 Public Exam"}
+                                {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'premium' && "💎 Premium Access"}
+                                {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' && "🔒 Locked: Will open after specific time"}
+                              </p>
+                            </div>
+                            <ChevronRight size={24} className="text-white/20 group-hover:text-blue-500 transition-colors" />
                           </div>
                         ))}
                       </div>
