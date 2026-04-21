@@ -695,35 +695,42 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
                                         <p className="text-[10px] font-bold text-slate-500 mt-1 italic"> {r.date} • Score: {r.obtained}/{r.total} {r.timeTaken && `• Time: ${r.timeTaken}`} </p>
                                     </div>
                                 </div>
-                                <div className="flex gap-2 flex-shrink-0 print:hidden">
+                               <div className="flex gap-2 flex-shrink-0 print:hidden">
 
-    <button
-        onClick={async () => {
-            const val = prompt("Enter Bonus Marks:");
-            if (!val) return;
+    <>
+        <button
+            onClick={async () => {
+                const val = prompt("Enter Bonus Marks:");
+                if (!val) return;
 
-            const bonusVal = parseFloat(val);
-            const newObt = r.obtained + bonusVal;
+                const bonusVal = Number(val);
+                if (isNaN(bonusVal)) return alert("Invalid number");
 
-            await setDoc(doc(db, "results", r.id), {
-                obtained: newObt,
-                bonus: (r.bonus || 0) + bonusVal,
-                percent: Math.round((newObt / r.total) * 100)
-            }, { merge: true });
+                const newObt = Number(r.obtained || 0) + bonusVal;
 
-            alert("Bonus Added!");
-        }}
-        className="text-green-400 text-[10px] font-black uppercase"
-    >
-        +Bonus
-    </button>
+                await setDoc(doc(db, "results", r.id), {
+                    obtained: newObt,
+                    bonus: Number(r.bonus || 0) + bonusVal,
+                    percent: Math.round((newObt / Number(r.total || 1)) * 100)
+                }, { merge: true });
 
-    <button onClick={async () => { 
-        if (window.confirm("Purge record?")) 
-            await deleteDoc(doc(db, "results", r.id)); 
-    }} className="text-slate-600 hover:text-red-500 active:scale-90 transition-all">
-        <Trash2 size={24} />
-    </button>
+                alert("Bonus Added!");
+            }}
+            className="text-green-400 text-[10px] font-black uppercase"
+        >
+            +Bonus
+        </button>
+
+        <button
+            onClick={async () => {
+                if (window.confirm("Purge record?"))
+                    await deleteDoc(doc(db, "results", r.id));
+            }}
+            className="text-slate-600 hover:text-red-500 active:scale-90 transition-all"
+        >
+            <Trash2 size={24} />
+        </button>
+    </>
 
 </div>
                             {r.details && r.details.some(d => d.pending) && (
