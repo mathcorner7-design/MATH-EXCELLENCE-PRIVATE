@@ -870,23 +870,69 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   );
 };
 
+// --- Growth Section View ---
 const GrowthSectionView = ({ results, students }) => {
-  const [sel, setSel] = useState(null); const [selectedReview, setSelectedReview] = useState(null);
-  const [vCode, setVCode] = useState(''); const [isVerified, setIsVerified] = useState(false);
+  const [sel, setSel] = useState(null);
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [vCode, setVCode] = useState('');
+  const [isVerified, setIsVerified] = useState(false);
+
   const handlePrint = () => { window.print(); };
-  const handleVerify = () => { const s = students.find(x => x.name === sel); if (s && s.studentCode?.toString().trim() === vCode.trim()) setIsVerified(true); else alert("INVALID CODE!"); };
+  const handleVerify = () => {
+    const s = students.find(x => x.name === sel);
+    if (s && s.studentCode?.toString().trim() === vCode.trim()) setIsVerified(true);
+    else alert("INVALID CODE!");
+  };
 
   return (
     <div className="max-w-2xl mx-auto w-full animate-in fade-in duration-500 text-left px-2">
       {selectedReview && <ReviewResultModal result={selectedReview} onClose={() => setSelectedReview(null)} />}
-      {!sel && ( <div className="mb-8 p-6 bg-yellow-500/10 border-2 border-yellow-500 rounded-[2rem] text-center animate-pulse print:hidden"><p className="text-yellow-400 font-black uppercase italic text-[14px] md:text-[16px] leading-tight tracking-tight"> This section is exclusively for registered students CONTACT ANSHU SIR FOR REGISTRATION. </p></div> )}
-      {!sel ? (<div className="grid gap-4 print:hidden">{students.map((std) => ( <button key={std.id} onClick={() => { setSel(std.name); setIsVerified(false); setVCode(''); }} className="w-full bg-black/60 backdrop-blur-xl p-5 rounded-[2rem] shadow-lg border border-white/10 flex justify-between items-center group active:scale-95 transition-all"><div className="flex items-center gap-4"><div className="w-10 h-10 bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all"><User size={18} /></div><span className="font-black text-white uppercase text-[14px] italic tracking-tight break-words">{std.name}</span></div><div className="flex items-center gap-3"><div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase italic ${getRemainingDays(std.subscriptionEnd) <= 5 ? 'bg-red-900/40 text-red-500' : 'bg-blue-950 text-blue-400'}`}> {getRemainingDays(std.subscriptionEnd)}D Left </div><ChevronRight size={24} className="text-slate-600 group-hover:text-blue-400" /></div></button> ))}</div>) : !isVerified ? (
-        <div className="bg-slate-900/80 p-10 rounded-[3rem] border border-white/10 text-center animate-in zoom-in"><Lock size={48} className="text-blue-500 mx-auto mb-4" /><h3 className="font-black text-white uppercase italic mb-6">Verify Access: {sel}</h3><input type="password" value={vCode} onChange={(e) => setVCode(e.target.value)} placeholder="ENTER UNIQUE CODE" className="w-full p-4 bg-black border-2 border-slate-700 rounded-2xl text-center font-black text-white outline-none focus:border-blue-500 mb-6" /><div className="flex gap-4"><button onClick={() => setSel(null)} className="flex-1 py-4 bg-slate-800 rounded-2xl font-black uppercase text-[10px]">Back</button><button onClick={handleVerify} className="flex-1 py-4 bg-blue-700 rounded-2xl font-black uppercase text-[10px] shadow-lg">Verify</button></div></div>
+      {!sel && (
+        <div className="mb-8 p-6 bg-yellow-500/10 border-2 border-yellow-500 rounded-[2rem] text-center animate-pulse print:hidden">
+          <p className="text-yellow-400 font-black uppercase italic text-[14px] md:text-[16px] leading-tight tracking-tight">
+            This section is exclusively for registered students CONTACT ANSHU SIR FOR REGISTRATION.
+          </p>
+        </div>
+      )}
+      {!sel ? (
+        <div className="grid gap-4 print:hidden">
+          {students.map((std) => (
+            <button key={std.id} onClick={() => { setSel(std.name); setIsVerified(false); setVCode(''); }} className="w-full bg-black/60 backdrop-blur-xl p-5 rounded-[2rem] shadow-lg border border-white/10 flex justify-between items-center group active:scale-95 transition-all">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all"><User size={18} /></div>
+                <span className="font-black text-white uppercase text-[14px] italic tracking-tight break-words">{std.name}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase italic ${getRemainingDays(std.subscriptionEnd) <= 5 ? 'bg-red-900/40 text-red-500' : 'bg-blue-950 text-blue-400'}`}>
+                  {getRemainingDays(std.subscriptionEnd)}D Left
+                </div>
+                <ChevronRight size={24} className="text-slate-600 group-hover:text-blue-400" />
+              </div>
+            </button>
+          ))}
+        </div>
+      ) : !isVerified ? (
+        <div className="bg-slate-900/80 p-10 rounded-[3rem] border border-white/10 text-center animate-in zoom-in">
+          <Lock size={48} className="text-blue-500 mx-auto mb-4" />
+          <h3 className="font-black text-white uppercase italic mb-6">Verify Access: {sel}</h3>
+          <input type="password" value={vCode} onChange={(e) => setVCode(e.target.value)} placeholder="ENTER UNIQUE CODE" className="w-full p-4 bg-black border-2 border-slate-700 rounded-2xl text-center font-black text-white outline-none focus:border-blue-500 mb-6" />
+          <div className="flex gap-4">
+            <button onClick={() => setSel(null)} className="flex-1 py-4 bg-slate-800 rounded-2xl font-black uppercase text-[10px]">Back</button>
+            <button onClick={handleVerify} className="flex-1 py-4 bg-blue-700 rounded-2xl font-black uppercase text-[10px] shadow-lg">Verify</button>
+          </div>
+        </div>
       ) : (
         <div className="space-y-6 animate-in slide-in-from-right-20 duration-700 print-full-report">
-          <div className="flex justify-between items-center print:hidden"><button onClick={() => setSel(null)} className="flex items-center gap-2 text-[12px] font-black text-blue-400 uppercase italic hover:underline ml-2"><ChevronLeft size={24} /> Return</button><button onClick={handlePrint} className="bg-white text-black px-5 py-2 rounded-full font-black text-[10px] uppercase flex items-center gap-2 shadow-xl"><Download size={16} /> PDF</button></div>
+          <div className="flex justify-between items-center print:hidden">
+            <button onClick={() => setSel(null)} className="flex items-center gap-2 text-[12px] font-black text-blue-400 uppercase italic hover:underline ml-2"><ChevronLeft size={24} /> Return</button>
+            <button onClick={handlePrint} className="bg-white text-black px-5 py-2 rounded-full font-black text-[10px] uppercase flex items-center gap-2 shadow-xl"><Download size={16} /> PDF</button>
+          </div>
           <div className="bg-black/90 rounded-[3rem] shadow-2xl overflow-hidden border-2 border-white/10 flex flex-col print-full-report">
-            <div className="bg-blue-700 p-8 text-white text-center relative flex-shrink-0 print:border-b-4 print:border-blue-900"><h2 className="text-2xl font-black uppercase italic tracking-tighter mb-2 leading-none break-words px-4 text-white">Performance Transcript</h2><div className="inline-block bg-white/20 px-6 py-1.5 rounded-full border border-white/30 max-w-[90%] overflow-hidden"><p className="text-sm font-black uppercase italic break-words text-white">{sel}</p></div><p className="mt-3 text-[10px] font-black uppercase italic text-yellow-300 tracking-widest text-center"> Validity Remains: {getRemainingDays(students.find(s => s.name === sel)?.subscriptionEnd)} Days </p></div>
+            <div className="bg-blue-700 p-8 text-white text-center relative flex-shrink-0 print:border-b-4 print:border-blue-900">
+              <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-2 leading-none break-words px-4 text-white">Performance Transcript</h2>
+              <div className="inline-block bg-white/20 px-6 py-1.5 rounded-full border border-white/30 max-w-[90%] overflow-hidden"><p className="text-sm font-black uppercase italic break-words text-white">{sel}</p></div>
+              <p className="mt-3 text-[10px] font-black uppercase italic text-yellow-300 tracking-widest text-center"> Validity Remains: {getRemainingDays(students.find(s => s.name === sel)?.subscriptionEnd)} Days </p>
+            </div>
             <div className="p-4 md:p-6 space-y-4 bg-white/5 print:bg-white print:overflow-visible h-auto">
               {(() => {
                 const stdRes = results.filter(r => r.name === sel).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
