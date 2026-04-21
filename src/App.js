@@ -695,8 +695,37 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
                                         <p className="text-[10px] font-bold text-slate-500 mt-1 italic"> {r.date} • Score: {r.obtained}/{r.total} {r.timeTaken && `• Time: ${r.timeTaken}`} </p>
                                     </div>
                                 </div>
-                                <button onClick={async () => { if (window.confirm("Purge record?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-slate-600 hover:text-red-500 active:scale-90 transition-all flex-shrink-0 print:hidden"><Trash2 size={24} /></button>
-                            </div>
+                                <div className="flex gap-2 flex-shrink-0 print:hidden">
+
+    <button
+        onClick={async () => {
+            const val = prompt("Enter Bonus Marks:");
+            if (!val) return;
+
+            const bonusVal = parseFloat(val);
+            const newObt = r.obtained + bonusVal;
+
+            await setDoc(doc(db, "results", r.id), {
+                obtained: newObt,
+                bonus: (r.bonus || 0) + bonusVal,
+                percent: Math.round((newObt / r.total) * 100)
+            }, { merge: true });
+
+            alert("Bonus Added!");
+        }}
+        className="text-green-400 text-[10px] font-black uppercase"
+    >
+        +Bonus
+    </button>
+
+    <button onClick={async () => { 
+        if (window.confirm("Purge record?")) 
+            await deleteDoc(doc(db, "results", r.id)); 
+    }} className="text-slate-600 hover:text-red-500 active:scale-90 transition-all">
+        <Trash2 size={24} />
+    </button>
+
+</div>
                             {r.details && r.details.some(d => d.pending) && (
                                 <div className="bg-orange-950/30 border border-orange-900/50 rounded-[2rem] p-4 flex flex-col gap-3 shadow-inner print:hidden"><p className="text-[10px] font-black text-orange-400 uppercase italic text-center animate-pulse tracking-widest">Action Required: Written Solutions</p><div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory">
                                     {r.details.filter(d => d.pending).map((pendingQ, pIdx) => {
@@ -814,7 +843,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
             const percent = totalPossibleMarks > 0 ? Math.round((totalObtainedMarks / totalPossibleMarks) * 100) : 0;
             const d = new Date(); let finalStudentName = exam.studentName.toUpperCase();
             await addDoc(collection(db, "logs"), { studentName: exam.isGuest ? `(Guest) ${finalStudentName}` : finalStudentName, examTitle: exam.name, timestamp: Date.now() });
-            if (!exam.isGuest) { await addDoc(collection(db, "results"), { name: finalStudentName, exam: exam.name, percent, obtained: totalObtainedMarks, total: totalPossibleMarks, date: d.toLocaleDateString('en-GB'), timestamp: Date.now(), details: detailResults, timeTaken: timeDuration }); }
+            if (!exam.isGuest) { await addDoc(collection(db, "results"), { name: finalStudentName, exam: exam.name, percent, obtained: totalObtainedMarks, total: totalPossibleMarks, date: d.toLocaleDateString('en-GB'), timestamp: Date.now(), details: detailResults, timeTaken: timeDuration, bonus: 0 }); }
             setScoreData({ correct: totalObtainedMarks, total: totalPossibleMarks, percent, details: detailResults });
             localStorage.removeItem(recoveryKey); localStorage.removeItem(timerKey); setIsSubmitted(true);
         } catch (e) { console.error(e); setIsSubmitted(true); }
