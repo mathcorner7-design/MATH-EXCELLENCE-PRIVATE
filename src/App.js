@@ -637,22 +637,22 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-slate-950 z-[1200] p-6 overflow-y-auto animate-in slide-in-from-right-full duration-500 print:hidden text-white">
-            {previewImg && <ImagePreviewModal src={previewImg} onClose={() => setPreviewImg(null)} />}
-            
-            <button onClick={onClose} className="font-black text-blue-400 mb-10 flex items-center gap-3 border-b-4 border-blue-400 w-fit uppercase text-[11px] italic tracking-tighter hover:text-blue-200 transition-all print:hidden">
-                <ChevronLeft size={24} /> Return to Registry
-            </button>
+        <>
+            <div className="fixed inset-0 bg-slate-950 z-[1200] p-6 overflow-y-auto animate-in slide-in-from-right-full duration-500 print:hidden text-white">
+                {previewImg && <ImagePreviewModal src={previewImg} onClose={() => setPreviewImg(null)} />}
+                
+                <button onClick={onClose} className="font-black text-blue-400 mb-10 flex items-center gap-3 border-b-4 border-blue-400 w-fit uppercase text-[11px] italic tracking-tighter hover:text-blue-200 transition-all print:hidden">
+                    <ChevronLeft size={24} /> Return to Registry
+                </button>
 
-            <div className="bg-slate-900/60 backdrop-blur-md p-10 rounded-[3rem] border border-white/10 shadow-3xl max-w-xl mx-auto space-y-10">
-                <div className="flex items-center gap-5 border-b border-white/10 pb-6">
-                    <div className="w-16 h-16 bg-blue-700 rounded-[1.5rem] flex items-center justify-center text-white shadow-xl italic font-black text-2xl">{student?.name?.charAt(0)}</div>
-                    <div>
-                        <h3 className="text-3xl font-black uppercase italic tracking-tighter text-white leading-none">{student?.name}</h3>
-                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1 italic">Performance Logs</p>
+                <div className="bg-slate-900/60 backdrop-blur-md p-10 rounded-[3rem] border border-white/10 shadow-3xl max-w-xl mx-auto space-y-10">
+                    <div className="flex items-center gap-5 border-b border-white/10 pb-6">
+                        <div className="w-16 h-16 bg-blue-700 rounded-[1.5rem] flex items-center justify-center text-white shadow-xl italic font-black text-2xl">{student?.name?.charAt(0)}</div>
+                        <div>
+                            <h3 className="text-3xl font-black uppercase italic tracking-tighter text-white leading-none">{student?.name}</h3>
+                            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1 italic">Performance Logs</p>
+                        </div>
                     </div>
-                </div>
-
                 <div className="p-8 bg-black rounded-[2.5rem] space-y-5 border border-white/10 print:hidden">
                     <div className="grid grid-cols-1 gap-5 text-left">
                         <input type="text" value={newRes.exam} onChange={(e) => setNewRes({ ...newRes, exam: e.target.value.toUpperCase() })} className="w-full p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-xs outline-none focus:border-blue-500" placeholder="Module Name" />
