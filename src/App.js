@@ -106,6 +106,8 @@ const App = () => {
     const [studentResults, setStudentResults] = useState([]);
     const [activityLogs, setActivityLogs] = useState([]);
     const [examStartTime, setExamStartTime] = useState(null);
+    
+    // প্র্যাকটিস সেকশনের অ্যাকর্ডিয়নের জন্য স্টেট
     const [expandedPracticeClass, setExpandedPracticeClass] = useState(null);
 
     useEffect(() => {
@@ -247,9 +249,9 @@ const App = () => {
                         { id: 'growth', label: 'Growth', icon: <TrendingUp size={20} /> },
                         { id: 'teacher', label: 'Admin', icon: <User size={20} /> }
                     ].map((item) => (
-                        <button key={item.id} onClick={() => setActiveTab(item.id)} className={`flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all duration-300 relative group ${activeTab === item.id ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.6)] scale-105' : 'text-slate-400 hover:text-white hover:bg-white/10'}`} >
-                            <span className={`transition-all duration-500 ease-in-out ${activeTab === item.id ? 'scale-110 animate-bounce' : 'group-hover:rotate-[360deg] group-hover:scale-110'}`}> {item.icon} </span>
-                            <span className={`text-[9px] font-black uppercase italic tracking-tighter transition-all duration-300 ${activeTab === item.id ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'}`}> {item.label} </span>
+                        <button key={item.id} onClick={() => setActiveTab(item.id)} className={`flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all duration-300 relative group ${ activeTab === item.id ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.6)] scale-105' : 'text-slate-400 hover:text-white hover:bg-white/10' }`} >
+                            <span className={`transition-all duration-500 ease-in-out ${ activeTab === item.id ? 'scale-110 animate-bounce' : 'group-hover:rotate-[360deg] group-hover:scale-110' }`}> {item.icon} </span>
+                            <span className={`text-[9px] font-black uppercase italic tracking-tighter transition-all duration-300 ${ activeTab === item.id ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }`}> {item.label} </span>
                             {activeTab === item.id && ( <span className="absolute bottom-0.5 w-4 h-0.5 bg-white rounded-full animate-pulse"></span> )}
                         </button>
                     ))}
@@ -421,7 +423,7 @@ const App = () => {
     );
 };
 
-const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, studentResults, setTeacherPin }) => {
+const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, setTeacherPin, studentResults }) => {
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [isChangingPin, setIsChangingPin] = useState(false);
     const [pinVal, setPinVal] = useState('');
@@ -637,86 +639,84 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
     };
 
     return (
-        <>
-            <div className="fixed inset-0 bg-slate-950 z-[1200] p-6 overflow-y-auto animate-in slide-in-from-right-full duration-500 print:hidden text-white">
-                {previewImg && <ImagePreviewModal src={previewImg} onClose={() => setPreviewImg(null)} />}
-                
-                <button onClick={onClose} className="font-black text-blue-400 mb-10 flex items-center gap-3 border-b-4 border-blue-400 w-fit uppercase text-[11px] italic tracking-tighter hover:text-blue-200 transition-all print:hidden">
-                    <ChevronLeft size={24} /> Return to Registry
-                </button>
+        <div className="fixed inset-0 bg-slate-950 z-[1200] p-6 overflow-y-auto animate-in slide-in-from-right-full duration-500 print:hidden text-white">
+            {previewImg && <ImagePreviewModal src={previewImg} onClose={() => setPreviewImg(null)} />}
+            
+            <button onClick={onClose} className="font-black text-blue-400 mb-10 flex items-center gap-3 border-b-4 border-blue-400 w-fit uppercase text-[11px] italic tracking-tighter hover:text-blue-200 transition-all print:hidden">
+                <ChevronLeft size={24} /> Return to Registry
+            </button>
 
-                <div className="bg-slate-900/60 backdrop-blur-md p-10 rounded-[3rem] border border-white/10 shadow-3xl max-w-xl mx-auto space-y-10">
-                    <div className="flex items-center gap-5 border-b border-white/10 pb-6">
-                        <div className="w-16 h-16 bg-blue-700 rounded-[1.5rem] flex items-center justify-center text-white shadow-xl italic font-black text-2xl">{student?.name?.charAt(0)}</div>
-                        <div>
-                            <h3 className="text-3xl font-black uppercase italic tracking-tighter text-white leading-none">{student?.name}</h3>
-                            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1 italic">Performance Logs</p>
-                        </div>
-                    </div>
-
-                    <div className="p-8 bg-black rounded-[2.5rem] space-y-5 border border-white/10 print:hidden">
-                        <div className="grid grid-cols-1 gap-5 text-left">
-                            <input type="text" value={newRes.exam} onChange={(e) => setNewRes({ ...newRes, exam: e.target.value.toUpperCase() })} className="w-full p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-xs outline-none focus:border-blue-500" placeholder="Module Name" />
-                            <input type="date" value={newRes.date} onChange={(e) => setNewRes({ ...newRes, date: e.target.value })} className="w-full p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-xs outline-none" />
-                            <div className="flex gap-3">
-                                <input type="number" placeholder="Obt" value={newRes.obtained} onChange={(e) => setNewRes({ ...newRes, obtained: e.target.value })} className="w-1/2 p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-lg text-center outline-none focus:border-blue-500" />
-                                <input type="number" placeholder="Full" value={newRes.total} onChange={(e) => setNewRes({ ...newRes, total: e.target.value })} className="w-1/2 p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-lg text-center outline-none focus:border-blue-500" />
-                            </div>
-                        </div>
-                        <button onClick={async () => { if (newRes.exam && newRes.obtained && newRes.total && newRes.date) { const p = Math.round((parseFloat(newRes.obtained) / parseFloat(newRes.total)) * 100); await addDoc(collection(db, "results"), { ...newRes, name: student.name, percent: p, timestamp: Date.now() }); setNewRes({ exam: "", obtained: "", total: "", date: "" }); alert("Saved!"); } }} className="w-full py-5 bg-blue-700 text-white rounded-[1.5rem] font-black uppercase text-xs shadow-xl active:scale-95 transition-all">Manual Entry</button>
-                    </div>
-
-                    <div className="space-y-8 pt-8 border-t border-white/10">
-                        {results.filter(r => r.name === student?.name).sort((a, b) => b.timestamp - a.timestamp).map(r => (
-                            <div key={r.id} className="p-6 bg-white/5 border border-white/10 rounded-[2.5rem] flex flex-col gap-6 shadow-sm hover:shadow-md transition-all group">
-                                <div className="flex justify-between items-start w-full">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg bg-blue-900/40 text-blue-400 border border-blue-800/50 shadow-sm">{r.percent}%</div>
-                                        <div className="flex-1 min-w-0 pr-2">
-                                            <p className="text-sm font-black uppercase italic tracking-tighter text-white leading-none break-words whitespace-normal">{r.exam}</p>
-                                            <p className="text-[10px] font-bold text-slate-500 mt-1 italic"> {r.date} • Score: {r.obtained}/{r.total} {r.timeTaken && `• Time: ${r.timeTaken}`} </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3 print:hidden">
-                                        <button onClick={() => addBonusMarks(r)} className="text-yellow-500 hover:text-yellow-400 active:scale-90 transition-all"><Gift size={22} /></button>
-                                        <button onClick={async () => { if (window.confirm("Purge record?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-slate-600 hover:text-red-500 active:scale-90 transition-all flex-shrink-0"><Trash2 size={24} /></button>
-                                    </div>
-                                </div>
-                                {r.details && r.details.some(d => d.pending) && (
-                                    <div className="bg-orange-950/30 border border-orange-900/50 rounded-[2rem] p-4 flex flex-col gap-3 shadow-inner print:hidden">
-                                        <p className="text-[10px] font-black text-orange-400 uppercase italic text-center animate-pulse tracking-widest">Action Required: Written Solutions</p>
-                                        <div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory">
-                                            {r.details.filter(d => d.pending).map((pendingQ, pIdx) => {
-                                                const photoList = Array.isArray(pendingQ.selected) ? pendingQ.selected : [pendingQ.selected];
-                                                return photoList.map((photoUrl, imgIdx) => (
-                                                    <div key={`${pIdx}-${imgIdx}`} className="min-w-[200px] bg-black border border-white/10 shadow-md rounded-2xl p-4 flex flex-col items-center gap-3 snap-center">
-                                                        <p className="text-[9px] font-black text-slate-500 uppercase italic">Q{pendingQ.qNum} - Page {imgIdx + 1}</p>
-                                                        <button onClick={() => setPreviewImg(photoUrl)} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">View Page</button>
-                                                        {imgIdx === photoList.length - 1 && (
-                                                            <div className="flex gap-2 w-full mt-2">
-                                                                <input id={`mark-input-${r.id}-${pendingQ.qNum}`} type="number" placeholder="Marks" className="w-1/2 p-2 border border-slate-700 rounded-xl text-center font-black text-[10px] outline-none focus:border-orange-500 bg-black text-white" />
-                                                                <button onClick={async () => {
-                                                                    const markVal = document.getElementById(`mark-input-${r.id}-${pendingQ.qNum}`).value;
-                                                                    if (!markVal) return alert("Enter marks!");
-                                                                    const updatedDetails = r.details.map(d => (d.pending && d.qNum === pendingQ.qNum) ? { ...d, status: true, mark: parseFloat(markVal), pending: false, selected: "PHOTO_DELETED" } : d);
-                                                                    const newObt = updatedDetails.reduce((sum, d) => sum + (d.status ? d.mark : 0), 0);
-                                                                    await setDoc(doc(db, "results", r.id), { details: updatedDetails, obtained: newObt, percent: Math.round((newObt / r.total) * 100) }, { merge: true });
-                                                                    alert(`Q${pendingQ.qNum} Marks Updated!`);
-                                                                }} className="w-1/2 py-2 bg-orange-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">Save</button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ));
-                                            })}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+            <div className="bg-slate-900/60 backdrop-blur-md p-10 rounded-[3rem] border border-white/10 shadow-3xl max-w-xl mx-auto space-y-10">
+                <div className="flex items-center gap-5 border-b border-white/10 pb-6">
+                    <div className="w-16 h-16 bg-blue-700 rounded-[1.5rem] flex items-center justify-center text-white shadow-xl italic font-black text-2xl">{student?.name?.charAt(0)}</div>
+                    <div>
+                        <h3 className="text-3xl font-black uppercase italic tracking-tighter text-white leading-none">{student?.name}</h3>
+                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1 italic">Performance Logs</p>
                     </div>
                 </div>
+
+                <div className="p-8 bg-black rounded-[2.5rem] space-y-5 border border-white/10 print:hidden">
+                    <div className="grid grid-cols-1 gap-5 text-left">
+                        <input type="text" value={newRes.exam} onChange={(e) => setNewRes({ ...newRes, exam: e.target.value.toUpperCase() })} className="w-full p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-xs outline-none focus:border-blue-500" placeholder="Module Name" />
+                        <input type="date" value={newRes.date} onChange={(e) => setNewRes({ ...newRes, date: e.target.value })} className="w-full p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-xs outline-none" />
+                        <div className="flex gap-3">
+                            <input type="number" placeholder="Obt" value={newRes.obtained} onChange={(e) => setNewRes({ ...newRes, obtained: e.target.value })} className="w-1/2 p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-lg text-center outline-none focus:border-blue-500" />
+                            <input type="number" placeholder="Full" value={newRes.total} onChange={(e) => setNewRes({ ...newRes, total: e.target.value })} className="w-1/2 p-4 rounded-xl border border-white/10 bg-slate-900 text-white font-black text-lg text-center outline-none focus:border-blue-500" />
+                        </div>
+                    </div>
+                    <button onClick={async () => { if (newRes.exam && newRes.obtained && newRes.total && newRes.date) { const p = Math.round((parseFloat(newRes.obtained) / parseFloat(newRes.total)) * 100); await addDoc(collection(db, "results"), { ...newRes, name: student.name, percent: p, timestamp: Date.now() }); setNewRes({ exam: "", obtained: "", total: "", date: "" }); alert("Saved!"); } }} className="w-full py-5 bg-blue-700 text-white rounded-[1.5rem] font-black uppercase text-xs shadow-xl active:scale-95 transition-all">Manual Entry</button>
+                </div>
+
+                <div className="space-y-8 pt-8 border-t border-white/10">
+                    {results.filter(r => r.name === student?.name).sort((a, b) => b.timestamp - a.timestamp).map(r => (
+                        <div key={r.id} className="p-6 bg-white/5 border border-white/10 rounded-[2.5rem] flex flex-col gap-6 shadow-sm hover:shadow-md transition-all group">
+                            <div className="flex justify-between items-start w-full">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg bg-blue-900/40 text-blue-400 border border-blue-800/50 shadow-sm">{r.percent}%</div>
+                                    <div className="flex-1 min-w-0 pr-2">
+                                        <p className="text-sm font-black uppercase italic tracking-tighter text-white leading-none break-words whitespace-normal">{r.exam}</p>
+                                        <p className="text-[10px] font-bold text-slate-500 mt-1 italic"> {r.date} • Score: {r.obtained}/{r.total} {r.timeTaken && `• Time: ${r.timeTaken}`} </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 print:hidden">
+                                    <button onClick={() => addBonusMarks(r)} className="text-yellow-500 hover:text-yellow-400 active:scale-90 transition-all"><Gift size={22} /></button>
+                                    <button onClick={async () => { if (window.confirm("Purge record?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-slate-600 hover:text-red-500 active:scale-90 transition-all flex-shrink-0"><Trash2 size={24} /></button>
+                                </div>
+                            </div>
+                            {r.details && r.details.some(d => d.pending) && (
+                                <div className="bg-orange-950/30 border border-orange-900/50 rounded-[2rem] p-4 flex flex-col gap-3 shadow-inner print:hidden">
+                                    <p className="text-[10px] font-black text-orange-400 uppercase italic text-center animate-pulse tracking-widest">Action Required: Written Solutions</p>
+                                    <div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory">
+                                        {r.details.filter(d => d.pending).map((pendingQ, pIdx) => {
+                                            const photoList = Array.isArray(pendingQ.selected) ? pendingQ.selected : [pendingQ.selected];
+                                            return photoList.map((photoUrl, imgIdx) => (
+                                                <div key={`${pIdx}-${imgIdx}`} className="min-w-[200px] bg-black border border-white/10 shadow-md rounded-2xl p-4 flex flex-col items-center gap-3 snap-center">
+                                                    <p className="text-[9px] font-black text-slate-500 uppercase italic">Q{pendingQ.qNum} - Page {imgIdx + 1}</p>
+                                                    <button onClick={() => setPreviewImg(photoUrl)} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">View Page</button>
+                                                    {imgIdx === photoList.length - 1 && (
+                                                        <div className="flex gap-2 w-full mt-2">
+                                                            <input id={`mark-input-${r.id}-${pendingQ.qNum}`} type="number" placeholder="Marks" className="w-1/2 p-2 border border-slate-700 rounded-xl text-center font-black text-[10px] outline-none focus:border-orange-500 bg-black text-white" />
+                                                            <button onClick={async () => {
+                                                                const markVal = document.getElementById(`mark-input-${r.id}-${pendingQ.qNum}`).value;
+                                                                if (!markVal) return alert("Enter marks!");
+                                                                const updatedDetails = r.details.map(d => (d.pending && d.qNum === pendingQ.qNum) ? { ...d, status: true, mark: parseFloat(markVal), pending: false, selected: "PHOTO_DELETED" } : d);
+                                                                const newObt = updatedDetails.reduce((sum, d) => sum + (d.status ? d.mark : 0), 0);
+                                                                await setDoc(doc(db, "results", r.id), { details: updatedDetails, obtained: newObt, percent: Math.round((newObt / r.total) * 100) }, { merge: true });
+                                                                alert(`Q${pendingQ.qNum} Marks Updated!`);
+                                                            }} className="w-1/2 py-2 bg-orange-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">Save</button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ));
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
             </div>
-        </>
+        </div>
     );
 };
 
