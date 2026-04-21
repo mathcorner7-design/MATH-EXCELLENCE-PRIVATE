@@ -636,7 +636,7 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
         }
     };
 
-    return (
+        return (
         <>
             <div className="fixed inset-0 bg-slate-950 z-[1200] p-6 overflow-y-auto animate-in slide-in-from-right-full duration-500 print:hidden text-white">
                 {previewImg && <ImagePreviewModal src={previewImg} onClose={() => setPreviewImg(null)} />}
@@ -678,39 +678,10 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3 print:hidden">
-                                        <button onClick={() => addBonusMarks(r)} className="text-yellow-500 hover:text-yellow-400 active:scale-90 transition-all"><Gift size={22} /></button>
+                                        <button onClick={() => addBonusMarks(r)} className="text-yellow-500 hover:text-yellow-400 active:scale-90 transition-all">🎁</button>
                                         <button onClick={async () => { if (window.confirm("Purge record?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-slate-600 hover:text-red-500 active:scale-90 transition-all flex-shrink-0"><Trash2 size={24} /></button>
                                     </div>
                                 </div>
-                                {r.details && r.details.some(d => d.pending) && (
-                                    <div className="bg-orange-950/30 border border-orange-900/50 rounded-[2rem] p-4 flex flex-col gap-3 shadow-inner print:hidden">
-                                        <p className="text-[10px] font-black text-orange-400 uppercase italic text-center animate-pulse tracking-widest">Action Required: Written Solutions</p>
-                                        <div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory">
-                                            {r.details.filter(d => d.pending).map((pendingQ, pIdx) => {
-                                                const photoList = Array.isArray(pendingQ.selected) ? pendingQ.selected : [pendingQ.selected];
-                                                return photoList.map((photoUrl, imgIdx) => (
-                                                    <div key={`${pIdx}-${imgIdx}`} className="min-w-[200px] bg-black border border-white/10 shadow-md rounded-2xl p-4 flex flex-col items-center gap-3 snap-center">
-                                                        <p className="text-[9px] font-black text-slate-500 uppercase italic">Q{pendingQ.qNum} - Page {imgIdx + 1}</p>
-                                                        <button onClick={() => setPreviewImg(photoUrl)} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">View Page</button>
-                                                        {imgIdx === photoList.length - 1 && (
-                                                            <div className="flex gap-2 w-full mt-2">
-                                                                <input id={`mark-input-${r.id}-${pendingQ.qNum}`} type="number" placeholder="Marks" className="w-1/2 p-2 border border-slate-700 rounded-xl text-center font-black text-[10px] outline-none focus:border-orange-500 bg-black text-white" />
-                                                                <button onClick={async () => {
-                                                                    const markVal = document.getElementById(`mark-input-${r.id}-${pendingQ.qNum}`).value;
-                                                                    if (!markVal) return alert("Enter marks!");
-                                                                    const updatedDetails = r.details.map(d => (d.pending && d.qNum === pendingQ.qNum) ? { ...d, status: true, mark: parseFloat(markVal), pending: false, selected: "PHOTO_DELETED" } : d);
-                                                                    const newObt = updatedDetails.reduce((sum, d) => sum + (d.status ? d.mark : 0), 0);
-                                                                    await setDoc(doc(db, "results", r.id), { details: updatedDetails, obtained: newObt, percent: Math.round((newObt / r.total) * 100) }, { merge: true });
-                                                                    alert(`Q${pendingQ.qNum} Marks Updated!`);
-                                                                }} className="w-1/2 py-2 bg-orange-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">Save</button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ));
-                                            })}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         ))}
                     </div>
@@ -718,6 +689,7 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
             </div>
         </>
     );
+};
 };
 const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
     const recoveryKey = `exam_recovery_${exam.studentCode}_${exam.id}`;
