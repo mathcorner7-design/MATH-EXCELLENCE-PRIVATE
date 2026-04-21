@@ -426,63 +426,60 @@ const App = () => {
   // চ্যাপ্টার অনুযায়ী গ্রুপ করা (Status এর মতোই Fallback লজিক)
   const chapters = [...new Set(classExams.map(m => m.chapter || 'GENERAL'))];
 
-  return (
-    <div key={cls} className="space-y-4">
-      <div onClick={() => setOpenClass(isOpen ? null : cls)} className="cursor-pointer flex justify-between items-center font-black uppercase text-blue-400 border-b-2 border-blue-900/50 pb-2 text-xs italic tracking-widest pl-2" >
-        <div className="flex items-center gap-2"> <BookOpen size={16} /> Class {cls} </div>
-        <ChevronRight size={16} className={`transition-transform ${isOpen ? 'rotate-90' : ''}`} />
-      </div>
-
-      {isOpen && (
-        <div className="space-y-8 mt-4 pl-2">
-          {chapters.map(chName => (
-            <div key={chName} className="space-y-3">
-              {/* চ্যাপ্টারের সুন্দর হেডিং */}
-              <h4 className="text-[10px] font-black text-purple-400 uppercase italic flex items-center gap-2 tracking-widest">
-                <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                {chName}
-              </h4>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {classExams.filter(e => (e.chapter || 'GENERAL') === chName).map((p, i) => (
-                  <div 
-                    key={p.id} 
-                    onClick={() => {
-                      const s = p.status || (p.isGuestEnabled ? 'public' : 'premium');
-                      if (s === 'locked') return; 
-                      handleStartExamFlow(p);
-                    }}
-                    className={`w-full p-5 rounded-[1.8rem] shadow-xl flex justify-between items-center border transition-all cursor-pointer relative overflow-hidden group 
-                      ${(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' ? 'bg-white/5 border-white/5 opacity-60' : 'bg-black/40 border-white/10 active:scale-95 shadow-lg'}`}
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-sm font-black uppercase italic tracking-tighter text-white">{i + 1}. {p.name}</h3>
-                        <LevelBadge level={p.level} />
-                      </div>
-                      <p className="text-[9px] font-bold text-slate-500 uppercase mt-1">Time: {p.hours || 0}h {p.minutes || 0}m</p>
-                      <p className={`text-[8px] font-black uppercase italic mt-2 tracking-widest ${
-                        (p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'public' ? 'text-green-500' : 
-                        (p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'premium' ? 'text-yellow-500' : 'text-red-500'
-                      }`}>
-                        {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'public' && "🌍 Public"}
-                        {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'premium' && "💎 Premium"}
-                        {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' && "🔒 Locked"}
-                      </p>
+                 return (
+                  <div key={cls} className="space-y-4">
+                    <div onClick={() => setOpenClass(isOpen ? null : cls)} className="cursor-pointer flex justify-between items-center font-black uppercase text-blue-400 border-b-2 border-blue-900/50 pb-2 text-xs italic tracking-widest pl-2" >
+                      <div className="flex items-center gap-2"> <BookOpen size={16} /> Class {cls} </div>
+                      <ChevronRight size={16} className={`transition-transform ${isOpen ? 'rotate-90' : ''}`} />
                     </div>
-                    <ChevronRight size={20} className="text-white/10 group-hover:text-blue-400" />
+
+                    {isOpen && (
+                      <div className="space-y-8 mt-4 pl-2">
+                        {chapters.map(chName => (
+                          <div key={chName} className="space-y-3">
+                            <h4 className="text-[10px] font-black text-purple-400 uppercase italic flex items-center gap-2 tracking-widest">
+                              <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_#a855f7]"></div>
+                              {chName}
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {classExams.filter(e => (e.chapter || 'GENERAL') === chName).map((p, i) => (
+                                <div 
+                                  key={p.id} 
+                                  onClick={() => {
+                                    const s = p.status || (p.isGuestEnabled ? 'public' : 'premium');
+                                    if (s === 'locked') return; 
+                                    handleStartExamFlow(p);
+                                  }}
+                                  className={`w-full p-5 rounded-[1.8rem] shadow-xl flex justify-between items-center border transition-all cursor-pointer relative overflow-hidden group 
+                                    ${(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' ? 'bg-white/5 border-white/5 opacity-60 cursor-not-allowed' : 'bg-black/40 backdrop-blur-xl border-white/10 active:scale-95 hover:border-blue-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
+                                >
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <h3 className="text-sm font-black uppercase italic tracking-tighter text-white">{i + 1}. {p.name}</h3>
+                                      <LevelBadge level={p.level} />
+                                    </div>
+                                    <p className="text-[9px] font-bold text-slate-500 uppercase italic mt-1">Time: {p.hours || 0}h {p.minutes || 0}m</p>
+                                    <p className={`text-[8px] font-black uppercase italic mt-2 tracking-widest ${
+                                      (p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'public' ? 'text-green-500' : 
+                                      (p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'premium' ? 'text-yellow-500' : 'text-red-500'
+                                    }`}>
+                                      {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'public' && "🌍 Public"}
+                                      {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'premium' && "💎 Premium"}
+                                      {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' && "🔒 Locked"}
+                                    </p>
+                                  </div>
+                                  <ChevronRight size={20} className="text-white/10 group-hover:text-blue-500 transition-colors" />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-});
-  );
-};
+                );
+              });
 
 const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, setTeacherPin, studentResults, ads }) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
