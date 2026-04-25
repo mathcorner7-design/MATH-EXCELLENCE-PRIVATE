@@ -162,11 +162,28 @@ const App = () => {
   };
 
   const finalizeExamStart = () => {
-    if (!studentNameInput.trim()) return alert("PLEASE ENTER YOUR NAME");
-    const isGuestSessionEnabled = currentExam?.isGuestEnabled;
-    const enteredCode = studentCodeInput.trim();
-    const matchedStudent = students.find(s => s.studentCode?.toString().trim() === enteredCode);
-    if (!isGuestSessionEnabled) {
+  if (!studentNameInput.trim()) return alert("PLEASE ENTER YOUR NAME");
+  const enteredCode = studentCodeInput.trim();
+
+  // ১. চেক করা হচ্ছে এটা আপনার টিচার পিন কি না
+  if (enteredCode === teacherPin) {
+    setCurrentExam(prev => ({ 
+      ...prev, 
+      studentName: "ADMIN (PREVIEW)", 
+      studentCode: "ADMIN_MASTER", 
+      isGuest: true // গেস্ট ট্রু রাখলে রেজাল্ট ডাটাবেসে সেভ হবে না
+    }));
+    setExamStartTime(Date.now());
+    setIsExamActive(true);
+    setShowNameModal(false);
+    return;
+  }
+
+  // ২. পিন না মিললে আগের মতো স্টুডেন্ট চেক হবে
+  const isGuestSessionEnabled = currentExam?.isGuestEnabled;
+  const matchedStudent = students.find(s => s.studentCode?.toString().trim() === enteredCode);
+  
+  if (!isGuestSessionEnabled) {
       if (!enteredCode) return alert("THIS EXAM IS PROTECTED! UNIQUE CODE IS MANDATORY.");
       if (!matchedStudent) {
         alert("INVALID STUDENT CODE! PLEASE CONTACT ANSHU SIR.");
@@ -425,7 +442,7 @@ const App = () => {
           )
         )}
 
-        {activeTab === 'growth' && <GrowthSectionView results={studentResults} students={students} />}
+        {activeTab === 'growth' && <GrowthSectionView results={studentResults} students={students} teacherPin={teacherPin} />}
 
         {activeTab === 'practice' && (
           <div className="w-full space-y-8 print:hidden">
@@ -934,17 +951,21 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   );
 };
 
-const GrowthSectionView = ({ results, students }) => {
+const GrowthSectionView = ({ results, students, teacherPin }) => {
   const [sel, setSel] = useState(null);
   const [selectedReview, setSelectedReview] = useState(null);
   const [vCode, setVCode] = useState('');
   const [isVerified, setIsVerified] = useState(false);
   const handlePrint = () => { window.print(); };
-  const handleVerify = () => {
-    const s = students.find(x => x.name === sel);
-    if (s && s.studentCode?.toString().trim() === vCode.trim()) setIsVerified(true);
-    else alert("INVALID CODE!");
-  };
+ const handleVerify = () => {
+  const s = students.find(x => x.name === sel);
+  // স্টুডেন্ট কোড অথবা আপনার টিচার পিন - যেকোনো একটা মিললেই হবে
+  if (s && (s.studentCode?.toString().trim() === vCode.trim() || vCode.trim() === teacherPin)) {
+    setIsVerified(true);
+  } else {
+    alert("INVALID CODE!");
+  }
+};
   return (
     <div className="max-w-2xl mx-auto w-full animate-in fade-in duration-500 text-left px-2">
       {selectedReview && <ReviewResultModal result={selectedReview} onClose={() => setSelectedReview(null)} />}
