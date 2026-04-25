@@ -111,6 +111,7 @@ const App = () => {
   const [openClass, setOpenClass] = useState(null);
   const [ads, setAds] = useState([]);
   const [qaChapter, setQaChapter] = useState('');
+  const [openChapter, setOpenChapter] = useState(null);
 
   useEffect(() => {
     const fetchPin = async () => {
@@ -444,33 +445,53 @@ const App = () => {
                     </div>
                     {isOpen && (
                       <div className="space-y-6 mt-4 pl-2">
-                        {chapters.map(chName => (
-                          <div key={chName} className="space-y-3">
-                            <h4 className="text-[10px] font-black text-purple-400 uppercase italic flex items-center gap-2 tracking-widest">
-                              <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_#a855f7]"></div>
-                              {chName}
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {classExams.filter(e => (e.chapter || 'GENERAL').toUpperCase() === chName).map((p, i) => (
-                                <div key={p.id} onClick={() => { const s = p.status || (p.isGuestEnabled ? 'public' : 'premium'); if (s === 'locked') return; handleStartExamFlow(p); }} className={`w-full p-6 rounded-[2rem] shadow-xl flex justify-between items-center border transition-all cursor-pointer relative overflow-hidden group ${(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' ? 'bg-white/5 border-white/5 opacity-60 cursor-not-allowed' : 'bg-black/60 backdrop-blur-xl border-white/10 active:scale-95 hover:border-blue-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`} >
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <h3 className="text-sm font-black uppercase italic tracking-tighter text-white">{i + 1}. {p.name}</h3>
-                                      <LevelBadge level={p.level} />
-                                    </div>
-                                    <p className="text-[9px] font-bold text-slate-500 uppercase italic mt-1">Time: {p.hours || 0}h {p.minutes || 0}m</p>
-                                    <p className={`text-[8px] font-black uppercase italic mt-2 tracking-widest ${ (p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'public' ? 'text-green-500' : (p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'premium' ? 'text-yellow-500' : 'text-red-500' }`}>
-                                      {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'public' && "🌍 FREE TO ALL"}
-                                      {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'premium' && "💎 ONLY FOR REGISTERED STUDENTS"}
-                                      {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' && "🔒 LOCKED EXAM (COMING SOON)"}
-                                    </p>
-                                  </div>
-                                  <ChevronRight size={24} className="text-white/20 group-hover:text-blue-500 transition-colors" />
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
+                        {chapters.map(chName => {
+  const isChOpen = openChapter === `${cls}-${chName}`;
+  return (
+    <div key={chName} className="space-y-3 mb-2">
+      {/* চ্যাপ্টার হেডার - যা ক্লিক করলে খুলবে */}
+      <div 
+        onClick={() => setOpenChapter(isChOpen ? null : `${cls}-${chName}`)}
+        className="cursor-pointer flex justify-between items-center p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-all"
+      >
+        <h4 className="text-[10px] font-black text-purple-400 uppercase italic flex items-center gap-2 tracking-widest">
+          <div className={`w-1.5 h-1.5 rounded-full shadow-[0_0_8px_#a855f7] ${isChOpen ? 'bg-purple-400 animate-ping' : 'bg-purple-800'}`}></div>
+          {chName}
+        </h4>
+        <ChevronRight size={14} className={`text-purple-400 transition-transform duration-300 ${isChOpen ? 'rotate-90' : ''}`} />
+      </div>
+
+      {/* এক্সাম লিস্ট - শুধু ওপেন থাকলে দেখাবে */}
+      {isChOpen && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
+          {classExams.filter(e => (e.chapter || 'GENERAL').toUpperCase() === chName).map((p, i) => (
+            <div key={p.id} onClick={() => {
+                const s = p.status || (p.isGuestEnabled ? 'public' : 'premium');
+                if (s === 'locked') return;
+                handleStartExamFlow(p);
+              }} 
+              className={`w-full p-6 rounded-[2rem] shadow-xl flex justify-between items-center border transition-all cursor-pointer relative overflow-hidden group ${(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' ? 'bg-white/5 border-white/5 opacity-60 cursor-not-allowed' : 'bg-black/60 backdrop-blur-xl border-white/10 active:scale-95 hover:border-blue-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
+            >
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-sm font-black uppercase italic tracking-tighter text-white">{i + 1}. {p.name}</h3>
+                  <LevelBadge level={p.level} />
+                </div>
+                <p className="text-[9px] font-bold text-slate-500 uppercase italic mt-1">Time: {p.hours || 0}h {p.minutes || 0}m</p>
+                <p className={`text-[8px] font-black uppercase italic mt-2 tracking-widest ${ (p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'public' ? 'text-green-500' : (p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'premium' ? 'text-yellow-500' : 'text-red-500' }`}>
+                  {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'public' && "🌐 FREE TO ALL"}
+                  {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'premium' && "💎 ONLY FOR REGISTERED STUDENTS"}
+                  {(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' && "🔒 LOCKED EXAM(COMING SOON)"}
+                </p>
+              </div>
+              <ChevronRight size={24} className="text-white/20 group-hover:text-blue-500 transition-colors" />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+})}
                       </div>
                     )}
                   </div>
