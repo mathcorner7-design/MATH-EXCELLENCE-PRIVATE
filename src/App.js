@@ -94,6 +94,7 @@ const ReviewResultModal = ({ result, onClose }) => {
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
+  const [isAppSubmitting, setIsAppSubmitting] = useState(false);
   const [isExamActive, setIsExamActive] = useState(false);
   const [currentExam, setCurrentExam] = useState(null);
   const [showNameModal, setShowNameModal] = useState(false);
@@ -218,7 +219,7 @@ const App = () => {
   const ongoingLive = liveMocks.filter(m => m.isPublished && (Date.now() - (m.timestamp || 0) < 6 * 3600000));
   const shiftedLive = liveMocks.filter(m => m.isPublished && (Date.now() - (m.timestamp || 0) >= 6 * 3600000));
 
-  if (isExamActive) return <InteractiveExamHall exam={currentExam} onFinish={() => setIsExamActive(false)} studentsList={students} />;
+  if (isExamActive) return <InteractiveExamHall exam={currentExam} onFinish={() => setIsExamActive(false)} setIsAppSubmitting={setIsAppSubmitting} studentsList={students} />;
 
   const LevelBadge = ({ level }) => {
     if (!level) return null;
@@ -529,17 +530,18 @@ const App = () => {
           </div>
         )}
       </main>
-        {isSubmitting && (
+        {isAppSubmitting && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[9999] flex flex-col items-center justify-center p-6 text-center text-white">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
           <h2 className="text-blue-400 text-2xl font-black tracking-tighter animate-pulse uppercase italic">
             Submitting Your Exam...
           </h2>
-          <p className="text-gray-400 text-xs mt-4 font-bold uppercase italic tracking-widest leading-relaxed">
-            Please Wait! Saving your Exam. <br/> Do not close the app.
+          <p className="text-gray-400 text-[10px] mt-4 font-bold uppercase italic tracking-widest leading-relaxed">
+            Please Wait! Saving your hard work. <br/> Do not close the app.
           </p>
         </div>
       )}
+
     </div>
   );
 };
@@ -827,7 +829,7 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
   );
 };
 
-const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
+const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting }) => {
   const recoveryKey = `exam_recovery_${exam.studentCode}_${exam.id}`;
   const timerKey = `timer_end_${exam.studentCode}_${exam.id}`;
   const [timeLeft, setTimeLeft] = useState(() => {
@@ -846,7 +848,6 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
     return savedAnswers ? JSON.parse(savedAnswers) : {};
   });
   const [activeQuestion, setActiveQuestion] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [scoreData, setScoreData] = useState(null);
 
   useEffect(() => {
@@ -925,7 +926,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
   }, [timeLeft, isSubmitted]);
 
   const submitExam = async () => {
-  setIsSubmitting(true);
+    setIsAppSubmitting(true);
     try {
       const startTimeKey = `timer_end_${exam.studentCode}_${exam.id}`;
       const savedTimerEnd = localStorage.getItem(startTimeKey);
@@ -959,13 +960,11 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList }) => {
       localStorage.removeItem(recoveryKey);
       localStorage.removeItem(timerKey);
       setIsSubmitted(true);
-     } catch (e) { 
-    console.error(e); 
-    setIsSubmitted(true); 
-  } finally {
-    setIsSubmitting(false); // লোডিং বন্ধ করার জন্য
-  }
-};
+    } catch (e) { console.error(e); setIsSubmitted(true); }
+    finally {
+      setIsAppSubmitting(false);
+    }
+  };
 
   const formatTime = (s) => `${Math.floor(s / 60)}:${s % 60 < 10 ? '0' + (s % 60) : s % 60}`;
 
@@ -1040,19 +1039,6 @@ const GrowthSectionView = ({ results, students, teacherPin }) => {
               })()}
             </div>
           </div>
-        </div>
-      )}
-              </main>
-
-      {isSubmitting && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[9999] flex flex-col items-center justify-center p-6 text-center text-white">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-          <h2 className="text-blue-400 text-2xl font-black tracking-tighter animate-pulse uppercase italic">
-            Submitting Your Exam...
-          </h2>
-          <p className="text-gray-400 text-[10px] mt-4 font-bold uppercase italic tracking-widest leading-relaxed">
-            Please Wait! Saving your hard work. <br/> Do not close the app.
-          </p>
         </div>
       )}
     </div>
