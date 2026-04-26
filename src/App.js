@@ -926,7 +926,10 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
   }, [timeLeft, isSubmitted]);
 
   const submitExam = async () => {
-    alert("Submitting your exam... Please wait a moment.");
+      const loadingDiv = document.createElement('div');
+  loadingDiv.id = 'loading-overlay';
+  loadingDiv.innerHTML = "<div style='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;text-align:center;'><div style='width:50px;height:50px;border:5px solid #3b82f6;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;'></div><br><b style='letter-spacing:1px;'>SUBMITTING EXAM...</b><p style='font-size:12px;opacity:0.7;'>Please wait, saving your data.</p></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>";
+  document.body.appendChild(loadingDiv);
     setIsAppSubmitting(true);
     try {
       const startTimeKey = `timer_end_${exam.studentCode}_${exam.id}`;
@@ -964,6 +967,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
     } catch (e) { console.error(e); setIsSubmitted(true); }
     finally {
       setIsAppSubmitting(false);
+      document.getElementById('loading-overlay')?.remove();
     }
   };
 
