@@ -694,6 +694,18 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div><p className="text-[8px] font-black text-yellow-500 uppercase mb-1 ml-1 italic">Correct Answer Key</p><input type="text" defaultValue={item.answerKey} onBlur={(e) => updateField(item.id, item.source, 'answerKey', e.target.value.toUpperCase())} className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-xs font-bold text-white outline-none" placeholder="e.g. A,B,W,D" /></div>
                         <div><p className="text-[8px] font-black text-green-500 uppercase mb-1 ml-1 italic">Marks per Question</p><input type="text" defaultValue={item.questionMarks} onBlur={(e) => updateField(item.id, item.source, 'questionMarks', e.target.value)} className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-xs font-bold text-white outline-none" placeholder="e.g. 1,1,5,1" /></div>
+      {/* নেগেটিভ মার্কিং আপডেট করার অপশন */}
+<div className="md:col-span-2">
+  <p className="text-[8px] font-black text-red-500 uppercase mb-1 ml-1 italic">Update Negative Mark (Ex: 0.25)</p>
+  <input 
+    type="number" 
+    step="0.01" 
+    defaultValue={item.negativeMark} 
+    onBlur={(e) => updateField(item.id, item.source, 'negativeMark', e.target.value)} 
+    className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-xs font-bold text-white outline-none focus:border-red-500" 
+    placeholder="0 for no negative" 
+  />
+</div>
                       </div>
                     </div>
                   )}
