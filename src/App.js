@@ -1041,6 +1041,17 @@ const GrowthSectionView = ({ results, students, teacherPin }) => {
           </div>
         </div>
       )}
+        {isAppSubmitting && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[9999] flex flex-col items-center justify-center p-6 text-center text-white">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+          <h2 className="text-blue-400 text-2xl font-black tracking-tighter animate-pulse uppercase italic">
+            Submitting Your Exam...
+          </h2>
+          <p className="text-gray-400 text-[10px] mt-4 font-bold uppercase italic tracking-widest leading-relaxed">
+            Please Wait! Saving your hard work. <br/> Do not close the app.
+          </p>
+        </div>
+      )}
     </div>
   );
 };
