@@ -553,6 +553,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   const [expandedId, setExpandedId] = useState(null);
   const [quickAddType, setQuickAddType] = useState('live');
   const [qaName, setQaName] = useState('');
+  const [qaAnswerLink, setQaAnswerLink] = useState('');
   const [qaHours, setQaHours] = useState('1');
   const [qaMinutes, setQaMinutes] = useState('0');
   const [qaLink, setQaLink] = useState('');
@@ -585,9 +586,10 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
       class: qaClass,
       level: qaLevel,
       chapter: qaChapter.trim().toUpperCase() || 'GENERAL',
+      answerPdfUrl: qaAnswerLink.trim()
       timestamp: Date.now()
     });
-    setQaName(''); setQaLink(''); setQaKey(''); setQaMarks(''); setQaNeg('0'); setQaStatus('public'); setQaChapter('');
+    setQaName(''); setQaLink(''); setQaKey(''); setQaMarks(''); setQaNeg('0'); setQaStatus('public'); setQaChapter(''); setQaAnswerLink('');
     alert(`Success: Added to Registry`);
   };
 
@@ -653,7 +655,16 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                       </div>
                       <div className="flex flex-wrap gap-3">
                         <div className="bg-black p-2.5 rounded-xl border border-white/10 shadow-sm min-w-[120px]"><p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1">Time Limit</p><div className="flex items-center gap-1"><input type="number" defaultValue={item.hours} onBlur={(e) => updateField(item.id, item.source, 'hours', e.target.value)} className="w-10 text-center font-black bg-slate-900 rounded-lg outline-none text-white" /> <span className="font-bold text-[9px]">H</span><input type="number" defaultValue={item.minutes} onBlur={(e) => updateField(item.id, item.source, 'minutes', e.target.value)} className="w-10 text-center font-black bg-slate-900 rounded-lg outline-none text-white" /> <span className="font-bold text-[9px]">M</span></div></div>
-                        <div className="flex-1 bg-black p-2.5 rounded-xl border border-white/10 shadow-sm"><p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1">Google Drive Link</p><input type="text" defaultValue={item.fileUrl} onBlur={(e) => updateField(item.id, item.source, 'fileUrl', e.target.value)} className="w-full p-2 rounded-lg border border-white/5 bg-black text-white text-[10px] outline-none font-bold" /></div>
+                        <div className="flex-1 bg-black p-2.5 rounded-xl border border-white/10 shadow-sm"><p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1">Google Drive Link</p><input type="text" defaultValue={item.fileUrl} onBlur={(e) => updateField(item.id, item.source, 'fileUrl', e.target.value)} className="w-full p-2 rounded-lg border border-white/5 bg-black text-white text-[10px] outline-none font-bold" /></div><div>
+  <p className="text-[8px] font-black text-green-500 uppercase mb-1 ml-1">Update Answer Link</p>
+  <input 
+    type="text" 
+    defaultValue={item.answerPdfUrl} 
+    onBlur={(e) => updateField(item.id, item.source, 'answerPdfUrl', e.target.value)} 
+    className="w-full p-2 rounded-lg border border-white/5 bg-black text-white text-[10px] outline-none font-bold" 
+    placeholder="New Answer PDF Link"
+  />
+</div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div><p className="text-[8px] font-black text-yellow-500 uppercase mb-1 ml-1 italic">Correct Answer Key</p><input type="text" defaultValue={item.answerKey} onBlur={(e) => updateField(item.id, item.source, 'answerKey', e.target.value.toUpperCase())} className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-xs font-bold text-white outline-none" placeholder="e.g. A,B,W,D" /></div>
@@ -719,6 +730,16 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
             <p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1 italic tracking-widest">Google Drive Link</p>
             <input type="text" value={qaLink} onChange={(e) => setQaLink(e.target.value)} className="w-full bg-transparent outline-none text-[9px] font-bold text-white" placeholder="Paste PDF/Doc Link" />
           </div>
+    <div className="bg-black p-3 rounded-2xl border border-white/10 shadow-inner mt-2">
+  <p className="text-[8px] font-black text-green-500 uppercase mb-1 ml-1 italic tracking-widest">Answer PDF Link (Detailed Review)</p>
+  <input 
+    type="text" 
+    value={qaAnswerLink} 
+    onChange={(e) => setQaAnswerLink(e.target.value)} 
+    className="w-full bg-transparent outline-none text-[9px] font-bold text-white" 
+    placeholder="Paste Answer PDF Link (Optional)" 
+  />
+</div>
           <button onClick={handleQuickAdd} className="w-full bg-blue-700 text-white py-4 rounded-[1.5rem] font-black text-[11px] uppercase shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3 border-b-4 border-blue-900 hover:bg-blue-600 italic tracking-tighter"><Send size={18} /> Deploy to Registry</button>
         </div>
       </div>
@@ -958,7 +979,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
       let finalName = exam.studentName.toUpperCase();
       await addDoc(collection(db, "logs"), { studentName: exam.isGuest ? `(Guest) ${finalName}` : finalName, examTitle: exam.name, timestamp: Date.now() });
       if (!exam.isGuest) {
-        await addDoc(collection(db, "results"), { name: finalName, exam: exam.name, percent, obtained: totalObtainedMarks, total: totalPossibleMarks, date: d.toLocaleDateString('en-GB'), timestamp: Date.now(), details: detailResults, timeTaken: timeDuration, bonus: 0 });
+        await addDoc(collection(db, "results"), { name: finalName, exam: exam.name, percent, obtained: totalObtainedMarks, total: totalPossibleMarks, date: d.toLocaleDateString('en-GB'), timestamp: Date.now(), details: detailResults, answerPdfUrl: exam.answerPdfUrl timeTaken: timeDuration, bonus: 0 });
       }
       setScoreData({ correct: totalObtainedMarks, total: totalPossibleMarks, percent, details: detailResults });
       localStorage.removeItem(recoveryKey);
@@ -1037,7 +1058,26 @@ const GrowthSectionView = ({ results, students, teacherPin }) => {
                         <p className="text-xl md:text-3xl font-black italic text-blue-400 leading-none">{totalObtained}/{r.total}</p>
                         {r.timeTaken && <p className="text-[9px] font-black text-yellow-500 uppercase italic mt-1 border-t border-white/5 pt-1">Time: {r.timeTaken}</p>}
                       </div>
-                      <div className="flex-shrink-0 print:hidden"><button onClick={() => setSelectedReview(r)} className="bg-slate-800 text-blue-400 p-2 md:p-3 rounded-2xl border border-white/10 shadow-sm hover:bg-blue-600 hover:text-white transition-all"><Eye size={18} /></button></div>
+                     <div className="flex-shrink-0 flex flex-col gap-2 print:hidden">
+  {/* কুইক রিভিউ বাটন */}
+  <button onClick={() => setSelectedReview(r)} className="bg-slate-800 text-blue-400 p-2 md:p-3 rounded-2xl border border-white/10 shadow-sm hover:bg-blue-600 hover:text-white transition-all flex flex-col items-center min-w-[65px]">
+    <Eye size={16} />
+    <span className="text-[7px] font-black mt-1 uppercase italic">Quick</span>
+  </button>
+
+  {/* ডিটেল রিভিউ (লিঙ্ক থাকলে দেখাবে, না থাকলে লক) */}
+  {r.answerPdfUrl ? (
+    <a href={r.answerPdfUrl} target="_blank" rel="noreferrer" className="bg-slate-800 text-green-400 p-2 md:p-3 rounded-2xl border border-white/10 shadow-sm hover:bg-green-600 hover:text-white transition-all flex flex-col items-center min-w-[65px]">
+      <FileText size={16} />
+      <span className="text-[7px] font-black mt-1 uppercase italic">Detail</span>
+    </a>
+  ) : (
+    <div className="bg-slate-900/40 text-slate-600 p-1.5 rounded-xl border border-white/5 flex flex-col items-center opacity-50 min-w-[65px]">
+      <Lock size={12} />
+      <span className="text-[6px] font-black uppercase text-center leading-tight">No Link<br/>Available</span>
+    </div>
+  )}
+</div> 
                     </div>
                   );
                 });
