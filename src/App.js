@@ -967,17 +967,6 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
   };
 
   const formatTime = (s) => `${Math.floor(s / 60)}:${s % 60 < 10 ? '0' + (s % 60) : s % 60}`;
-if (isAppSubmitting) return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[9999] flex flex-col items-center justify-center p-6 text-center text-white">
-      <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-      <h2 className="text-blue-400 text-2xl font-black tracking-tighter animate-pulse uppercase italic">
-        Submitting Your Exam...
-      </h2>
-      <p className="text-gray-400 text-[10px] mt-4 font-bold uppercase italic tracking-widest leading-relaxed">
-        Please Wait! Saving your hard work. <br/> Do not close the app.
-      </p>
-    </div>
-  );
 
   if (isSubmitted) return (
     <div className="fixed inset-0 bg-slate-950 z-[2000] flex flex-col items-center overflow-y-auto p-10 text-center animate-in zoom-in duration-500 text-white"><CheckCircle size={80} className="text-green-500 mb-6 animate-bounce shadow-2xl rounded-full" /><h2 className="text-3xl font-black uppercase italic mb-8 tracking-tighter leading-none">Session Completed</h2><div className="bg-slate-900 p-10 rounded-[3rem] border-4 border-slate-800 mb-10 w-full max-sm shadow-2xl text-center"><p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2 opacity-60">Result Transcript</p><h3 className="text-5xl font-black text-blue-400 italic tracking-tighter leading-none">{scoreData?.correct} / {scoreData?.total}</h3>{exam.isGuest && <p className="text-orange-400 text-[10px] font-black mt-4 uppercase italic">Notice: Guest data is not saved permanentally.</p>}<div className="mt-8 space-y-2 max-h-60 overflow-y-auto no-scrollbar border-t border-slate-800 pt-4 w-full px-2"><p className="text-[9px] font-black text-slate-500 uppercase italic mb-3 text-center">Quick Review:</p><div className="grid grid-cols-5 gap-2">{scoreData?.details?.map((item, idx) => (<div key={idx} className={`p-2 rounded-lg border flex flex-col items-center ${item.type === 'written' ? 'bg-orange-900/20 border-orange-800 text-orange-400' : (item.status ? 'bg-green-900/20 border-green-800 text-green-400' : 'bg-red-900/20 border-red-800 text-red-400')}`}><span className="text-[8px] font-black">Q{item.qNum}</span>{item.type === 'written' ? <Clock size={10} /> : (item.status ? <CheckCircle size={10} /> : <X size={10} />)}</div>))}</div></div></div><button onClick={onFinish} className="bg-blue-700 text-white px-16 py-4 rounded-full font-black uppercase text-[12px] shadow-2xl">Close Arena</button></div>
@@ -1050,19 +1039,6 @@ const GrowthSectionView = ({ results, students, teacherPin }) => {
               })()}
             </div>
           </div>
-                </div>
-      )}
-
-      {/* --- সাবমিটিং ওভারলে (মেইন রিটার্নের ঠিক আগে) --- */}
-      {isAppSubmitting && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[9999] flex flex-col items-center justify-center p-6 text-center text-white">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-          <h2 className="text-blue-400 text-2xl font-black tracking-tighter animate-pulse uppercase italic">
-            Submitting Your Exam...
-          </h2>
-          <p className="text-gray-400 text-[10px] mt-4 font-bold uppercase italic tracking-widest leading-relaxed">
-            Please Wait! Saving your hard work. <br/> Do not close the app.
-          </p>
         </div>
       )}
     </div>
