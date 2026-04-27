@@ -1029,11 +1029,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
   }, [timeLeft, isSubmitted]);
 
   const submitExam = async () => {
-    const loadingDiv = document.createElement('div');
-    loadingDiv.id = 'loading-overlay';
-    loadingDiv.innerHTML = "<div style='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;text-align:center;'><div style='width:50px;height:50px;border:5px solid #3b82f6;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;'></div><br><b style='letter-spacing:1px;'>SUBMITTING EXAM...</b><p style='font-size:12px;opacity:0.7;'>Please wait, saving your data.</p></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>";
-    document.body.appendChild(loadingDiv);
-    
+    // লোডিং স্টেট সেট করা (এখন আর আলাদা কোনো div তৈরি হবে না)
     setIsAppSubmitting(true);
 
     try {
@@ -1063,10 +1059,9 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
         });
 
         const percent = totalPossibleMarks > 0 ? Math.round((totalObtainedMarks / totalPossibleMarks) * 100) : 0;
-        const d = new Date();
         let finalName = exam.studentName.toUpperCase();
 
-        // ১. লগ এবং রেজাল্ট ডাটাবেসে সেভ করা
+        // লগ এবং রেজাল্ট সেভ
         await addDoc(collection(db, "logs"), { 
             studentName: exam.isGuest ? `(Guest) ${finalName}` : finalName, 
             examTitle: exam.name, 
@@ -1074,50 +1069,28 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
         });
 
         if (!exam.isGuest) {
-            await addDoc(collection(db, "results"), {
-                name: finalName,
-                exam: exam.name,
-                percent,
-                tabSwitches: tabSwitches,
-                status: isBanned ? "BANNED" : "COMPLETED",
-                obtained: totalObtainedMarks,
-                total: totalPossibleMarks,
-                date: d.toLocaleDateString('en-GB'),
-                timestamp: Date.now(),
-                details: detailResults,
-                answerPdfUrl: exam.answerPdfUrl || "",
-                timeTaken: timeDuration,
-                bonus: 0
+            await addDoc(collection(db, "results"), { 
+                name: finalName, exam: exam.name, percent, tabSwitches: tabSwitches, 
+                status: isBanned ? "BANNED" : "COMPLETED", 
+                obtained: totalObtainedMarks, total: totalPossibleMarks, 
+                date: new Date().toLocaleDateString('en-GB'), 
+                timestamp: Date.now(), details: detailResults, 
+                answerPdfUrl: exam.answerPdfUrl || "", timeTaken: timeDuration, bonus: 0 
             });
         }
 
-        // ২. রেজাল্ট ডাটা স্টেটে সেট করা (সাদা স্ক্রিন রোধ করতে এটি আগে জরুরি)
-             // এই অংশটুকু রিপ্লেস করুন
-      setScoreData({ correct: totalObtainedMarks, total: totalPossibleMarks, percent, details: detailResults });
-      localStorage.removeItem(recoveryKey);
-      localStorage.removeItem(timerKey);
+        setScoreData({ correct: totalObtainedMarks, total: totalPossibleMarks, percent, details: detailResults });
+        localStorage.removeItem(recoveryKey);
+        localStorage.removeItem(timerKey);
+        
+        // রেজাল্ট স্টেট আপডেট এবং লোডিং শেষ করা
+        setIsSubmitted(true);
+        setIsAppSubmitting(false);
 
-      // গুরুত্বপূর্ণ: আগে রেজাল্ট স্টেট সেট হবে
-      setIsSubmitted(true); 
-
-      // ১ সেকেন্ড সময় দিন যাতে ব্রাউজার রেজাল্ট রেন্ডার করতে পারে, তারপর লোডিং স্ক্রিন সরান
-      setTimeout(() => {
-          setIsAppSubmitting(false);
-          const overlay = document.getElementById('loading-overlay');
-          if (overlay) overlay.remove();
-      }, 1000);
-
-      if (isBanned) {
-          setTimeout(() => {
-              onFinish();
-          }, 6000);
-      }
     } catch (e) {
-      console.error(e);
-      setIsAppSubmitting(false);
-      const overlay = document.getElementById('loading-overlay');
-      if (overlay) overlay.remove();
-      setIsSubmitted(true); 
+        console.error(e);
+        setIsAppSubmitting(false);
+        setIsSubmitted(true); // এরর হলেও রেজাল্ট স্ক্রিনে পাঠিয়ে দাও
     }
 };
   const formatTime = (s) => `${Math.floor(s / 60)}:${s % 60 < 10 ? '0' + (s % 60) : s % 60}`;
