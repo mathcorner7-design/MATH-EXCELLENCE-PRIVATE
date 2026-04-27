@@ -891,6 +891,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
   const recoveryKey = `exam_recovery_${exam.studentCode}_${exam.id}`;
   const timerKey = `timer_end_${exam.studentCode}_${exam.id}`;
   
+  // ১. সব স্টেটগুলো এখানে (ডুপ্লিকেট রিমুভ করা হয়েছে)
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [tabSwitches, setTabSwitches] = useState(0);
   const [inactiveTime, setInactiveTime] = useState(0);
@@ -914,7 +915,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
     return savedAnswers ? JSON.parse(savedAnswers) : {};
   });
 
-  // --- ট্র্যাকিং লজিক (শুদ্ধ করা হয়েছে) ---
+  // ২. ট্র্যাকিং লজিক
   useEffect(() => {
     let startTime;
 
@@ -931,23 +932,22 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        // ১. ট্যাব সুইচিং কাউন্ট
+        // ট্যাব সুইচিং কাউন্ট
         setTabSwitches(prev => {
           const newCount = prev + 1;
           if (newCount >= 2) triggerBanProcess();
           return newCount;
         });
-        // ২. বাইরে যাওয়ার সময় রেকর্ড
+        // বাইরে যাওয়ার সময় রেকর্ড
         startTime = new Date().getTime();
       } else {
-        // ৩. ফিরে আসার পর সময় ক্যালকুলেশন
+        // ফিরে আসার পর সময় ক্যালকুলেশন
         if (startTime) {
           const endTime = new Date().getTime();
           const secondsAway = Math.floor((endTime - startTime) / 1000);
           
           setInactiveTime(prev => {
             const totalAway = prev + secondsAway;
-            // এখানে চেক করা হচ্ছে ৬০ সেকেন্ড হয়েছে কি না
             if (totalAway >= 60) {
               triggerBanProcess();
             }
@@ -967,7 +967,9 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [isBanned, inactiveTime]); // ইনঅ্যাক্টিভ টাইম এখানে ট্র্যাক হবে
+  }, [isBanned, inactiveTime]); 
+
+  // ৩. এরপর আপনার submitExam ফাংশনটি শুরু হবে...
 
   const [answers, setAnswers] = useState(() => {
     const savedAnswers = localStorage.getItem(recoveryKey);
