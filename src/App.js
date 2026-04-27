@@ -1273,61 +1273,70 @@ const GrowthSectionView = ({ results, students, teacherPin }) => {
                   const hasPending = r.details && r.details.some(d => d.type === 'written' && d.pending === true);
                   const totalObtained = (parseFloat(r.obtained) || 0) + (parseFloat(r.bonus) || 0);
                   return (
-                    <div key={r.id} className="w-full bg-slate-900/60 rounded-[2rem] border border-white/10 shadow-sm flex items-center p-4 md:p-5 gap-3 md:gap-6 hover:shadow-md transition-all group print-card">
-                      <div className="flex-1 min-w-0 border-l-4 md:border-l-8 border-blue-600 pl-3 md:pl-5">
-                        <p className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Exam Unit {isMultiple && <span className="text-yellow-500 ml-2">| ATTEMPT {r.attemptNo}</span>}</p>
-                        <p className="text-xs md:text-lg font-black uppercase italic text-white leading-tight whitespace-normal break-words">{r.exam}</p>
-                        {r.bonus > 0 && <p className="text-[7px] text-green-400 font-black uppercase italic">+ Includes {r.bonus} Bonus Marks</p>}
-                        {hasPending && <p className="text-[7px] md:text-[8px] font-black text-orange-400 uppercase italic mt-0.5 animate-pulse">Score may increase after sir's review</p>}
-                        <p className="text-[8px] md:text-[9px] font-black text-blue-400 uppercase italic mt-1">{new Date(r.timestamp).toLocaleDateString('en-GB')} • {new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                      </div>
-                      <div className="text-center px-2 md:px-4 border-l border-white/10 min-w-[70px] md:min-w-[100px]">
-                        <p className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase mb-0.5">Score</p>
-                        <p className="text-xl md:text-3xl font-black italic text-blue-400 leading-none">{totalObtained}/{r.total}</p>
-                        {r.timeTaken && <p className="text-[9px] font-black text-yellow-500 uppercase italic mt-1 border-t border-white/5 pt-1">Time: {r.timeTaken}</p>}
-<div className="mt-1 border-t border-white/5 pt-1">
-  {/* ট্যাব সুইচ কাউন্ট */}
-  <p className="text-[8px] font-bold text-gray-400 uppercase italic">
-    Switches: <span className="text-orange-500">{r.tabSwitches || 0}</span>
-  </p>
-  
-  {/* ইনঅ্যাক্টিভ টাইম (Away) কত সেকেন্ড ছিল */}
-  <p className="text-[8px] font-bold text-gray-400 uppercase italic">
-    Away: <span className="text-blue-400">{r.inactiveTime || 0}s</span>
-  </p>
-
-  {/* যদি স্ট্যাটাস ব্যান থাকে অথবা ইনঅ্যাক্টিভ টাইম ৬০ সেকেন্ড পার হয় */}
-  {(r.status === "BANNED" || r.inactiveTime >= 60) && (
-    <p className="text-[8px] font-black text-red-500 animate-pulse italic mt-0.5">
-      🚨 BANNED
-    </p>
-  )}
-</div>
-                      </div>
-                     <div className="flex-shrink-0 flex flex-col gap-2 print:hidden">
-  {/* কুইক রিভিউ বাটন */}
-  <button onClick={() => setSelectedReview(r)} className="bg-slate-800 text-blue-400 p-2 md:p-3 rounded-2xl border border-white/10 shadow-sm hover:bg-blue-600 hover:text-white transition-all flex flex-col items-center min-w-[65px]">
-    <Eye size={16} />
-    <span className="text-[7px] font-black mt-1 uppercase italic">Quick</span>
-  </button>
-
-  {/* ডিটেল রিভিউ (লিঙ্ক থাকলে দেখাবে, না থাকলে লক) */}
-  {r.answerPdfUrl ? (
-    <a href={r.answerPdfUrl} target="_blank" rel="noreferrer" className="bg-slate-800 text-green-400 p-2 md:p-3 rounded-2xl border border-white/10 shadow-sm hover:bg-green-600 hover:text-white transition-all flex flex-col items-center min-w-[65px]">
-      <FileText size={16} />
-      <span className="text-[7px] font-black mt-1 uppercase italic">Detail</span>
-    </a>
-  ) : (
-    <div className="bg-slate-900/40 text-slate-600 p-1.5 rounded-xl border border-white/5 flex flex-col items-center opacity-50 min-w-[65px]">
-      <Lock size={12} />
-      <span className="text-[6px] font-black uppercase text-center leading-tight">No Link<br/>Available</span>
+  <div key={r.id} className={`w-full rounded-[2rem] border shadow-sm flex items-center p-4 md:p-5 gap-3 md:gap-6 transition-all group print-card relative overflow-hidden ${
+    (r.status === "BANNED" || r.inactiveTime >= 60) 
+    ? "bg-red-950/20 border-red-900/50 grayscale-[0.8] opacity-60" 
+    : "bg-slate-900/60 border-white/10 hover:shadow-md"
+  }`}>
+    <div className="flex-1 min-w-0 border-l-4 md:border-l-8 border-blue-600 pl-3 md:pl-5">
+      <p className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">
+        Exam Unit {isMultiple && <span className="text-yellow-500 ml-2">| ATTEMPT {r.attemptNo}</span>}
+      </p>
+      <p className="text-xs md:text-lg font-black uppercase italic text-white leading-tight whitespace-normal break-words">{r.exam}</p>
+      {r.bonus > 0 && <p className="text-[7px] text-green-400 font-black uppercase italic">+ Includes {r.bonus} Bonus Marks</p>}
+      {hasPending && <p className="text-[7px] md:text-[8px] font-black text-orange-400 uppercase italic mt-0.5 animate-pulse">Score may increase after sir's review</p>}
+      <p className="text-[8px] md:text-[9px] font-black text-blue-400 uppercase italic mt-1">{new Date(r.timestamp).toLocaleDateString('en-GB')} • {new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
     </div>
-  )}
-</div> 
-                    </div>
-                  );
-                });
-              })()}
+
+    <div className="text-center px-2 md:px-4 border-l border-white/10 min-w-[70px] md:min-w-[100px]">
+      {(r.status === "BANNED" || r.inactiveTime >= 60) ? (
+        <div className="flex flex-col items-center">
+          <p className="text-[8px] font-black text-red-500 uppercase animate-pulse">ACCESS REVOKED</p>
+          <p className="text-xl md:text-3xl font-black italic text-red-600 leading-none">BANNED</p>
+        </div>
+      ) : (
+        <>
+          <p className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase mb-0.5">Score</p>
+          <p className="text-xl md:text-3xl font-black italic text-blue-400 leading-none">{totalObtained}/{r.total}</p>
+          {r.timeTaken && <p className="text-[9px] font-black text-yellow-500 uppercase italic mt-1 border-t border-white/5 pt-1">Time: {r.timeTaken}</p>}
+        </>
+      )}
+    </div>
+
+    <div className="flex-shrink-0 flex flex-col gap-2 print:hidden">
+      {/* কুইক রিভিউ বাটন - ব্যান হলে ডিজেবল থাকবে */}
+      <button 
+        disabled={(r.status === "BANNED" || r.inactiveTime >= 60)}
+        onClick={() => setSelectedReview(r)} 
+        className={`p-2 md:p-3 rounded-2xl border shadow-sm flex flex-col items-center min-w-[65px] transition-all ${
+          (r.status === "BANNED" || r.inactiveTime >= 60)
+          ? "bg-slate-900 border-white/5 text-slate-700 cursor-not-allowed"
+          : "bg-slate-800 text-blue-400 border-white/10 hover:bg-blue-600 hover:text-white"
+        }`}
+      >
+        <Eye size={16} />
+        <span className="text-[7px] font-black mt-1 uppercase italic">Quick</span>
+      </button>
+
+      {/* ডিটেল রিভিউ (ব্যান হলে লক) */}
+      {(r.answerPdfUrl && !(r.status === "BANNED" || r.inactiveTime >= 60)) ? (
+        <a href={r.answerPdfUrl} target="_blank" rel="noreferrer" className="bg-slate-800 text-green-400 p-2 md:p-3 rounded-2xl border border-white/10 shadow-sm hover:bg-green-600 hover:text-white transition-all flex flex-col items-center min-w-[65px]">
+          <FileText size={16} />
+          <span className="text-[7px] font-black mt-1 uppercase italic">Detail</span>
+        </a>
+      ) : (
+        <div className="bg-slate-900/40 text-slate-600 p-1.5 rounded-xl border border-white/5 flex flex-col items-center opacity-50 min-w-[65px]">
+          <Lock size={12} />
+          <span className="text-[6px] font-black uppercase text-center leading-tight">
+            {(r.status === "BANNED" || r.inactiveTime >= 60) ? "LOCKED" : "No Link"}
+          </span>
+        </div>
+      )}
+    </div>
+  </div>
+);
+});
+})()}
             </div>
           </div>
         </div>
