@@ -916,13 +916,20 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
   });
   
   // ২. ট্র্যাকিং লজিক (ব্যান এবং ইন্যাক্টিভ টাইম)
+ const inactiveRef = React.useRef(0); // লেটেস্ট টাইম মনে রাখার জন্য
+
   useEffect(() => {
     let startTime;
+
     const triggerBanProcess = () => {
       if (!isBanned) {
         setIsBanned(true);
+        // যখন ব্যান হবে তখন লেটেস্ট টাইমটা স্টেট এ সেট করে দেওয়া হচ্ছে
+        setInactiveTime(inactiveRef.current);
         if (!document.hidden) {
-          setTimeout(() => { submitExam(); }, 5000);
+          setTimeout(() => {
+            submitExam();
+          }, 5000);
         }
       }
     };
@@ -939,21 +946,29 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
         if (startTime) {
           const endTime = new Date().getTime();
           const secondsAway = Math.floor((endTime - startTime) / 1000);
-          setInactiveTime(prev => {
-            const totalAway = prev + secondsAway;
-            if (totalAway >= 60) triggerBanProcess();
-            return totalAway;
-          });
+          
+          // রেফ এবং স্টেট দুটোই আপডেট হচ্ছে
+          inactiveRef.current += secondsAway;
+          setInactiveTime(inactiveRef.current);
+
+          if (inactiveRef.current >= 60) {
+            triggerBanProcess();
+          }
         }
+
         if (isBanned) {
-          setTimeout(() => { submitExam(); }, 5000);
+          setTimeout(() => {
+            submitExam();
+          }, 5000);
         }
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [isBanned, inactiveTime]); 
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [isBanned]); 
 
   // ৩. এরপর আপনার ডাটা সেভ করার লজিক (যা আপনার ৯৮১ লাইনে ছিল)
   useEffect(() => {
