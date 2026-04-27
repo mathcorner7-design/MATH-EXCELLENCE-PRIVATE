@@ -1068,16 +1068,24 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
         await addDoc(collection(db, "results"), { name: finalName, exam: exam.name, percent, tabSwitches: tabSwitches,
 status: isBanned ? "BANNED" : "COMPLETED", obtained: totalObtainedMarks, total: totalPossibleMarks, date: d.toLocaleDateString('en-GB'), timestamp: Date.now(), details: detailResults, answerPdfUrl: exam.answerPdfUrl || "", timeTaken: timeDuration, bonus: 0 });
       }
-      setScoreData({ correct: totalObtainedMarks, total: totalPossibleMarks, percent, details: detailResults });
-      localStorage.removeItem(recoveryKey);
-      localStorage.removeItem(timerKey);
-      setIsSubmitted(true);
-    } catch (e) { console.error(e); setIsSubmitted(true); }
-    finally {
-      setIsAppSubmitting(false);
-      document.getElementById('loading-overlay')?.remove();
-    }
-  };
+          // ... আপনার আগের মার্কস ক্যালকুলেশন কোড ঠিক থাকবে ...
+    
+    setScoreData({ correct: totalObtainedMarks, total: totalPossibleMarks, percent, details: detailResults });
+    localStorage.removeItem(recoveryKey);
+    localStorage.removeItem(timerKey);
+    
+    // এই সিরিয়ালটি খুব গুরুত্বপূর্ণ:
+    setIsSubmitted(true); // আগে ইউজারকে জানানো যে সাবমিট হয়েছে
+    setIsAppSubmitting(false); // তারপর লোডিং স্ক্রিন সরানো
+
+  } catch (e) {
+    console.error(e);
+    setIsAppSubmitting(false); // ভুল হলেও লোডিং সরাতে হবে
+    setIsSubmitted(true); 
+  } finally {
+    document.getElementById('loading-overlay')?.remove();
+  }
+};
 
   const formatTime = (s) => `${Math.floor(s / 60)}:${s % 60 < 10 ? '0' + (s % 60) : s % 60}`;
 
