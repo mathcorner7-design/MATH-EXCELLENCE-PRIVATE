@@ -1044,7 +1044,9 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
     return () => clearInterval(t);
   }, [timeLeft, isSubmitted]);
 
-  const submitExam = async () => {
+  const submitExam = async (forceBan = false) => {
+    const currentTabSwitches = tabSwitches; 
+    const currentInactiveTime = inactiveTime; 
       const loadingDiv = document.createElement('div');
   loadingDiv.id = 'loading-overlay';
   loadingDiv.innerHTML = "<div style='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;text-align:center;'><div style='width:50px;height:50px;border:5px solid #3b82f6;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;'></div><br><b style='letter-spacing:1px;'>SUBMITTING EXAM...</b><p style='font-size:12px;opacity:0.7;'>Please wait, saving your data.</p></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>";
