@@ -1070,34 +1070,122 @@ status: isBanned ? "BANNED" : "COMPLETED", obtained: totalObtainedMarks, total: 
   const formatTime = (s) => `${Math.floor(s / 60)}:${s % 60 < 10 ? '0' + (s % 60) : s % 60}`;
 
   if (isSubmitted) return (
-   if (isBanned) return (
-  <div className="fixed inset-0 bg-black z-[9999] flex flex-col items-center justify-center p-6 text-center backdrop-blur-2xl">
-    <div className="bg-red-600/10 border-2 border-red-600 p-10 rounded-[3rem] max-w-md w-full shadow-[0_0_50px_rgba(220,38,38,0.3)] border-t-8 border-red-500">
-      <h1 className="text-4xl font-black text-red-500 mb-4 italic uppercase tracking-tighter">You are Banned!</h1>
-      <p className="text-white font-bold text-xs mb-2 uppercase italic tracking-widest">Suspicious Activity Detected</p>
-      <p className="text-gray-400 text-[10px] mb-8 uppercase leading-relaxed">
-        Reason: Multiple Tab Switches or Inactivity during the exam.
-      </p>
-      <div className="h-px bg-white/20 w-full mb-8"></div>
-      <p className="text-blue-400 font-black text-xs italic uppercase mb-2">Contact: Anshu Sir</p>
-      <p className="text-yellow-500 font-black text-[9px] uppercase animate-pulse">Or Re-attempt the Exam carefully</p>
-      
-      <button 
-        onClick={() => window.location.reload()} 
-        className="mt-8 px-8 py-3 bg-white text-black rounded-full font-black text-[10px] uppercase shadow-xl active:scale-95 transition-all"
-      >
-        Return to Home
-      </button>
+    <div className="fixed inset-0 bg-slate-950 z-[2000] flex flex-col items-center overflow-y-auto p-10 text-center animate-in zoom-in duration-500 text-white">
+      <CheckCircle size={80} className="text-green-500 mb-6 animate-bounce shadow-2xl rounded-full" />
+      <h2 className="text-3xl font-black uppercase italic mb-8 tracking-tighter leading-none">Session Completed</h2>
+      <div className="bg-slate-900 p-10 rounded-[3rem] border-4 border-slate-800 mb-10 w-full max-sm shadow-2xl text-center">
+        <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2 opacity-60">Result Transcript</p>
+        <h3 className="text-5xl font-black text-blue-400 italic tracking-tighter leading-none">{scoreData?.correct} / {scoreData?.total}</h3>
+        {exam.isGuest && <p className="text-orange-400 text-[10px] font-black mt-4 uppercase italic">Notice: Guest data is not saved permanentally.</p>}
+        <div className="mt-8 space-y-2 max-h-60 overflow-y-auto no-scrollbar border-t border-slate-800 pt-4 w-full px-2">
+          <p className="text-[9px] font-black text-slate-500 uppercase italic mb-3 text-center">Quick Review:</p>
+          <div className="grid grid-cols-5 gap-2">
+            {scoreData?.details?.map((item, idx) => (
+              <div key={idx} className={`p-2 rounded-lg border flex flex-col items-center ${item.type === 'written' ? 'bg-orange-900/20 border-orange-800 text-orange-400' : (item.status ? 'bg-green-900/20 border-green-800 text-green-400' : 'bg-red-900/20 border-red-800 text-red-400')}`}>
+                <span className="text-[8px] font-black">Q{item.qNum}</span>
+                {item.type === 'written' ? <Clock size={10} /> : (item.status ? <CheckCircle size={10} /> : <X size={10} />)}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <button onClick={onFinish} className="bg-blue-700 text-white px-16 py-4 rounded-full font-black uppercase text-[12px] shadow-2xl">Close Arena</button>
     </div>
-  </div>
-); 
-    <div className="fixed inset-0 bg-slate-950 z-[2000] flex flex-col items-center overflow-y-auto p-10 text-center animate-in zoom-in duration-500 text-white"><CheckCircle size={80} className="text-green-500 mb-6 animate-bounce shadow-2xl rounded-full" /><h2 className="text-3xl font-black uppercase italic mb-8 tracking-tighter leading-none">Session Completed</h2><div className="bg-slate-900 p-10 rounded-[3rem] border-4 border-slate-800 mb-10 w-full max-sm shadow-2xl text-center"><p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2 opacity-60">Result Transcript</p><h3 className="text-5xl font-black text-blue-400 italic tracking-tighter leading-none">{scoreData?.correct} / {scoreData?.total}</h3>{exam.isGuest && <p className="text-orange-400 text-[10px] font-black mt-4 uppercase italic">Notice: Guest data is not saved permanentally.</p>}<div className="mt-8 space-y-2 max-h-60 overflow-y-auto no-scrollbar border-t border-slate-800 pt-4 w-full px-2"><p className="text-[9px] font-black text-slate-500 uppercase italic mb-3 text-center">Quick Review:</p><div className="grid grid-cols-5 gap-2">{scoreData?.details?.map((item, idx) => (<div key={idx} className={`p-2 rounded-lg border flex flex-col items-center ${item.type === 'written' ? 'bg-orange-900/20 border-orange-800 text-orange-400' : (item.status ? 'bg-green-900/20 border-green-800 text-green-400' : 'bg-red-900/20 border-red-800 text-red-400')}`}><span className="text-[8px] font-black">Q{item.qNum}</span>{item.type === 'written' ? <Clock size={10} /> : (item.status ? <CheckCircle size={10} /> : <X size={10} />)}</div>))}</div></div></div><button onClick={onFinish} className="bg-blue-700 text-white px-16 py-4 rounded-full font-black uppercase text-[12px] shadow-2xl">Close Arena</button></div>
+  );
+
+  if (isBanned) return (
+    <div className="fixed inset-0 bg-black z-[9999] flex flex-col items-center justify-center p-6 text-center backdrop-blur-2xl">
+      <div className="bg-red-600/10 border-2 border-red-600 p-10 rounded-[3rem] max-w-md w-full shadow-[0_0_50px_rgba(220,38,38,0.3)] border-t-8 border-red-500">
+        <h1 className="text-4xl font-black text-red-500 mb-4 italic uppercase tracking-tighter text-white">You are Banned!</h1>
+        <p className="text-white font-bold text-xs mb-2 uppercase italic tracking-widest">Suspicious Activity Detected</p>
+        <p className="text-gray-400 text-[10px] mb-8 uppercase leading-relaxed">
+          Reason: Multiple Tab Switches or Inactivity during the exam.
+        </p>
+        <div className="h-px bg-white/20 w-full mb-8"></div>
+        <p className="text-blue-400 font-black text-xs italic uppercase mb-2">Contact: Anshu Sir</p>
+        <p className="text-yellow-500 font-black text-[9px] uppercase animate-pulse">Or Re-attempt the Exam carefully</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="mt-8 px-8 py-3 bg-white text-black rounded-full font-black text-[10px] uppercase shadow-xl active:scale-95 transition-all"
+        >
+          Return to Home
+        </button>
+      </div>
+    </div>
   );
 
   return (
     <div className="fixed inset-0 bg-black z-[100] flex flex-col overflow-hidden animate-in fade-in duration-500">
-      <div className="bg-slate-900 p-2 md:p-3 flex justify-between items-center border-b-4 border-yellow-500 shadow-2xl relative z-50 text-white"><div className="flex-1 min-w-0 pr-2"><h2 className="font-black text-[10px] uppercase italic tracking-tighter leading-none truncate max-w-[150px]">{exam?.name}</h2><p className="text-[8px] md:text-[9px] text-blue-400 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName} {exam.isGuest && '(GUEST)'}</p></div><div className="flex items-center gap-6"><div className="px-5 py-1.5 rounded-xl font-black text-2xl border-4 text-white border-slate-800 bg-black">{formatTime(timeLeft)}</div><button onClick={() => { if (window.confirm("SUBMIT EXAM?")) submitExam(); }} className="bg-green-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg">SUBMIT</button></div></div>
-      <div className="flex-1 bg-slate-950 overflow-hidden relative"><iframe src={exam?.fileUrl?.replace('/view?usp=sharing', '/preview').replace('/view', '/preview')} className="w-full h-full border-none opacity-90" title="Paper" /><div className="absolute bottom-0 left-0 right-0 z-50 bg-slate-900/98 border-t-2 border-white/10 backdrop-blur-xl p-3 md:p-4 shadow-2xl"><div className="max-w-4xl mx-auto"><div className="flex items-center justify-between mb-2 px-2"><span className="text-[9px] font-black text-blue-400 uppercase italic flex items-center gap-3"><PenTool size={16} /> RESPONSE INTERFACE</span>{activeQuestion && <button onClick={() => setActiveQuestion(null)} className="text-white bg-slate-700 px-3 py-1 rounded-lg font-black text-[10px] uppercase shadow-lg">Close</button>}</div> {activeQuestion ? ( <div className="flex flex-col items-center animate-in slide-in-from-bottom-2 pb-2"><p className="text-slate-400 font-black text-xs mb-4 italic uppercase">{answerKeyArray[activeQuestion - 1] === 'W' ? `Page Capturing Q${activeQuestion}:` : `Choice for Q${activeQuestion}:`}</p> {answerKeyArray[activeQuestion - 1] === 'W' ? (<div className="flex flex-col items-center gap-4">{exam.isGuest ? (<div className="p-4 bg-orange-900/20 border-2 border-orange-800 rounded-2xl text-center"><AlertCircle className="text-orange-500 mx-auto mb-2" /><p className="text-[9px] font-black text-orange-200 uppercase">Guest users can't upload.</p></div>) : (<> <div className="flex gap-2 flex-wrap justify-center">{Array.isArray(answers[activeQuestion]) && answers[activeQuestion].map((_, i) => (<div key={i} className="relative"><div className="bg-green-600 text-white text-[8px] font-black px-2 py-1 rounded-lg uppercase">Page {i + 1} ✓</div><button onClick={() => removeImage(activeQuestion, i)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-0.5 shadow-lg active:scale-75 transition-all"><X size={12} /></button></div>))}</div> <div className="flex gap-4"><label className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase cursor-pointer shadow-xl flex items-center gap-2 active:scale-95 transition-all"><Camera size={16} /> {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 ? 'ADD ANOTHER' : 'CAPTURE'}<input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { handleImageUpload(activeQuestion, e.target.files[0]); e.target.value = null; }} /></label>{Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (<button onClick={() => setActiveQuestion(null)} className="bg-green-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl">DONE</button>)}</div></>)}</div>) : (<div className="flex gap-5">{['A', 'B', 'C', 'D'].map(opt => (<button key={opt} onClick={() => handleOptionSelect(activeQuestion, opt)} className={`w-12 h-12 rounded-xl font-black text-xl flex items-center justify-center border-b-8 transition-all active:scale-90 ${answers[activeQuestion] === opt ? 'bg-blue-600 text-white border-blue-900 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'bg-slate-800 text-slate-400 border-black hover:bg-slate-700'}`}>{opt}</button>))}</div>)}</div> ) : (<div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar snap-x items-center justify-start">{answerKeyArray.map((_, index) => { const num = index + 1; return (<button key={num} onClick={() => setActiveQuestion(num)} className={`min-w-[42px] h-[42px] rounded-xl font-black text-xs flex items-center justify-center transition-all snap-center border-b-4 shadow-lg ${answers[num] ? 'bg-green-600 text-white border-green-900' : 'bg-slate-800 text-slate-500 border-black hover:bg-slate-700 hover:text-white'}`}>{num}</button>); })}</div>)}</div></div></div></div>
+      <div className="bg-slate-900 p-2 md:p-3 flex justify-between items-center border-b-4 border-yellow-500 shadow-2xl relative z-50 text-white">
+        <div className="flex-1 min-w-0 pr-2">
+          <h2 className="font-black text-[10px] uppercase italic tracking-tighter leading-none truncate max-w-[150px]">{exam?.name}</h2>
+          <p className="text-[8px] md:text-[9px] text-blue-400 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName} {exam.isGuest && '(GUEST)'}</p>
+        </div>
+        <div className="flex items-center gap-6">
+          <div className="px-5 py-1.5 rounded-xl font-black text-2xl border-4 text-white border-slate-800 bg-black">{formatTime(timeLeft)}</div>
+          <button onClick={() => { if (window.confirm("SUBMIT EXAM?")) submitExam(); }} className="bg-green-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg">SUBMIT</button>
+        </div>
+      </div>
+      <div className="flex-1 bg-slate-950 overflow-hidden relative">
+        <iframe src={exam?.fileUrl?.replace('/view?usp=sharing', '/preview').replace('/view', '/preview')} className="w-full h-full border-none opacity-90" title="Paper" />
+        <div className="absolute bottom-0 left-0 right-0 z-50 bg-slate-900/98 border-t-2 border-white/10 backdrop-blur-xl p-3 md:p-4 shadow-2xl">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center justify-between mb-2 px-2">
+              <span className="text-[9px] font-black text-blue-400 uppercase italic flex items-center gap-3"><PenTool size={16} /> RESPONSE INTERFACE</span>
+              {activeQuestion && <button onClick={() => setActiveQuestion(null)} className="text-white bg-slate-700 px-3 py-1 rounded-lg font-black text-[10px] uppercase shadow-lg">Close</button>}
+            </div> 
+            {activeQuestion ? (
+              <div className="flex flex-col items-center animate-in slide-in-from-bottom-2 pb-2">
+                <p className="text-slate-400 font-black text-xs mb-4 italic uppercase">{answerKeyArray[activeQuestion - 1] === 'W' ? `Page Capturing Q${activeQuestion}:` : `Choice for Q${activeQuestion}:`}</p> 
+                {answerKeyArray[activeQuestion - 1] === 'W' ? (
+                  <div className="flex flex-col items-center gap-4">
+                    {exam.isGuest ? (
+                      <div className="p-4 bg-orange-900/20 border-2 border-orange-800 rounded-2xl text-center">
+                        <AlertCircle className="text-orange-500 mx-auto mb-2" />
+                        <p className="text-[9px] font-black text-orange-200 uppercase">Guest users can't upload.</p>
+                      </div>
+                    ) : (
+                      <> 
+                        <div className="flex gap-2 flex-wrap justify-center">
+                          {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].map((_, i) => (
+                            <div key={i} className="relative">
+                              <div className="bg-green-600 text-white text-[8px] font-black px-2 py-1 rounded-lg uppercase">Page {i + 1} ✓</div>
+                              <button onClick={() => removeImage(activeQuestion, i)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-0.5 shadow-lg active:scale-75 transition-all"><X size={12} /></button>
+                            </div>
+                          ))}
+                        </div> 
+                        <div className="flex gap-4">
+                          <label className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase cursor-pointer shadow-xl flex items-center gap-2 active:scale-95 transition-all">
+                            <Camera size={16} /> {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 ? 'ADD ANOTHER' : 'CAPTURE'}
+                            <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { handleImageUpload(activeQuestion, e.target.files[0]); e.target.value = null; }} />
+                          </label>
+                          {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (
+                            <button onClick={() => setActiveQuestion(null)} className="bg-green-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl">DONE</button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex gap-5">
+                    {['A', 'B', 'C', 'D'].map(opt => (
+                      <button key={opt} onClick={() => handleOptionSelect(activeQuestion, opt)} className={`w-12 h-12 rounded-xl font-black text-xl flex items-center justify-center border-b-8 transition-all active:scale-90 ${answers[activeQuestion] === opt ? 'bg-blue-600 text-white border-blue-900 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'bg-slate-800 text-slate-400 border-black hover:bg-slate-700'}`}>{opt}</button>
+                    ))}
+                  </div>
+                )}
+              </div> 
+            ) : (
+              <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar snap-x items-center justify-start">
+                {answerKeyArray.map((_, index) => { 
+                  const num = index + 1; 
+                  return (<button key={num} onClick={() => setActiveQuestion(num)} className={`min-w-[42px] h-[42px] rounded-xl font-black text-xs flex items-center justify-center transition-all snap-center border-b-4 shadow-lg ${answers[num] ? 'bg-green-600 text-white border-green-900' : 'bg-slate-800 text-slate-500 border-black hover:bg-slate-700 hover:text-white'}`}>{num}</button>); 
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
