@@ -901,50 +901,66 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
     return initialDuration;
   });
     const [isSubmitted, setIsSubmitted] = useState(false);
-  
-  // ট্র্যাকিং স্টেটগুলো এখন আলাদা এবং নিরাপদ জায়গায়
   const [tabSwitches, setTabSwitches] = useState(0);
   const [inactiveTime, setInactiveTime] = useState(0);
   const [isBanned, setIsBanned] = useState(false);
 
-  // ট্যাব সুইচ এবং ইনঅ্যাক্টিভ ট্র্যাকিং লজিক
   useEffect(() => {
     let inactiveInterval;
+
+    // ব্যান করার প্রক্রিয়া শুরু করার ফাংশন
+    const triggerBanProcess = () => {
+      if (!isBanned) {
+        setIsBanned(true);
+        // স্টুডেন্ট যখন স্ক্রিনে থাকবে (document.hidden === false), তখনই ৫ সেকেন্ডের টাইমার শুরু হবে
+        if (!document.hidden) {
+          setTimeout(() => {
+            submitExam();
+          }, 5000);
+        }
+      }
+    };
+
     const handleVisibilityChange = () => {
       if (document.hidden) {
+        // ১. ট্যাব সুইচিং কাউন্ট
         setTabSwitches(prev => {
           const newCount = prev + 1;
-          if (newCount >= 2) setIsBanned(true); 
+          if (newCount >= 2) triggerBanProcess();
           return newCount;
         });
+
+        // ২. ইন্যাক্টিভ টাইমার শুরু
         inactiveInterval = setInterval(() => {
           setInactiveTime(prev => {
-            if (prev >= 60) { 
-              setIsBanned(true);
+            const nextTime = prev + 1;
+            if (nextTime >= 60) {
+              setIsBanned(true); // শুধু ব্যান ফ্ল্যাগ ট্রু করবে, সাবমিট নয়
               clearInterval(inactiveInterval);
             }
-            return prev + 1;
+            return nextTime;
           });
         }, 1000);
       } else {
+        // ৩. স্টুডেন্ট যখন ফিরে আসবে
         clearInterval(inactiveInterval);
+        
+        // যদি সে বাইরে থাকাকালীন ব্যান হয়ে গিয়ে থাকে, তবে এখন ৫ সেকেন্ড টাইমার শুরু হবে
+        if (isBanned) {
+          setTimeout(() => {
+            submitExam();
+          }, 5000);
+        }
       }
     };
+
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       clearInterval(inactiveInterval);
     };
-  }, []);
-
-  // ব্যান হওয়া মাত্রই অটো-সাবমিট লজিক
-  useEffect(() => {
-    if (isBanned) {
-      submitExam();
-    }
   }, [isBanned]);
 
-  // আপনার সেই কাঙ্ক্ষিত answers সেট করার লাইনটি এখানে (সঠিকভাবে সাজানো)
   const [answers, setAnswers] = useState(() => {
     const savedAnswers = localStorage.getItem(recoveryKey);
     return savedAnswers ? JSON.parse(savedAnswers) : {};
