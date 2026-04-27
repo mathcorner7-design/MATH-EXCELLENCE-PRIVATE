@@ -1078,7 +1078,8 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
       let finalName = exam.studentName.toUpperCase();
       
       // --- এইখানে নতুন স্ট্যাটাস চেক ---
-      const finalStatus = (isBanned || inactiveTime >= 60) ? "BANNED" : "COMPLETED";
+      const finalInactiveValue = (typeof window !== 'undefined' && window.totalAway) ? window.totalAway : inactiveTime;
+      const finalStatus = (isBanned || finalInactiveValue >= 60) ? "BANNED" : "COMPLETED";
 
       await addDoc(collection(db, "logs"), { studentName: exam.isGuest ? `(Guest) ${finalName}` : finalName, examTitle: exam.name, timestamp: Date.now() });
       
@@ -1088,7 +1089,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
           exam: exam.name, 
           percent, 
           tabSwitches: tabSwitches,
-          inactiveTime: inactiveTime, // ইনঅ্যাক্টিভ টাইম সেভ হচ্ছে
+          inactiveTime: finalInactiveValue, 
           status: finalStatus,        // ব্যান স্ট্যাটাস সেভ হচ্ছে
           obtained: totalObtainedMarks, 
           total: totalPossibleMarks, 
@@ -1272,6 +1273,7 @@ const GrowthSectionView = ({ results, students, teacherPin }) => {
                   const isMultiple = stdRes.filter(sr => sr.exam === r.exam).length > 1;
                   const hasPending = r.details && r.details.some(d => d.type === 'written' && d.pending === true);
                   const totalObtained = (parseFloat(r.obtained) || 0) + (parseFloat(r.bonus) || 0);
+                  const isActuallyBanned = (String(r.status).toUpperCase() === "BANNED" || Number(r.inactiveTime) >= 60);
     return (
   <div key={r.id} className={`w-full rounded-[2rem] border shadow-sm flex items-center p-4 md:p-5 gap-3 md:gap-6 transition-all group print-card relative overflow-hidden ${
     (r.status === "BANNED" || (r.inactiveTime && parseInt(r.inactiveTime) >= 60)) 
@@ -1311,18 +1313,18 @@ const GrowthSectionView = ({ results, students, teacherPin }) => {
     <div className="flex-shrink-0 flex flex-col gap-2 print:hidden">
       
       {/* Quick রিভিউ বাটন */}
-      <button 
-        disabled={(r.status === "BANNED" || (r.inactiveTime && parseInt(r.inactiveTime) >= 60))}
-        onClick={() => setSelectedReview(r)} 
-        className={`p-2 md:p-3 rounded-2xl border shadow-sm flex flex-col items-center min-w-[65px] transition-all ${
-          (r.status === "BANNED" || (r.inactiveTime && parseInt(r.inactiveTime) >= 60))
-          ? "bg-black/40 border-red-900/20 text-red-900/40 cursor-not-allowed"
-          : "bg-slate-800 text-blue-400 border-white/10 hover:bg-blue-600 hover:text-white"
-        }`}
-      >
-        <Eye size={16} />
-        <span className="text-[7px] font-black mt-1 uppercase italic">Quick</span>
-      </button>
+        <button 
+    disabled={isActuallyBanned}
+    onClick={() => { if(!isActuallyBanned) setSelectedReview(r); }} 
+    className={`p-2 md:p-3 rounded-2xl border shadow-sm flex flex-col items-center min-w-[65px] transition-all ${
+      isActuallyBanned 
+      ? "bg-slate-900 border-red-900/20 text-red-900/40 cursor-not-allowed" 
+      : "bg-slate-800 text-blue-400 border-white/10 hover:bg-blue-600 hover:text-white"
+    }`}
+  >
+    <Eye size={16} />
+    <span className="text-[7px] font-black mt-1 uppercase italic">Quick</span>
+  </button>
 
       {/* Detail রিভিউ লিঙ্ক */}
       {(r.answerPdfUrl && !(r.status === "BANNED" || (r.inactiveTime && parseInt(r.inactiveTime) >= 60))) ? (
