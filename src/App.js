@@ -914,9 +914,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
     const savedAnswers = localStorage.getItem(recoveryKey);
     return savedAnswers ? JSON.parse(savedAnswers) : {};
   });
-  const [activeQuestion, setActiveQuestion] = useState(null);
-  const [scoreData, setScoreData] = useState(null);
-
+  
   // ২. ট্র্যাকিং লজিক (ব্যান এবং ইন্যাক্টিভ টাইম)
   useEffect(() => {
     let startTime;
