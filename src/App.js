@@ -906,61 +906,49 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
   const [isBanned, setIsBanned] = useState(false);
 
   useEffect(() => {
-    let startTime; // স্টুডেন্ট কখন বাইরে গেল সেই সময়
-
+    let startTime;
     const triggerBanProcess = () => {
-      if (!isBanned) {
-        setIsBanned(true);
-        // যদি স্টুডেন্ট এখন ট্যাবে ফিরে এসে থাকে, তবে ৫ সেকেন্ড পর সাবমিট হবে
-        if (!document.hidden) {
-          setTimeout(() => {
-            submitExam();
-          }, 5000);
+        if (!isBanned) {
+            setIsBanned(true);
+            // ইউজার যদি স্ক্রিনে ফিরে আসে, তবে ৫ সেকেন্ড পর অটো সাবমিট হবে
+            if (!document.hidden) {
+                setTimeout(() => {
+                    submitExam();
+                }, 5000);
+            }
         }
-      }
     };
 
     const handleVisibilityChange = () => {
-      if (document.hidden) {
-        // ১. ট্যাব সুইচিং কাউন্ট
-        setTabSwitches(prev => {
-          const newCount = prev + 1;
-          if (newCount >= 2) triggerBanProcess();
-          return newCount;
-        });
-
-        // ২. বাইরে যাওয়ার সময়টা রেকর্ড করে রাখা
-        startTime = new Date().getTime();
-      } else {
-        // ৩. ফিরে আসার পর সময় পরীক্ষা করা
-        if (startTime) {
-          const endTime = new Date().getTime();
-          const secondsAway = Math.floor((endTime - startTime) / 1000);
-          
-          // আগের বাইরে থাকার সময়ের সাথে বর্তমানের সময় যোগ করা
-          setInactiveTime(prev => {
-            const totalAway = prev + secondsAway;
-            if (totalAway >= 60 || isBanned) {
-              triggerBanProcess();
+        if (document.hidden) {
+            // ট্যাব পাল্টালে কাউন্ট বাড়বে
+            setTabSwitches(prev => {
+                const newCount = prev + 1;
+                if (newCount >= 2) triggerBanProcess();
+                return newCount;
+            });
+            startTime = new Date().getTime(); // বাইরে যাওয়ার সময় শুরু
+        } else {
+            // ফিরে আসার পর চেক
+            if (startTime) {
+                const endTime = new Date().getTime();
+                const secondsAway = Math.floor((endTime - startTime) / 1000);
+                
+                setInactiveTime(prev => {
+                    const totalAway = prev + secondsAway;
+                    // যদি ১ মিনিটের বেশি বাইরে থাকে (৬০ সেকেন্ড)
+                    if (totalAway >= 60) {
+                        triggerBanProcess();
+                    }
+                    return totalAway;
+                });
             }
-            return totalAway;
-          });
         }
-
-        // যদি বাইরে থাকাকালীনই ট্যাব সুইচিংয়ের জন্য ব্যান হয়ে থাকে
-        if (isBanned) {
-          setTimeout(() => {
-            submitExam();
-          }, 5000);
-        }
-      }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [isBanned]);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+}, [isBanned]);
 
   const [answers, setAnswers] = useState(() => {
     const savedAnswers = localStorage.getItem(recoveryKey);
@@ -1270,10 +1258,10 @@ const GrowthSectionView = ({ results, students, teacherPin }) => {
     Switches: <span className="text-orange-500">{r.tabSwitches || 0}</span>
   </p>
   {r.status === "BANNED" && (
-    <p className="text-[8px] font-black text-red-500 animate-pulse italic mt-0.5">
-      🚨 BANNED
+    <p className="text-[10px] font-black text-red-500 animate-pulse italic mt-1 border-t border-red-900/20 pt-1">
+        🚨 BANNED BY SYSTEM
     </p>
-  )}
+)}
 </div>
                       </div>
                      <div className="flex-shrink-0 flex flex-col gap-2 print:hidden">
