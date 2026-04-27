@@ -914,7 +914,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
         // যদি স্টুডেন্ট এখন ট্যাবে ফিরে এসে থাকে, তবে ৫ সেকেন্ড পর সাবমিট হবে
         if (!document.hidden) {
           setTimeout(() => {
-            submitExam();
+            submitExam(true);
           }, 5000);
         }
       }
@@ -1043,8 +1043,11 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
     else if (timeLeft <= 0 && !isSubmitted) submitExam();
     return () => clearInterval(t);
   }, [timeLeft, isSubmitted]);
-
+(forcedBan = false)
   const submitExam = async (forceBan = false) => {
+    setIsAppSubmitting(true);
+    const finalStatus = (isBanned || forcedBan || inactiveTime >= 60 || tabSwitches >= 2) ? "BANNED" : "COMPLETED";
+
     const currentTabSwitches = tabSwitches; 
     const currentInactiveTime = inactiveTime; 
       const loadingDiv = document.createElement('div');
@@ -1077,6 +1080,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
       const percent = totalPossibleMarks > 0 ? Math.round((totalObtainedMarks / totalPossibleMarks) * 100) : 0;
       const d = new Date();
       let finalName = exam.studentName.toUpperCase();
+      const finalStatus = (isBanned || inactiveTime >= 60 || tabSwitches >= 2) ? "BANNED" : "COMPLETED";
       await addDoc(collection(db, "logs"), { studentName: exam.isGuest ? `(Guest) ${finalName}` : finalName, examTitle: exam.name, timestamp: Date.now() });
       if (!exam.isGuest) {
         await addDoc(collection(db, "results"), { name: finalName, exam: exam.name, percent, tabSwitches: tabSwitches,
