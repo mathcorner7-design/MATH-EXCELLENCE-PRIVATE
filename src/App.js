@@ -1029,14 +1029,19 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
   }, [timeLeft, isSubmitted]);
 
   const submitExam = async () => {
+    // লোডিং স্ক্রিন দেখানো
     const loadingDiv = document.createElement('div');
     loadingDiv.id = 'loading-overlay';
-    loadingDiv.innerHTML = "<div style='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;text-align:center;'><div style='width:50px;height:50px;border:5px solid #3b82f6;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;'></div><br><b style='letter-spacing:1px;'>SUBMITTING EXAM...</b><p style='font-size:12px;opacity:0.7;'>Please wait, saving your data.</p></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>";
+    loadingDiv.innerHTML = `<div style='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;'>
+        <div style='width:50px;height:50px;border:5px solid #3b82f6;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;'></div>
+        <br><b>সাবমিট হচ্ছে...</b>
+    </div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
     document.body.appendChild(loadingDiv);
-    
+
     setIsAppSubmitting(true);
 
     try {
+        // ক্যালকুলেশন
         const startTimeKey = `timer_end_${exam.studentCode}_${exam.id}`;
         const savedTimerEnd = localStorage.getItem(startTimeKey);
         const startTime = savedTimerEnd ? (parseInt(savedTimerEnd) - (parseInt(exam?.duration) * 1000)) : Date.now();
@@ -1049,11 +1054,10 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
 
         const detailResults = answerKeyArray.map((key, index) => {
             const qNum = index + 1;
-            const qMark = marksArray[index] !== undefined ? marksArray[index] : 1;
+            const qMark = marksArray[index] || 1;
             const studentAns = answers[qNum] || 'None';
             const isCorrect = studentAns === key;
             const isWrong = studentAns !== 'None' && studentAns !== key;
-            
             totalPossibleMarks += qMark;
             if (key !== 'W') {
                 if (isCorrect) totalObtainedMarks += qMark;
@@ -1063,61 +1067,53 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
         });
 
         const percent = totalPossibleMarks > 0 ? Math.round((totalObtainedMarks / totalPossibleMarks) * 100) : 0;
-        const d = new Date();
-        let finalName = exam.studentName.toUpperCase();
 
-        // ১. লগ এবং রেজাল্ট ডাটাবেসে সেভ করা
+        // ডেটাবেসে সেভ করা
         await addDoc(collection(db, "logs"), { 
-            studentName: exam.isGuest ? `(Guest) ${finalName}` : finalName, 
+            studentName: exam.isGuest ? `(Guest) ${exam.studentName}` : exam.studentName, 
             examTitle: exam.name, 
             timestamp: Date.now() 
         });
 
         if (!exam.isGuest) {
-            await addDoc(collection(db, "results"), {
-                name: finalName,
-                exam: exam.name,
-                percent,
-                tabSwitches: tabSwitches,
-                status: isBanned ? "BANNED" : "COMPLETED",
-                obtained: totalObtainedMarks,
-                total: totalPossibleMarks,
-                date: d.toLocaleDateString('en-GB'),
-                timestamp: Date.now(),
-                details: detailResults,
-                answerPdfUrl: exam.answerPdfUrl || "",
-                timeTaken: timeDuration,
-                bonus: 0
+            await addDoc(collection(db, "results"), { 
+                name: exam.studentName.toUpperCase(), 
+                exam: exam.name, 
+                percent, 
+                tabSwitches, 
+                status: isBanned ? "BANNED" : "COMPLETED", 
+                obtained: totalObtainedMarks, 
+                total: totalPossibleMarks, 
+                date: new Date().toLocaleDateString('en-GB'), 
+                timestamp: Date.now(), 
+                details: detailResults, 
+                answerPdfUrl: exam.answerPdfUrl || "", 
+                timeTaken: timeDuration, 
+                bonus: 0 
             });
         }
 
-        // ২. রেজাল্ট ডাটা স্টেটে সেট করা (সাদা স্ক্রিন রোধ করতে এটি আগে জরুরি)
-             // এই অংশটুকু রিপ্লেস করুন
-      setScoreData({ correct: totalObtainedMarks, total: totalPossibleMarks, percent, details: detailResults });
-      localStorage.removeItem(recoveryKey);
-      localStorage.removeItem(timerKey);
+        // লোকাল স্টোরেজ পরিষ্কার
+        localStorage.removeItem(recoveryKey);
+        localStorage.removeItem(timerKey);
 
-      // গুরুত্বপূর্ণ: আগে রেজাল্ট স্টেট সেট হবে
-      setIsSubmitted(true); 
+        // স্টেট আপডেট (গুরুত্বপূর্ণ: একসাথে আপডেট করুন)
+        setScoreData({ 
+            correct: totalObtainedMarks, 
+            total: totalPossibleMarks, 
+            percent, 
+            details: detailResults 
+        });
+        
+        setIsSubmitted(true);
+        setIsAppSubmitting(false);
 
-      // ১ সেকেন্ড সময় দিন যাতে ব্রাউজার রেজাল্ট রেন্ডার করতে পারে, তারপর লোডিং স্ক্রিন সরান
-      setTimeout(() => {
-          setIsAppSubmitting(false);
-          const overlay = document.getElementById('loading-overlay');
-          if (overlay) overlay.remove();
-      }, 1000);
-
-      if (isBanned) {
-          setTimeout(() => {
-              onFinish();
-          }, 6000);
-      }
     } catch (e) {
-      console.error(e);
-      setIsAppSubmitting(false);
-      const overlay = document.getElementById('loading-overlay');
-      if (overlay) overlay.remove();
-      setIsSubmitted(true); 
+        console.error(e);
+        setIsAppSubmitting(false);
+    } finally {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.remove();
     }
 };
   const formatTime = (s) => `${Math.floor(s / 60)}:${s % 60 < 10 ? '0' + (s % 60) : s % 60}`;
