@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, deleteDoc, getDocs, writeBatch, getDoc } from "firebase/firestore";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "firebase/auth";
@@ -33,7 +33,7 @@ const getRemainingDays = (expiryDate) => {
 
 // --- Countdown Component ---
 const LiveCountdown = ({ timestamp, onExpire }) => {
-  const [timeLeft, setTimeLeft] = useState("");
+  const isSubmittingRef = useRef(false);
   useEffect(() => {
     const timer = setInterval(() => {
       const diff = (timestamp + 6 * 3600000) - Date.now();
@@ -887,6 +887,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
   const recoveryKey = `exam_recovery_${exam.studentCode}_${exam.id}`;
   const timerKey = `timer_end_${exam.studentCode}_${exam.id}`;
   const [timeLeft, setTimeLeft] = useState(() => {
+    const isSubmittingRef = useRef(false);
     const savedEnd = localStorage.getItem(timerKey);
     if (savedEnd) {
       const remaining = Math.floor((parseInt(savedEnd) - Date.now()) / 1000);
@@ -916,6 +917,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
     };
 
     const handleVisibilityChange = () => {
+      if (isSubmittingRef.current) return;
         if (document.hidden) {
             // ট্যাব পাল্টালে কাউন্ট বাড়বে
             setTabSwitches(prev => {
@@ -1029,19 +1031,12 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
   }, [timeLeft, isSubmitted]);
 
   const submitExam = async () => {
-    // লোডিং স্ক্রিন দেখানো
-    const loadingDiv = document.createElement('div');
-    loadingDiv.id = 'loading-overlay';
-    loadingDiv.innerHTML = `<div style='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;'>
-        <div style='width:50px;height:50px;border:5px solid #3b82f6;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;'></div>
-        <br><b>সাবমিট হচ্ছে...</b>
-    </div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
-    document.body.appendChild(loadingDiv);
-
-    setIsAppSubmitting(true);
+    if (isSubmittingRef.current) return; // সাবমিট হতে থাকলে আর কাজ করবে না
+    isSubmittingRef.current = true; // সাবমিট ফ্ল্যাগ অন করে দিলাম
+    
+    setIsAppSubmitting(true); // এটি আপনার লোডিং স্ক্রিন দেখাবে
 
     try {
-        // ক্যালকুলেশন
         const startTimeKey = `timer_end_${exam.studentCode}_${exam.id}`;
         const savedTimerEnd = localStorage.getItem(startTimeKey);
         const startTime = savedTimerEnd ? (parseInt(savedTimerEnd) - (parseInt(exam?.duration) * 1000)) : Date.now();
@@ -1068,7 +1063,6 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
 
         const percent = totalPossibleMarks > 0 ? Math.round((totalObtainedMarks / totalPossibleMarks) * 100) : 0;
 
-        // ডেটাবেসে সেভ করা
         await addDoc(collection(db, "logs"), { 
             studentName: exam.isGuest ? `(Guest) ${exam.studentName}` : exam.studentName, 
             examTitle: exam.name, 
@@ -1093,11 +1087,9 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
             });
         }
 
-        // লোকাল স্টোরেজ পরিষ্কার
         localStorage.removeItem(recoveryKey);
         localStorage.removeItem(timerKey);
 
-        // স্টেট আপডেট (গুরুত্বপূর্ণ: একসাথে আপডেট করুন)
         setScoreData({ 
             correct: totalObtainedMarks, 
             total: totalPossibleMarks, 
@@ -1111,9 +1103,6 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
     } catch (e) {
         console.error(e);
         setIsAppSubmitting(false);
-    } finally {
-        const overlay = document.getElementById('loading-overlay');
-        if (overlay) overlay.remove();
     }
 };
   const formatTime = (s) => `${Math.floor(s / 60)}:${s % 60 < 10 ? '0' + (s % 60) : s % 60}`;
