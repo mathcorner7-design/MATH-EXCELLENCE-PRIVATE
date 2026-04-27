@@ -915,57 +915,51 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
     return savedAnswers ? JSON.parse(savedAnswers) : {};
   });
 
-  // ২. ট্র্যাকিং লজিক (ব্যান এবং ইন্যাক্টিভ টাইম)
+    // ২. ট্র্যাকিং লজিক (ব্যান এবং ইন্যাক্টিভ টাইম)
   useEffect(() => {
     let startTime;
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        // ট্যাব সুইচ ট্র্যাকিং
+        // ১. ট্যাব সুইচিং কাউন্ট
         setTabSwitches(prev => {
           const newCount = prev + 1;
           if (newCount >= 2) {
             setIsBanned(true);
-            // সরাসরি ৫ সেকেন্ডের ডিলে দিয়ে সাবমিট কল করা হলো
-            setTimeout(() => {
-              const submitBtn = document.querySelector('button[className*="bg-green-600"]');
-              if (submitBtn) submitBtn.click(); // সরাসরি সাবমিট বাটনে ক্লিক করা হচ্ছে
-            }, 5000);
+            // সরাসরি সাবমিট ফাংশন কল
+            setTimeout(() => { submitExam(); }, 5000);
           }
           return newCount;
         });
+
+        // ২. বাইরে যাওয়ার সময়টা রেকর্ড
         startTime = new Date().getTime();
       } else {
+        // ৩. ফিরে আসার পর সময় পরীক্ষা করা
         if (startTime) {
           const endTime = new Date().getTime();
           const secondsAway = Math.floor((endTime - startTime) / 1000);
           
           setInactiveTime(prev => {
-            const total = prev + secondsAway;
-            if (total >= 60) {
+            const totalAway = prev + secondsAway;
+            if (totalAway >= 60) {
               setIsBanned(true);
-              setTimeout(() => {
-                const submitBtn = document.querySelector('button[className*="bg-green-600"]');
-                if (submitBtn) submitBtn.click();
-              }, 5000);
+              setTimeout(() => { submitExam(); }, 5000);
             }
-            return total;
+            return totalAway;
           });
         }
 
-        // ফিরে আসার পর যদি অলরেডি ব্যান হয়ে থাকে
+        // যদি অলরেডি ব্যান হয়ে থাকে তবে সাবমিট করো
         if (isBanned) {
-          setTimeout(() => {
-            const submitBtn = document.querySelector('button[className*="bg-green-600"]');
-            if (submitBtn) submitBtn.click();
-          }, 5000);
+          setTimeout(() => { submitExam(); }, 5000);
         }
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [isBanned]); 
+  }, [isBanned, inactiveTime]); // এখানে dependency যোগ করা হয়েছে যাতে লজিক রি-রান হয় 
   // ৩. এরপর আপনার ডাটা সেভ করার লজিক (যা আপনার ৯৮১ লাইনে ছিল)
   useEffect(() => {
     localStorage.setItem(recoveryKey, JSON.stringify(answers));
