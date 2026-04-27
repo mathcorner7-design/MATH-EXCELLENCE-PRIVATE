@@ -1269,80 +1269,80 @@ const GrowthSectionView = ({ results, students, teacherPin }) => {
                 const stdRes = results.filter(r => r.name === sel).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
                 const attemptsMap = {};
                 const resWithAttempts = stdRes.map(r => { attemptsMap[r.exam] = (attemptsMap[r.exam] || 0) + 1; return { ...r, attemptNo: attemptsMap[r.exam] }; });
-                return resWithAttempts.reverse().map((r) => {
-                  const isMultiple = stdRes.filter(sr => sr.exam === r.exam).length > 1;
-                  const hasPending = r.details && r.details.some(d => d.type === 'written' && d.pending === true);
-                  const totalObtained = (parseFloat(r.obtained) || 0) + (parseFloat(r.bonus) || 0);
-                  const isActuallyBanned = (String(r.status).toUpperCase() === "BANNED" || Number(r.inactiveTime) >= 60);
-    return (
-  <div key={r.id} className={`w-full rounded-[2rem] border shadow-sm flex items-center p-4 md:p-5 gap-3 md:gap-6 transition-all group print-card relative overflow-hidden ${
-    (r.status === "BANNED" || (r.inactiveTime && parseInt(r.inactiveTime) >= 60)) 
-    ? "bg-red-950/30 border-red-900/50" 
-    : "bg-slate-900/60 border-white/10 hover:shadow-md"
-  }`}>
-    
-    {/* বাম পাশের কন্টেন্ট */}
-    <div className={`flex-1 min-w-0 border-l-4 md:border-l-8 border-blue-600 pl-3 md:pl-5 ${
-      (r.status === "BANNED" || (r.inactiveTime && parseInt(r.inactiveTime) >= 60)) ? "opacity-40 grayscale" : ""
+               return resWithAttempts.reverse().map((r) => {
+  const isMultiple = stdRes.filter(sr => sr.exam === r.exam).length > 1;
+  const hasPending = r.details && r.details.some(d => d.type === 'written' && d.pending === true);
+  const totalObtained = (parseFloat(r.obtained) || 0) + (parseFloat(r.bonus) || 0);
+  
+  // ১. একদম সলিড ব্যান চেক (কোনোভাবেই মিস হবে না)
+  const isActuallyBanned = (String(r.status).toUpperCase() === "BANNED" || Number(r.inactiveTime) >= 60);
+
+  return (
+    <div key={r.id} className={`w-full rounded-[2rem] border shadow-sm flex items-center p-4 md:p-5 gap-3 md:gap-6 transition-all group print-card relative overflow-hidden ${
+      isActuallyBanned ? "bg-red-950/40 border-red-800/60 shadow-lg" : "bg-slate-900/60 border-white/10 hover:shadow-md"
     }`}>
-      <p className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">
-        Exam Unit {isMultiple && <span className="text-yellow-500 ml-2">| ATTEMPT {r.attemptNo}</span>}
-      </p>
-      <p className="text-xs md:text-lg font-black uppercase italic text-white leading-tight whitespace-normal break-words">{r.exam}</p>
-      <p className="text-[8px] md:text-[9px] font-black text-blue-400 uppercase italic mt-1">
-        {new Date(r.timestamp).toLocaleDateString('en-GB')}
-      </p>
-    </div>
-
-    {/* স্কোর সেকশন - ব্যান হলে এখানে BANNED লেখা উঠবে */}
-    <div className="text-center px-2 md:px-4 border-l border-white/10 min-w-[70px] md:min-w-[100px]">
-      {(r.status === "BANNED" || (r.inactiveTime && parseInt(r.inactiveTime) >= 60)) ? (
-        <div className="flex flex-col items-center justify-center">
-          <p className="text-[10px] font-black text-red-500 animate-pulse uppercase italic">Restricted</p>
-          <p className="text-xl font-black text-red-600 italic leading-none">BANNED</p>
-        </div>
-      ) : (
-        <>
-          <p className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase mb-0.5">Score</p>
-          <p className="text-xl md:text-3xl font-black italic text-blue-400 leading-none">{totalObtained}/{r.total}</p>
-        </>
-      )}
-    </div>
-
-    {/* বাটন সেকশন - এগুলো এখন গ্যারান্টিড লক হবে */}
-    <div className="flex-shrink-0 flex flex-col gap-2 print:hidden">
       
-      {/* Quick রিভিউ বাটন */}
-        <button 
-    disabled={isActuallyBanned}
-    onClick={() => { if(!isActuallyBanned) setSelectedReview(r); }} 
-    className={`p-2 md:p-3 rounded-2xl border shadow-sm flex flex-col items-center min-w-[65px] transition-all ${
-      isActuallyBanned 
-      ? "bg-slate-900 border-red-900/20 text-red-900/40 cursor-not-allowed" 
-      : "bg-slate-800 text-blue-400 border-white/10 hover:bg-blue-600 hover:text-white"
-    }`}
-  >
-    <Eye size={16} />
-    <span className="text-[7px] font-black mt-1 uppercase italic">Quick</span>
-  </button>
+      {/* বাম পাশের কন্টেন্ট: এখানে ডেট আর টাইম দুটোই থাকবে */}
+      <div className={`flex-1 min-w-0 border-l-4 md:border-l-8 border-blue-600 pl-3 md:pl-5 ${isActuallyBanned ? "opacity-30 grayscale" : ""}`}>
+        <p className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">
+          Exam Unit {isMultiple && <span className="text-yellow-500 ml-2">| ATTEMPT {r.attemptNo}</span>}
+        </p>
+        <p className="text-xs md:text-lg font-black uppercase italic text-white leading-tight whitespace-normal break-words">{r.exam}</p>
+        {r.bonus > 0 && <p className="text-[7px] text-green-400 font-black uppercase italic">+ Includes {r.bonus} Bonus Marks</p>}
+        
+        {/* ডেট এবং টাইম ফিক্স */}
+        <p className="text-[8px] md:text-[9px] font-black text-blue-400 uppercase italic mt-1">
+          {r.date || new Date(r.timestamp).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+        </p>
+      </div>
 
-      {/* Detail রিভিউ লিঙ্ক */}
-      {(r.answerPdfUrl && !(r.status === "BANNED" || (r.inactiveTime && parseInt(r.inactiveTime) >= 60))) ? (
-        <a href={r.answerPdfUrl} target="_blank" rel="noreferrer" className="bg-slate-800 text-green-400 p-2 md:p-3 rounded-2xl border border-white/10 shadow-sm hover:bg-green-600 hover:text-white transition-all flex flex-col items-center min-w-[65px]">
-          <FileText size={16} />
-          <span className="text-[7px] font-black mt-1 uppercase italic">Detail</span>
-        </a>
-      ) : (
-        <div className="bg-black/20 text-slate-700 p-1.5 rounded-xl border border-white/5 flex flex-col items-center opacity-40 min-w-[65px]">
-          <Lock size={12} />
-          <span className="text-[6px] font-black uppercase text-center leading-tight">
-            {(r.status === "BANNED" || (r.inactiveTime && parseInt(r.inactiveTime) >= 60)) ? "LOCKED" : "No Link"}
-          </span>
-        </div>
-      )}
+      {/* স্কোর সেকশন: ব্যান হলে স্কোর দেখাবে না, লাল বিড়ি-ব্যান বা BANNED দেখাবে */}
+      <div className="text-center px-2 md:px-4 border-l border-white/10 min-w-[80px] md:min-w-[110px]">
+        {isActuallyBanned ? (
+          <div className="flex flex-col items-center">
+            <p className="text-[10px] font-black text-red-500 animate-pulse uppercase italic leading-none">Restricted</p>
+            <p className="text-xl font-black italic text-red-600 tracking-tighter">BANNED</p>
+          </div>
+        ) : (
+          <>
+            <p className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase mb-0.5">Score</p>
+            <p className="text-xl md:text-3xl font-black italic text-blue-400 leading-none">{totalObtained}/{r.total}</p>
+          </>
+        )}
+      </div>
+
+      {/* বাটন সেকশন: ব্যান হলে বাটন ডিজেবল এবং লক দেখাবে */}
+      <div className="flex-shrink-0 flex flex-col gap-2 print:hidden">
+        <button 
+          disabled={isActuallyBanned}
+          onClick={() => setSelectedReview(r)} 
+          className={`p-2 md:p-3 rounded-2xl border shadow-sm flex flex-col items-center min-w-[65px] transition-all ${
+            isActuallyBanned 
+            ? "bg-black/60 border-red-900/30 text-red-900/40 cursor-not-allowed" 
+            : "bg-slate-800 text-blue-400 border-white/10 hover:bg-blue-600 hover:text-white"
+          }`}
+        >
+          <Eye size={16} />
+          <span className="text-[7px] font-black mt-1 uppercase italic">Quick</span>
+        </button>
+
+        {/* ডিটেল রিভিউ (ব্যান হলে LOCKED) */}
+        {(r.answerPdfUrl && !isActuallyBanned) ? (
+          <a href={r.answerPdfUrl} target="_blank" rel="noreferrer" className="bg-slate-800 text-green-400 p-2 md:p-3 rounded-2xl border border-white/10 shadow-sm hover:bg-green-600 hover:text-white transition-all flex flex-col items-center min-w-[65px]">
+            <FileText size={16} />
+            <span className="text-[7px] font-black mt-1 uppercase italic">Detail</span>
+          </a>
+        ) : (
+          <div className="bg-black/30 text-slate-700 p-1.5 rounded-xl border border-white/5 flex flex-col items-center opacity-40 min-w-[65px]">
+            <Lock size={12} />
+            <span className="text-[6px] font-black uppercase text-center leading-tight">
+              {isActuallyBanned ? "LOCKED" : "No Link"}
+            </span>
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
 });
 })()}
             </div>
