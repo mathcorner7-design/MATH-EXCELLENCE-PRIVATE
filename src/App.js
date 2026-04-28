@@ -996,13 +996,13 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
       img.src = event.target.result;
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 500;
+        const MAX_WIDTH = 700;
         canvas.width = MAX_WIDTH;
         canvas.height = img.height * (MAX_WIDTH / img.width);
         const ctx = canvas.getContext('2d');
         ctx.filter = "grayscale(100%) contrast(120%)";
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.3);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.4);
         setAnswers(prev => {
           const existingPhotos = Array.isArray(prev[qNum]) ? prev[qNum] : [];
           return { ...prev, [qNum]: [...existingPhotos, compressedBase64] };
