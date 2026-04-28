@@ -962,7 +962,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [isBanned, isCapturing, lastCaptureTimre]);
+  }, [isBanned, isCapturing, lastCaptureTime]);
 
   const [answers, setAnswers] = useState(() => {
     const savedAnswers = localStorage.getItem(recoveryKey);
