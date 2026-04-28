@@ -1261,14 +1261,12 @@ const GrowthSectionView = ({ results, students, teacherPin }) => {
                         <p className="text-xl md:text-3xl font-black italic text-blue-400 leading-none">{totalObtained}/{r.total}</p>
                         {r.timeTaken && <p className="text-[9px] font-black text-yellow-500 uppercase italic mt-1 border-t border-white/5 pt-1">Time: {r.timeTaken}</p>}
                           <div className="mt-1 border-t border-white/5 pt-1">
-  <p className="text-[8px] font-bold text-gray-400 uppercase italic">
-    Switches: <span className="text-orange-500">{r.tabSwitches || 0}</span>
-  </p>
+
   {r.status === "BANNED" && (
-    <p className="text-[8px] font-black text-red-500 animate-pulse italic mt-0.5">
-      🚨 BANNED
-    </p>
-  )}
+  <p className="text-base md:text-xl font-black text-red-600 bg-red-900/30 px-3 py-1 rounded-xl animate-pulse italic mt-2 shadow-lg">
+    🚨 BANNED
+  </p>
+)}
 </div>
                       </div>
                      <div className="flex-shrink-0 flex flex-col gap-2 print:hidden">
