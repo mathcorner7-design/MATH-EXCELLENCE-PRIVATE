@@ -576,6 +576,8 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   const [isChangingPin, setIsChangingPin] = useState(false);
   const [pinVal, setPinVal] = useState('');
   const [expandedId, setExpandedId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState(''); // সার্চের জন্য
+  const [editExam, setEditExam] = useState(null);   // পপ-আপে এডিট করার জন্য
   const [activeManager, setActiveManager] = useState(null); 
   const [quickAddType, setQuickAddType] = useState('live');
   const [qaName, setQaName] = useState('');
@@ -631,12 +633,44 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
         </div>
   {isOpen && (
         <div className="max-h-[500px] overflow-y-auto p-4 space-y-6 bg-white/5 no-scrollbar scroll-smooth">
-          {classes.map(cls => (
-            <div key={cls} className="space-y-3">
-              <h4 className="text-[10px] font-black text-blue-400 uppercase italic border-b border-white/5 pb-1 sticky top-0 bg-slate-950/90 backdrop-blur-md z-10">Class {cls}</h4>
-              {items.filter(m => (m.class || 'Other') === cls).map((item, index) => (
+    {title.includes("Practice") && (
+      <div className="sticky top-0 z-20 pb-4 bg-slate-950/90 backdrop-blur-md pt-2">
+        <div className="relative group">
+          <input 
+            type="text"
+            placeholder="Search exams by name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full p-3 bg-black/40 border border-white/10 rounded-2xl text-xs text-white outline-none focus:border-blue-500 font-bold pl-10 transition-all"
+          />
+          <div className="absolute left-3 top-3.5 text-slate-500">
+            <PlusCircle size={18} className="rotate-45" /> 
+          </div>
+        </div>
+      </div>
+    )}
+  {classes.map(cls => {
+  // এখানে সার্চ অনুযায়ী ফিল্টার করা হচ্ছে
+  const filteredItems = items.filter(m => 
+    (m.class || 'Other') === cls && 
+    m.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // যদি সার্চের সাথে কোনো মিল না পাওয়া যায়, তবে ওই ক্লাস সেকশনটি দেখাবে না
+  if (filteredItems.length === 0) return null;
+
+  return (
+    <div key={cls} className="space-y-3">
+      <h4 className="text-[10px] font-black text-blue-400 uppercase italic border-b border-white/5 pb-1 sticky top-0 bg-slate-950/90 backdrop-blur-md z-10">Class {cls}</h4>
+      {filteredItems.map((item, index) => (
                 <div key={item.id} className="bg-slate-900/60 rounded-2xl border border-white/10 overflow-hidden transition-all duration-200">
-                  <div onClick={() => setExpandedId(expandedId === item.id ? null : item.id)} className="p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 group">
+                  <div onClick={() => {
+  if (title.includes("Practice")) {
+    setEditExam(item); // প্র্যাকটিস হলে পপ-আপ খুলবে
+  } else {
+    setExpandedId(expandedId === item.id ? null : item.id); // লাইভ মক হলে আগের মতো নিচে খুলবে
+  }
+}} className="p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 group">
                     <div className="flex-1 pr-2">
                       <div className="flex flex-col">
                         <div className="flex items-center gap-3">
@@ -857,6 +891,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
         </div>
       </div>
       {selectedStudent && <AdminMarksheetModal student={selectedStudent} results={studentResults} onClose={() => setSelectedStudent(null)} />}
+        {editExam && <EditExamModal item={editExam} onClose={() => setEditExam(null)} updateField={updateField} />}
     </div>
   );
 };
@@ -901,7 +936,54 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
     </div>
   );
 };
+// প্র্যাকটিস সেকশনের জন্য স্পেশাল পপ-আপ এডিটর
+const EditExamModal = ({ item, onClose, updateField }) => {
+  if (!item) return null;
 
+  return (
+    <div className="fixed inset-0 bg-black/90 z-[5000] backdrop-blur-md flex items-center justify-center p-4">
+      <div className="bg-slate-900 border-2 border-white/10 w-full max-w-2xl rounded-[2.5rem] shadow-2xl animate-in zoom-in duration-200 overflow-hidden">
+        
+        {/* হেডার: নাম এবং ক্যানসেল বাটন */}
+        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-slate-800/30">
+          <div>
+            <h3 className="text-blue-400 font-black italic uppercase text-sm tracking-widest">Edit Practice Set</h3>
+            <p className="text-[10px] text-slate-500 font-bold mt-1 uppercase">{item.name}</p>
+          </div>
+          <button onClick={onClose} className="p-2 bg-red-500/10 text-red-500 rounded-full hover:bg-red-500 hover:text-white transition-all">
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* এডিটিং ফর্ম: যা আগে লাফাতো, এখন তা এখানে শান্ত থাকবে */}
+        <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto no-scrollbar">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <p className="text-[8px] font-black text-slate-500 uppercase mb-2 ml-1">Exam Name</p>
+              <input type="text" defaultValue={item.name} onBlur={(e) => updateField(item.id, item.source, 'name', e.target.value.toUpperCase())} className="w-full p-3.5 bg-black border border-white/10 rounded-2xl text-white text-xs font-black outline-none focus:border-blue-500" />
+            </div>
+            <div>
+              <p className="text-[8px] font-black text-purple-400 uppercase mb-2 ml-1 italic">Chapter Name</p>
+              <input type="text" defaultValue={item.chapter} onBlur={(e) => updateField(item.id, item.source, 'chapter', e.target.value.toUpperCase())} className="w-full p-3.5 bg-black border border-white/10 rounded-2xl text-white text-xs font-black outline-none focus:border-purple-500" />
+            </div>
+          </div>
+
+          <div className="bg-black/40 p-4 rounded-3xl border border-white/5 space-y-4">
+             <p className="text-[9px] font-black text-green-500 uppercase italic">Drive & Answer Links</p>
+             <input type="text" placeholder="Question Link" defaultValue={item.fileUrl} onBlur={(e) => updateField(item.id, item.source, 'fileUrl', e.target.value)} className="w-full p-3 bg-black border border-white/5 rounded-xl text-white text-[10px] font-bold outline-none" />
+             <input type="text" placeholder="Answer PDF Link" defaultValue={item.answerPdfUrl} onBlur={(e) => updateField(item.id, item.source, 'answerPdfUrl', e.target.value)} className="w-full p-3 bg-black border border-white/5 rounded-xl text-white text-[10px] font-bold outline-none" />
+          </div>
+
+          <div className="flex justify-center pt-4">
+            <button onClick={onClose} className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black italic text-xs tracking-widest transition-all shadow-lg shadow-blue-900/20">
+              SAVE CHANGES & CLOSE
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting }) => {
   const recoveryKey = `exam_recovery_${exam.studentCode}_${exam.id}`;
   const timerKey = `timer_end_${exam.studentCode}_${exam.id}`;
