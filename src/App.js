@@ -572,7 +572,6 @@ const App = () => {
 };
 
 const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, setTeacherPin, studentResults, ads, qaChapter, setQaChapter }) => {
-  const [showPracticeManager, setShowPracticeManager] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isChangingPin, setIsChangingPin] = useState(false);
   const [pinVal, setPinVal] = useState('');
@@ -796,24 +795,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
         </div>
       </div>
       <AdminPaperManager title="Live Mock Exam" items={adminLive} color="text-red-500" />
-      const [showPracticeManager, setShowPracticeManager] = useState(false);
-
-<div 
-  onClick={() => setShowPracticeManager(prev => !prev)}
-  className="cursor-pointer p-5 bg-black/70 rounded-2xl border border-white/10 mb-4 text-center"
->
-  <h3 className="text-sm font-black text-blue-400 uppercase italic">
-    Practice Sets Manager (Click to Open)
-  </h3>
-</div>
-
-{showPracticeManager && (
-  <AdminPaperManager 
-    title="Practice Sets" 
-    items={adminShifted} 
-    color="text-blue-400" 
-  />
-)}
+      <AdminPaperManager title="Practice Sets" items={adminShifted} color="text-blue-400" />
       <div className="bg-black/60 backdrop-blur-xl p-8 rounded-[2.5rem] border-t-8 border-yellow-600 w-full mb-8 text-left border-x border-b border-white/5">
         <h3 className="font-black text-xs uppercase mb-6 flex items-center gap-2 italic text-yellow-500"><Radio size={20} /> Ad Manager</h3>
         <div className="space-y-4">
