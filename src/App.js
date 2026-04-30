@@ -878,7 +878,7 @@ document.body.style.overflow = "auto";
         <h2 className="text-lg font-black text-blue-400 uppercase italic">
           Edit Practice: {selectedPracticeExam.name}
         </h2>
-        <button onClick={() => setSelectedPracticeExam(null)}>
+        <button onClick={() => setSelectedPracticeExam(item)}>
           <X size={24}/>
         </button>
       </div>
