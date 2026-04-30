@@ -1032,8 +1032,8 @@ document.body.style.overflow = "auto";
      </div>
    </div>
 )}
+);
 
-};
   
 
 const AdminMarksheetModal = ({ student, results, onClose }) => {
