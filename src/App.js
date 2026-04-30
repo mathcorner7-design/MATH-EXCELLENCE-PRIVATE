@@ -867,13 +867,13 @@ document.body.style.overflow = "auto";
         </div>
       </div>
       {selectedStudent && <AdminMarksheetModal student={selectedStudent} results={studentResults} onClose={() => setSelectedStudent(null)} />}
+        </div>
        
    {selectedPracticeExam && (
   <div className="fixed inset-0 bg-black/90 z-[3000] flex items-center justify-center p-6 backdrop-blur-md">
     
     <div className="bg-slate-900 w-full max-w-3xl rounded-3xl p-6 border border-white/10 max-h-[90vh] overflow-y-auto">
 
-      {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg font-black text-blue-400 uppercase italic">
           Edit Practice: {selectedPracticeExam.name}
@@ -882,162 +882,162 @@ document.body.style.overflow = "auto";
           <X size={24}/>
         </button>
       </div>
-
-      {/* BODY */}
+   
       <div className="space-y-5">
+{/* ===== ACCESS MODE + CLASS + LEVEL ===== */}
+  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
 
-        {/* ACCESS MODE + CLASS + LEVEL */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+    <div>
+      <p className="text-[8px] font-black text-green-400 uppercase mb-1 ml-1 italic">Access Mode</p>
+      <select
+        defaultValue={selectedPracticeExam.status || 'public'}
+        onChange={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'status',e.target.value)}
+        className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-[10px] font-black"
+      >
+        <option value="public">🌍 Public</option>
+        <option value="premium">💎 Premium</option>
+        <option value="locked">🔒 Locked</option>
+      </select>
+    </div>
 
-          <div>
-            <p className="text-[8px] font-black text-green-400 uppercase mb-1 ml-1 italic">Access Mode</p>
-            <select
-              defaultValue={selectedPracticeExam.status || 'public'}
-              onChange={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'status',e.target.value)}
-              className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-[10px] font-black"
-            >
-              <option value="public">🌍 Public</option>
-              <option value="premium">💎 Premium</option>
-              <option value="locked">🔒 Locked</option>
-            </select>
-          </div>
+    <div>
+      <p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1">Class</p>
+      <select
+        defaultValue={selectedPracticeExam.class || '10'}
+        onChange={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'class',e.target.value)}
+        className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-[10px] font-black"
+      >
+        {[5,6,7,8,9,10,11,12].map(c => <option key={c} value={c}>{c}</option>)}
+      </select>
+    </div>
 
-          <div>
-            <p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1">Class</p>
-            <select
-              defaultValue={selectedPracticeExam.class || '10'}
-              onChange={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'class',e.target.value)}
-              className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-[10px] font-black"
-            >
-              {[5,6,7,8,9,10,11,12].map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-
-          <div className="md:col-span-2">
-            <p className="text-[8px] font-black text-yellow-500 uppercase mb-1 ml-1">Complexity Level</p>
-            <select
-              defaultValue={selectedPracticeExam.level || 'Moderate'}
-              onChange={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'level',e.target.value)}
-              className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-[10px] font-black"
-            >
-              {['Easy','Moderate','Hard'].map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)}
-            </select>
-          </div>
-
-        </div>
-
-        {/* NAME + CHAPTER */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-          <div>
-            <p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1">Exam Name</p>
-            <input
-              defaultValue={selectedPracticeExam.name}
-              onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'name',e.target.value.toUpperCase())}
-              className="w-full p-2.5 rounded-xl border border-white/10 bg-black text-white text-xs font-black"
-            />
-          </div>
-
-          <div>
-            <p className="text-[8px] font-black text-purple-400 uppercase mb-1 ml-1">Chapter Name</p>
-            <input
-              defaultValue={selectedPracticeExam.chapter}
-              onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'chapter',e.target.value.toUpperCase())}
-              className="w-full p-2.5 rounded-xl border border-white/10 bg-black text-white text-xs font-black"
-            />
-          </div>
-
-        </div>
-
-        {/* TIME LIMIT */}
-        <div className="bg-black p-3 rounded-xl border border-white/10">
-          <p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1">Time Limit</p>
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              defaultValue={selectedPracticeExam.hours}
-              onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'hours',e.target.value)}
-              className="w-14 text-center font-black bg-slate-900 rounded-lg text-white"
-            />
-            <span className="text-xs font-bold">H</span>
-
-            <input
-              type="number"
-              defaultValue={selectedPracticeExam.minutes}
-              onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'minutes',e.target.value)}
-              className="w-14 text-center font-black bg-slate-900 rounded-lg text-white"
-            />
-            <span className="text-xs font-bold">M</span>
-          </div>
-        </div>
-
-        {/* LINKS */}
-        <div className="space-y-3">
-
-          <div>
-            <p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1">Question Link</p>
-            <input
-              defaultValue={selectedPracticeExam.fileUrl}
-              onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'fileUrl',e.target.value)}
-              className="w-full p-2 rounded-lg border border-white/10 bg-black text-white text-[10px]"
-            />
-          </div>
-
-          <div>
-            <p className="text-[8px] font-black text-green-500 uppercase mb-1 ml-1">Answer Link</p>
-            <input
-              defaultValue={selectedPracticeExam.answerPdfUrl}
-              onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'answerPdfUrl',e.target.value)}
-              className="w-full p-2 rounded-lg border border-white/10 bg-black text-white text-[10px]"
-            />
-          </div>
-
-        </div>
-
-        {/* ANSWER KEY + MARKS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-          <div>
-            <p className="text-[8px] font-black text-yellow-500 uppercase mb-1 ml-1">Correct Answer Key</p>
-            <input
-              defaultValue={selectedPracticeExam.answerKey}
-              onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'answerKey',e.target.value.toUpperCase())}
-              className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-white text-xs font-bold"
-              placeholder="A,B,C,D"
-            />
-          </div>
-
-          <div>
-            <p className="text-[8px] font-black text-green-500 uppercase mb-1 ml-1">Marks per Question</p>
-            <input
-              defaultValue={selectedPracticeExam.questionMarks}
-              onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'questionMarks',e.target.value)}
-              className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-white text-xs font-bold"
-              placeholder="1,1,2,1"
-            />
-          </div>
-
-        </div>
-
-        {/* NEGATIVE MARK */}
-        <div>
-          <p className="text-[8px] font-black text-red-500 uppercase mb-1 ml-1">Negative Mark</p>
-          <input
-            type="number"
-            step="0.01"
-            defaultValue={selectedPracticeExam.negativeMark}
-            onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'negativeMark',e.target.value)}
-            className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-white text-xs font-bold"
-            placeholder="0.25"
-          />
-        </div>
-
-      </div>
-
+    <div className="md:col-span-2">
+      <p className="text-[8px] font-black text-yellow-500 uppercase mb-1 ml-1">Complexity Level</p>
+      <select
+        defaultValue={selectedPracticeExam.level || 'Moderate'}
+        onChange={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'level',e.target.value)}
+        className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-[10px] font-black"
+      >
+        {['Easy','Moderate','Hard'].map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)}
+      </select>
     </div>
 
   </div>
+
+  {/* ===== NAME + CHAPTER ===== */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+    <div>
+      <p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1">Exam Name</p>
+      <input
+        defaultValue={selectedPracticeExam.name}
+        onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'name',e.target.value.toUpperCase())}
+        className="w-full p-2.5 rounded-xl border border-white/10 bg-black text-white text-xs font-black"
+      />
+    </div>
+
+    <div>
+      <p className="text-[8px] font-black text-purple-400 uppercase mb-1 ml-1">Chapter Name</p>
+      <input
+        defaultValue={selectedPracticeExam.chapter}
+        onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'chapter',e.target.value.toUpperCase())}
+        className="w-full p-2.5 rounded-xl border border-white/10 bg-black text-white text-xs font-black"
+      />
+    </div>
+
+  </div>
+
+  {/* ===== TIME LIMIT ===== */}
+  <div className="bg-black p-3 rounded-xl border border-white/10">
+    <p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1">Time Limit</p>
+    <div className="flex items-center gap-2">
+      <input
+        type="number"
+        defaultValue={selectedPracticeExam.hours}
+        onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'hours',e.target.value)}
+        className="w-14 text-center font-black bg-slate-900 rounded-lg text-white"
+      />
+      <span className="text-xs font-bold">H</span>
+
+      <input
+        type="number"
+        defaultValue={selectedPracticeExam.minutes}
+        onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'minutes',e.target.value)}
+        className="w-14 text-center font-black bg-slate-900 rounded-lg text-white"
+      />
+      <span className="text-xs font-bold">M</span>
+    </div>
+  </div>
+
+  {/* ===== LINKS ===== */}
+  <div className="space-y-3">
+
+    <div>
+      <p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1">Question Link</p>
+      <input
+        defaultValue={selectedPracticeExam.fileUrl}
+        onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'fileUrl',e.target.value)}
+        className="w-full p-2 rounded-lg border border-white/10 bg-black text-white text-[10px]"
+      />
+    </div>
+
+    <div>
+      <p className="text-[8px] font-black text-green-500 uppercase mb-1 ml-1">Answer Link</p>
+      <input
+        defaultValue={selectedPracticeExam.answerPdfUrl}
+        onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'answerPdfUrl',e.target.value)}
+        className="w-full p-2 rounded-lg border border-white/10 bg-black text-white text-[10px]"
+      />
+    </div>
+
+  </div>
+
+  {/* ===== ANSWER KEY + MARKS ===== */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+    <div>
+      <p className="text-[8px] font-black text-yellow-500 uppercase mb-1 ml-1">Correct Answer Key</p>
+      <input
+        defaultValue={selectedPracticeExam.answerKey}
+        onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'answerKey',e.target.value.toUpperCase())}
+        className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-white text-xs font-bold"
+        placeholder="A,B,C,D"
+      />
+    </div>
+
+    <div>
+      <p className="text-[8px] font-black text-green-500 uppercase mb-1 ml-1">Marks per Question</p>
+      <input
+        defaultValue={selectedPracticeExam.questionMarks}
+        onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'questionMarks',e.target.value)}
+        className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-white text-xs font-bold"
+        placeholder="1,1,2,1"
+      />
+    </div>
+
+  </div>
+
+  {/* ===== NEGATIVE MARK ===== */}
+  <div>
+    <p className="text-[8px] font-black text-red-500 uppercase mb-1 ml-1">Negative Mark</p>
+    <input
+      type="number"
+      step="0.01"
+      defaultValue={selectedPracticeExam.negativeMark}
+      onBlur={(e)=>updateField(selectedPracticeExam.id, selectedPracticeExam.source,'negativeMark',e.target.value)}
+      className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-white text-xs font-bold"
+      placeholder="0.25"
+    /> 
+      </div>
+     </div>
+   </div>
+   </div>
+   
 )}
+};
+
+
+  
 
 const AdminMarksheetModal = ({ student, results, onClose }) => {
   const [newRes, setNewRes] = useState({ exam: "", obtained: "", total: "", date: "" });
