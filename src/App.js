@@ -867,7 +867,7 @@ document.body.style.overflow = "auto";
         </div>
       </div>
       {selectedStudent && <AdminMarksheetModal student={selectedStudent} results={studentResults} onClose={() => setSelectedStudent(null)} />}
-        {selectedPracticeExam && (
+        {selectedPracticeExam && ({
   <div className="fixed inset-0 bg-black/90 z-[3000] flex items-center justify-center p-6 backdrop-blur-md">
     
     <div className="bg-slate-900 w-full max-w-3xl rounded-3xl p-6 border border-white/10 max-h-[90vh] overflow-y-auto">
