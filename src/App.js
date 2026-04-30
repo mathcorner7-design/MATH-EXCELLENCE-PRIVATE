@@ -1385,5 +1385,5 @@ const GrowthSectionView = ({ results, students, teacherPin }) => {
     </div>
   );
 };
-
+};
 export default App;
