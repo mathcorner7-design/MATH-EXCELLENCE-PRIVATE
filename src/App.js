@@ -576,6 +576,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   const [isChangingPin, setIsChangingPin] = useState(false);
   const [pinVal, setPinVal] = useState('');
   const [expandedId, setExpandedId] = useState(null);
+  const [openAdminClass, setOpenAdminClass] = useState(null);
   const [quickAddType, setQuickAddType] = useState('live');
   const [qaName, setQaName] = useState('');
   const [qaAnswerLink, setQaAnswerLink] = useState('');
@@ -631,8 +632,12 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
         <div className="max-h-[600px] overflow-y-auto p-4 space-y-6 bg-white/5 no-scrollbar">
           {classes.map(cls => (
             <div key={cls} className="space-y-3">
-              <h4 className="text-[10px] font-black text-blue-400 uppercase italic border-b border-white/5 pb-1">Class {cls}</h4>
-              {items.filter(m => (m.class || 'Other') === cls).map((item, index) => (
+              <div onClick={() => setOpenAdminClass(openAdminClass === cls ? null : cls)} className="flex justify-between items-center cursor-pointer p-2 bg-white/5 rounded-lg">
+  <h4 className="text-[10px] font-black text-blue-400 uppercase italic">Class {cls}</h4>
+  <ChevronRight size={14} className={`transition-transform ${openAdminClass === cls ? 'rotate-90' : ''}`} />
+</div>
+{openAdminClass === cls && (
+              items.filter(m => (m.class || 'Other') === cls).map((item, index) => (
                 <div key={item.id} className="bg-slate-900/60 rounded-2xl border border-white/10 overflow-hidden transition-all">
                   <div onClick={() => setExpandedId(expandedId === item.id ? null : item.id)} className="p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 group">
                     <div className="flex-1 pr-2">
@@ -710,7 +715,9 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                     </div>
                   )}
                 </div>
+)
               ))}
+)
             </div>
           ))}
         </div>
