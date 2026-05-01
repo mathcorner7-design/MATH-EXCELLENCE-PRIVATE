@@ -662,7 +662,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                   </div>
                   {expandedId === item.id && (
                     <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[5000] flex items-start md:items-center justify-center p-4">
-  <div className="bg-slate-950 w-full max-w-2xl h-[95vh] overflow-y-auto p-8 rounded-[2.5rem] border border-white/10 shadow-2xl relative">
+  <div className="bg-slate-950 w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 rounded-[2.5rem] border border-white/10 shadow-2xl relative">
                     <button onClick={(e) => { e.stopPropagation(); setExpandedId(null); }} className="absolute top-6 right-6 p-2 bg-red-500/10 text-red-500 rounded-full hover:bg-red-600 hover:text-white transition-all">
   <X size={20} />
 </button>
