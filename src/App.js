@@ -901,6 +901,14 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
           })}
         </div>
       </div>
+          {/* গ্রোথ সেকশনের রিভিউ উইন্ডো এখানে অ্যাড করা হলো */}
+{selectedReview && (
+  <ReviewResultModal 
+    isOpen={!!selectedReview} 
+    onClose={() => setSelectedReview(null)} 
+    result={selectedReview} 
+  />
+)}
     </div>
   );
 };
