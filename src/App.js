@@ -879,8 +879,21 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg bg-blue-900/40 text-blue-400 border border-blue-800/50 shadow-sm">{currentPercent}%</div>
                     <div className="flex-1 min-0 pr-2">
-                      <p className="text-sm font-black uppercase italic tracking-tighter text-white leading-none break-words whitespace-normal">{r.exam}</p>
-                      <p className="text-[10px] font-bold text-slate-500 mt-1 italic"> {r.date} • Score: {currentTotalObt}/{r.total} {r.bonus > 0 && <span className="text-green-500 ml-1">(+{r.bonus} Bonus)</span>} </p>
+                      <div className="flex items-center gap-2">
+  <p className="text-sm font-black uppercase italic tracking-tighter text-white leading-none break-words">{r.exam}</p>
+  {r.status === "BANNED" && (
+    <span className="bg-red-600 text-white text-[8px] px-2 py-0.5 rounded-full animate-pulse font-black italic">BANNED</span>
+  )}
+</div>
+                      <p className="text-[10px] font-bold text-slate-500 mt-1 italic"> {r.date} • {new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Score: {currentTotalObt}/{r.total} {r.timeTaken && ` • Time: ${r.timeTaken}`} • Score: {currentTotalObt}/{r.total} {r.bonus > 0 && <span className="text-green-500 ml-1">(+{r.bonus} Bonus)</span>} <div className="mt-3 flex flex-wrap gap-1 border-t border-white/5 pt-2">
+  {r.details?.map((item, idx) => (
+    <div 
+      key={idx} 
+      title={`Q${item.qNum}`}
+      className={`w-2.5 h-2.5 rounded-sm ${item.type === 'written' ? (item.pending ? 'bg-orange-500 animate-slow-ping' : 'bg-blue-500') : (item.status ? 'bg-green-500' : 'bg-red-500')} opacity-80`}
+    ></div>
+  ))}
+</div> </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 print:hidden">
