@@ -862,6 +862,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
 const AdminMarksheetModal = ({ student, results, onClose }) => {
   const [newRes, setNewRes] = useState({ exam: "", obtained: "", total: "", date: "" });
   const [previewImg, setPreviewImg] = useState(null);
+  const [selectedReview, setSelectedReview] = useState(null);
   return (
     <div className="fixed inset-0 bg-slate-950 z-[1200] p-6 overflow-y-auto animate-in slide-in-from-right-full duration-500 print:hidden text-white">
       {previewImg && <ImagePreviewModal src={previewImg} onClose={() => setPreviewImg(null)} />}
