@@ -1316,7 +1316,11 @@ const GrowthSectionView = ({ results, students, teacherPin }) => {
                       </div>
                       <div className="text-center px-2 md:px-4 border-l border-white/10 min-w-[70px] md:min-w-[100px]">
                         <p className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase mb-0.5">Score</p>
-                        <p className="text-xl md:text-3xl font-black italic text-blue-400 leading-none">{totalObtained}/{r.total}</p>
+                        <p className="text-xl md:text-3xl font-black italic text-blue-400 leading-none">{hasPending ? (
+  <span className="text-sm md:text-lg text-orange-500 animate-pulse uppercase">Pending</span>
+) : (
+  <>{totalObtained}/{r.total}</>
+)}</p>
                         {r.timeTaken && <p className="text-[9px] font-black text-yellow-500 uppercase italic mt-1 border-t border-white/5 pt-1">Time: {r.timeTaken}</p>}
                           <div className="mt-1 border-t border-white/5 pt-1">
 
