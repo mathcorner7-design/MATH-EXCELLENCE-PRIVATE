@@ -885,20 +885,12 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
     <span className="bg-red-600 text-white text-[8px] px-2 py-0.5 rounded-full animate-pulse font-black italic">BANNED</span>
   )}
 </div>
-                      <p className="text-[10px] font-bold text-slate-500 mt-1 italic"> {r.date} • {new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {r.timeTaken && ` • Time: ${r.timeTaken}`} • Score: {currentTotalObt}/{r.total} {r.bonus > 0 && <span className="text-green-500 ml-1">(+{r.bonus} Bonus)</span>} <div className="mt-3 flex flex-wrap gap-1 border-t border-white/5 pt-2">
-  {r.details?.map((item, idx) => (
-    <div 
-      key={idx} 
-      title={`Q${item.qNum}`}
-      className={`w-2.5 h-2.5 rounded-sm ${item.type === 'written' ? (item.pending ? 'bg-orange-500 animate-slow-ping' : 'bg-blue-500') : (item.status ? 'bg-green-500' : 'bg-red-500')} opacity-80`}
-    ></div>
-  ))}
-</div> </p>
+                      <p className="text-[10px] font-bold text-slate-500 mt-1 italic"> {r.date} • {new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {r.timeTaken && ` • Time: ${r.timeTaken}`} • Score: {currentTotalObt}/{r.total} {r.bonus > 0 && <span className="text-green-500 ml-1">(+{r.bonus} Bonus)</span>}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 print:hidden">
                     <input id={`bonus-in-${r.id}`} type="number" placeholder="+" className="w-12 p-2 bg-black border border-slate-700 rounded-xl text-[10px] font-black text-center text-yellow-400 outline-none focus:border-yellow-500" />
-                    <button onClick={async () => { const bVal = document.getElementById(`bonus-in-${r.id}`).value; if(!bVal) return alert("Enter marks"); const newB = (parseFloat(r.bonus) || 0) + parseFloat(bVal); await setDoc(doc(db, "results", r.id), { bonus: newB }, { merge: true }); document.getElementById(`bonus-in-${r.id}`).value = ''; alert("Bonus Applied!"); }} className="p-2 bg-yellow-600 text-white rounded-xl shadow-lg active:scale-90 transition-all"><PlusCircle size={18}/></button>
+                    <button onClick={async () => { const bVal = document.getElementById(`bonus-in-${r.id}`).value; if(!bVal) return alert("Enter marks"); const newB = (parseFloat(r.bonus) || 0) + parseFloat(bVal); await setDoc(doc(db, "results", r.id), { bonus: newB }, { merge: true }); document.getElementById(`bonus-in-${r.id}`).value = ''; alert("Bonus Applied!"); }} className="p-2 bg-yellow-600 text-white rounded-xl shadow-lg active:scale-90 transition-all"><PlusCircle size={18}/></button> <button onClick={() => setSelectedReview(r)} className="p-2 bg-blue-600 text-white rounded-xl shadow-lg active:scale-90 transition-all"><Eye size={18}/></button>
                     <button onClick={async () => { if (window.confirm("Purge record?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-slate-600 hover:text-red-500 active:scale-90 transition-all flex-shrink-0"><Trash2 size={24} /></button>
                   </div>
                 </div>
