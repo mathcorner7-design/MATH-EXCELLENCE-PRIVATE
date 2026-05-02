@@ -1311,7 +1311,7 @@ const GrowthSectionView = ({ results, students, teacherPin }) => {
                         <p className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Exam Unit {isMultiple && <span className="text-yellow-500 ml-2">| ATTEMPT {r.attemptNo}</span>}</p>
                         <p className="text-xs md:text-lg font-black uppercase italic text-white leading-tight whitespace-normal break-words">{r.exam}</p>
                         {r.bonus > 0 && <p className="text-[7px] text-green-400 font-black uppercase italic">+ Includes {r.bonus} Bonus Marks</p>}
-                        {hasPending && <p className="text-[7px] md:text-[8px] font-black text-orange-400 uppercase italic mt-0.5 animate-pulse">Score may increase after sir's review</p>}
+                        {hasPending && <p className="text-[7px] md:text-[8px] font-black text-orange-400 uppercase italic mt-0.5 animate-pulse">WAITING FOR THE SIR'S CHECKING</p>}
                         <p className="text-[8px] md:text-[9px] font-black text-blue-400 uppercase italic mt-1">{new Date(r.timestamp).toLocaleDateString('en-GB')} • {new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                       </div>
                       <div className="text-center px-2 md:px-4 border-l border-white/10 min-w-[70px] md:min-w-[100px]">
