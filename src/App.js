@@ -885,7 +885,7 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
     <span className="bg-red-600 text-white text-[8px] px-2 py-0.5 rounded-full animate-pulse font-black italic">BANNED</span>
   )}
 </div>
-                      <p className="text-[10px] font-bold text-slate-500 mt-1 italic"> {r.date} • {new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Score: {currentTotalObt}/{r.total} {r.timeTaken && ` • Time: ${r.timeTaken}`} • Score: {currentTotalObt}/{r.total} {r.bonus > 0 && <span className="text-green-500 ml-1">(+{r.bonus} Bonus)</span>} <div className="mt-3 flex flex-wrap gap-1 border-t border-white/5 pt-2">
+                      <p className="text-[10px] font-bold text-slate-500 mt-1 italic"> {r.date} • {new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {r.timeTaken && ` • Time: ${r.timeTaken}`} • Score: {currentTotalObt}/{r.total} {r.bonus > 0 && <span className="text-green-500 ml-1">(+{r.bonus} Bonus)</span>} <div className="mt-3 flex flex-wrap gap-1 border-t border-white/5 pt-2">
   {r.details?.map((item, idx) => (
     <div 
       key={idx} 
