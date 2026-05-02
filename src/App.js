@@ -637,7 +637,13 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   <ChevronRight size={14} className={`transition-transform ${openAdminClass === cls ? 'rotate-90' : ''}`} />
 </div>
 {openAdminClass === cls && (
-              items.filter(m => (m.class || 'Other') === cls).map((item, index) => (
+              {[...new Set(items.filter(m => (m.class || 'Other') === cls).map(m => (m.chapter || 'GENERAL').toUpperCase()))].map(chName => (
+  <div key={chName} className="mb-6 ml-2 border-l-2 border-blue-900/30 pl-4">
+    <h5 className="text-[9px] font-black text-purple-400 uppercase italic mb-3 flex items-center gap-2 tracking-widest">
+      <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div> {chName}
+    </h5>
+    <div className="space-y-3">
+      {items.filter(m => (m.class || 'Other') === cls && (m.chapter || 'GENERAL').toUpperCase() === chName).map((item, index) => ( 
                 <div key={item.id} className="bg-slate-900/60 rounded-2xl border border-white/10 overflow-hidden transition-all">
                   <div onClick={() => setExpandedId(expandedId === item.id ? null : item.id)} className="p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 group">
                     <div className="flex-1 pr-2">
@@ -725,6 +731,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
 )
               ))}
             </div>
+              </div>
           ))}
         </div>
       </div>
