@@ -728,16 +728,13 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
       </div>
                   )}
                 </div>
-)
               ))}
             </div>
-              </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
+          </div>
+        ))}
+    </div>
+  </div>
+);
   return (
     <div className="w-full flex flex-col items-center">
       <div className="bg-slate-950/80 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-2xl border-t-8 border-blue-700 w-full mb-8 text-left animate-in fade-in print:hidden border-x border-b border-white/5">
