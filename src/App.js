@@ -1150,9 +1150,9 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
       <CheckCircle size={80} className="text-green-500 mb-6 animate-bounce shadow-2xl rounded-full" />
       <h2 className="text-3xl font-black uppercase italic mb-8 tracking-tighter leading-none">Session Completed</h2>
       <div className="bg-slate-900 p-10 rounded-[3rem] border-4 border-slate-800 mb-10 w-full max-sm shadow-2xl text-center">
-       <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2 opacity-60">MCQ SCORE ONLY</p>
+       <p className="text-[15px] font-black text-white uppercase tracking-widest mb-2 opacity-60">MCQ SCORE ONLY</p>
 <h3 className="text-5xl font-black text-blue-400 italic tracking-tighter leading-none">{scoreData?.correct}</h3>
-<p className="text-[10px] font-black text-orange-400 uppercase mt-5 italic animate-pulse tracking-tighter">Registered students, please wait for teacher's evaluation of written answers.</p>
+<p className="text-[14px] font-black text-white uppercase mt-5 italic animate-pulse tracking-tighter">Registered students, please wait for teacher's evaluation of written answers.</p>
         {exam.isGuest && <p className="text-orange-400 text-[10px] font-black mt-4 uppercase italic">Notice: Guest data is not saved permanentally.</p>}
         <div className="mt-8 space-y-2 max-h-60 overflow-y-auto no-scrollbar border-t border-slate-800 pt-4 w-full px-2">
           <p className="text-[9px] font-black text-slate-500 uppercase italic mb-3 text-center">Quick Review:</p>
