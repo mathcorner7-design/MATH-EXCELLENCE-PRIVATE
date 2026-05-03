@@ -622,126 +622,115 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   const adminLive = liveMocks.filter(m => (Date.now() - (m.timestamp || 0) < 6 * 3600000)).sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
   const adminShifted = [...practiceSets, ...liveMocks.filter(m => (Date.now() - (m.timestamp || 0) >= 6 * 3600000))].sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
 
-  const AdminPaperManager = ({ title, items, color, updateField, deleteDoc, db, doc, setOpenAdminClass, openAdminClass, setExpandedId, expandedId }) => {
+  const AdminPaperManager = ({ title, items, color }) => {
     const classes = [...new Set(items.map(m => m.class || 'Other'))].sort((a,b) => parseInt(a) - parseInt(b));
-    
     return (
       <div className="bg-black/60 backdrop-blur-xl rounded-[2rem] shadow-2xl border-t-8 border-slate-900 mb-8 w-full overflow-hidden print:hidden border-x border-b border-white/5">
         <div className="flex justify-between items-center p-6 border-b border-white/5">
           <h3 className={`font-black uppercase text-xs italic ${color}`}>{title} Manager ({items.length})</h3>
         </div>
         <div className="max-h-[600px] overflow-y-auto p-4 space-y-6 bg-white/5 no-scrollbar">
-          {classes.map(cls => {
-            // Error Fix: logic must be inside the map block before return
-            const classItems = items.filter(m => (m.class || 'Other') === cls);
-            const chapters = [...new Set(classItems.map(m => (m.chapter || 'GENERAL').toUpperCase()))];
-
-            return (
-              <div key={cls} className="space-y-3">
-                <div onClick={() => setOpenAdminClass(openAdminClass === cls ? null : cls)} className="flex justify-between items-center cursor-pointer p-2 bg-white/5 rounded-lg">
-                  <h4 className="text-[10px] font-black text-blue-400 uppercase italic">Class {cls}</h4>
-                  <ChevronRight size={14} className={`transition-transform ${openAdminClass === cls ? 'rotate-90' : ''}`} />
-                </div>
-
-                {/* logic for chapters map */}
-                {openAdminClass === cls && chapters.map(ch => {
-                  const isChOpen = expandedId === `${cls}-${ch}`;
-                  return (
-                    <div key={ch}>
-                      <div onClick={() => setExpandedId(isChOpen ? null : `${cls}-${ch}`)} className="cursor-pointer text-white/50 text-[10px] font-bold mb-2 ml-2">
-                        {ch}
-                      </div>
-
-                      {isChOpen && (
-                        <div className="space-y-3">
-                          {classItems
-                            .filter(m => (m.chapter || 'GENERAL').toUpperCase() === ch)
-                            .map((item, index) => (
-                                <div key={item.id} className="bg-slate-900/60 rounded-2xl border border-white/10 overflow-hidden transition-all">
-                                  <div onClick={() => setExpandedId(expandedId === item.id ? null : item.id)} className="p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 group">
-                                    <div className="flex-1 pr-2">
-                                      <div className="flex flex-col">
-                                        <div className="flex items-center gap-3">
-                                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.isPublished ? 'bg-green-500 animate-pulse' : 'bg-slate-700'}`}></div>
-                                          <span className="text-xs font-black uppercase italic text-white break-words">{item.name}</span>
-                                          {item.isGuestEnabled && <span className="text-[7px] bg-green-600 px-1.5 py-0.5 rounded text-white font-black italic">GUEST ON</span>}
-                                          {item.level && <span className="text-[7px] bg-blue-900 px-1.5 py-0.5 rounded text-blue-300 font-black italic">{item.level}</span>}
-                                        </div>
-                                        <p className="text-[8px] font-black text-purple-400 uppercase italic ml-5 mt-1">Chapter: {item.chapter || 'GENERAL'}</p>
-                                        <p className="text-[8px] font-bold text-slate-500 uppercase italic ml-5 mt-1">
-                                          Last Change: {item.timestamp ? `${new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • ${new Date(item.timestamp).toLocaleDateString('en-GB')}` : 'N/A'}
-                                        </p>
-                                      </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                      <button onClick={(e) => { e.stopPropagation(); updateField(item.id, item.source, 'isPublished', !item.isPublished); }} className={`px-4 py-1.5 rounded-full text-[8px] font-black shadow-sm ${item.isPublished ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-500'}`}>{item.isPublished ? 'LIVE' : 'HIDDEN'}</button>
-                                      <button onClick={async (e) => { e.stopPropagation(); if(window.confirm("Permanent delete?")) { await deleteDoc(doc(db, item.source === 'live' ? 'liveMocks' : 'practiceSets', item.id)); } }} className="p-2 text-slate-600 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
-                                      <ChevronRight size={18} className={`transition-transform text-slate-600 ${expandedId === item.id ? 'rotate-90 text-blue-400' : ''}`} />
-                                    </div>
-                                  </div>
-                                  {expandedId === item.id && (
-                                    <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[5000] flex justify-center items-start overflow-y-auto pt-10 pb-10">
-                                      <div className="bg-slate-950 w-full max-w-2xl p-8 rounded-[2.5rem] border border-white/10 shadow-2xl relative mb-10">
-                                        <button onClick={(e) => { e.stopPropagation(); setExpandedId(null); }} className="absolute top-6 right-6 p-2 bg-red-500/10 text-red-500 rounded-full hover:bg-red-600 hover:text-white transition-all">
-                                          <X size={20} />
-                                        </button>
-                                        <div className="p-5 border-t border-white/5 bg-black/40 space-y-4 animate-in slide-in-from-top-2">
-                                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                                            <div>
-                                              <p className="text-[8px] font-black text-green-400 uppercase mb-1 ml-1 italic">Access Mode</p>
-                                              <select value={item.status || (item.isGuestEnabled ? 'public' : 'premium')} onChange={(e) => updateField(item.id, item.source, 'status', e.target.value)} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-[9px] font-black outline-none">
-                                                <option value="public">🌍 Public</option>
-                                                <option value="premium">💎 Premium</option>
-                                                <option value="locked">🔒 Locked</option>
-                                              </select>
-                                            </div>
-                                            <div><p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1">Class</p><select value={item.class || '10'} onChange={(e) => updateField(item.id, item.source, 'class', e.target.value)} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-xs font-black">{[5,6,7,8,9,10,11,12].map(c => <option key={c} value={c}>{c}</option>)}</select></div>
-                                            <div className="md:col-span-2">
-                                              <p className="text-[8px] font-black text-yellow-500 uppercase mb-1 ml-1">Complexity Level</p>
-                                              <select value={item.level || 'Moderate'} onChange={(e) => updateField(item.id, item.source, 'level', e.target.value)} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-xs font-black">
-                                                {['Easy', 'Moderate', 'Hard'].map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)}
-                                              </select>
-                                            </div>
-                                          </div>
-                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div><p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1">Exam Name</p><input type="text" defaultValue={item.name} onBlur={(e) => updateField(item.id, item.source, 'name', e.target.value.toUpperCase())} className="w-full p-2.5 rounded-xl border border-white/10 bg-black text-white text-xs font-black outline-none focus:border-blue-500" /></div>
-                                            <div><p className="text-[8px] font-black text-purple-400 uppercase mb-1 ml-1 italic tracking-widest">Dynamic Folder/Chapter Name</p><input type="text" defaultValue={item.chapter} onBlur={(e) => updateField(item.id, item.source, 'chapter', e.target.value.toUpperCase())} className="w-full p-2.5 rounded-xl border border-white/10 bg-black text-white text-xs font-black outline-none focus:border-purple-500" /></div>
-                                          </div>
-                                          <div className="flex flex-wrap gap-3">
-                                            <div className="bg-black p-2.5 rounded-xl border border-white/10 shadow-sm min-w-[120px]"><p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1">Time Limit</p><div className="flex items-center gap-1"><input type="number" defaultValue={item.hours} onBlur={(e) => updateField(item.id, item.source, 'hours', e.target.value)} className="w-10 text-center font-black bg-slate-900 rounded-lg outline-none text-white" /> <span className="font-bold text-[9px]">H</span><input type="number" defaultValue={item.minutes} onBlur={(e) => updateField(item.id, item.source, 'minutes', e.target.value)} className="w-10 text-center font-black bg-slate-900 rounded-lg outline-none text-white" /> <span className="font-bold text-[9px]">M</span></div></div>
-                                            <div className="flex-1 bg-black p-2.5 rounded-xl border border-white/10 shadow-sm"><p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1">Google Drive Link</p><input type="text" defaultValue={item.fileUrl} onBlur={(e) => updateField(item.id, item.source, 'fileUrl', e.target.value)} className="w-full p-2 rounded-lg border border-white/5 bg-black text-white text-[10px] outline-none font-bold" /></div>
-                                            <div>
-                                              <p className="text-[8px] font-black text-green-500 uppercase mb-1 ml-1">Update Answer Link</p>
-                                              <input type="text" defaultValue={item.answerPdfUrl} onBlur={(e) => updateField(item.id, item.source, 'answerPdfUrl', e.target.value)} className="w-full p-2 rounded-lg border border-white/5 bg-black text-white text-[10px] outline-none font-bold" placeholder="New Answer PDF Link" />
-                                            </div>
-                                          </div>
-                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div><p className="text-[8px] font-black text-yellow-500 uppercase mb-1 ml-1 italic">Correct Answer Key</p><input type="text" defaultValue={item.answerKey} onBlur={(e) => updateField(item.id, item.source, 'answerKey', e.target.value.toUpperCase())} className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-xs font-bold text-white outline-none" placeholder="e.g. A,B,W,D" /></div>
-                                            <div><p className="text-[8px] font-black text-green-500 uppercase mb-1 ml-1 italic">Marks per Question</p><input type="text" defaultValue={item.questionMarks} onBlur={(e) => updateField(item.id, item.source, 'questionMarks', e.target.value)} className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-xs font-bold text-white outline-none" placeholder="e.g. 1,1,5,1" /></div>
-                                            <div className="md:col-span-2">
-                                              <p className="text-[8px] font-black text-red-500 uppercase mb-1 ml-1 italic">Update Negative Mark (Ex: 0.25)</p>
-                                              <input type="number" step="0.01" defaultValue={item.negativeMark} onBlur={(e) => updateField(item.id, item.source, 'negativeMark', e.target.value)} className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-xs font-bold text-white outline-none focus:border-red-500" placeholder="0 for no negative" />
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                            ))
-                          }
+          {classes.map(cls => (
+            <div key={cls} className="space-y-3">
+              <div onClick={() => setOpenAdminClass(openAdminClass === cls ? null : cls)} className="flex justify-between items-center cursor-pointer p-2 bg-white/5 rounded-lg">
+  <h4 className="text-[10px] font-black text-blue-400 uppercase italic">Class {cls}</h4>
+  <ChevronRight size={14} className={`transition-transform ${openAdminClass === cls ? 'rotate-90' : ''}`} />
+</div>
+{openAdminClass === cls && (
+              items.filter(m => (m.class || 'Other') === cls).map((item, index) => (
+                <div key={item.id} className="bg-slate-900/60 rounded-2xl border border-white/10 overflow-hidden transition-all">
+                  <div onClick={() => setExpandedId(expandedId === item.id ? null : item.id)} className="p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 group">
+                    <div className="flex-1 pr-2">
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.isPublished ? 'bg-green-500 animate-pulse' : 'bg-slate-700'}`}></div>
+                          <span className="text-xs font-black uppercase italic text-white break-words">{item.name}</span>
+                          {item.isGuestEnabled && <span className="text-[7px] bg-green-600 px-1.5 py-0.5 rounded text-white font-black italic">GUEST ON</span>}
+                          {item.level && <span className="text-[7px] bg-blue-900 px-1.5 py-0.5 rounded text-blue-300 font-black italic">{item.level}</span>}
                         </div>
-                      )}
+                        <p className="text-[8px] font-black text-purple-400 uppercase italic ml-5 mt-1">Chapter: {item.chapter || 'GENERAL'}</p>
+                        <p className="text-[8px] font-bold text-slate-500 uppercase italic ml-5 mt-1">
+                          Last Change: {item.timestamp ? `${new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • ${new Date(item.timestamp).toLocaleDateString('en-GB')}` : 'N/A'}
+                        </p>
+                      </div>
                     </div>
-                  );
-                })}
-              </div>
-            );
-          })}
+                    <div className="flex items-center gap-3">
+                      <button onClick={(e) => { e.stopPropagation(); updateField(item.id, item.source, 'isPublished', !item.isPublished); }} className={`px-4 py-1.5 rounded-full text-[8px] font-black shadow-sm ${item.isPublished ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-500'}`}>{item.isPublished ? 'LIVE' : 'HIDDEN'}</button>
+                      <button onClick={async (e) => { e.stopPropagation(); if(window.confirm("Permanent delete?")) { await deleteDoc(doc(db, item.source === 'live' ? 'liveMocks' : 'practiceSets', item.id)); } }} className="p-2 text-slate-600 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
+                      <ChevronRight size={18} className={`transition-transform text-slate-600 ${expandedId === item.id ? 'rotate-90 text-blue-400' : ''}`} />
+                    </div>
+                  </div>
+                  {expandedId === item.id && (
+                    <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[5000] flex justify-center items-start overflow-y-auto pt-10 pb-10">
+  <div className="bg-slate-950 w-full max-w-2xl p-8 rounded-[2.5rem] border border-white/10 shadow-2xl relative mb-10">
+                    <button onClick={(e) => { e.stopPropagation(); setExpandedId(null); }} className="absolute top-6 right-6 p-2 bg-red-500/10 text-red-500 rounded-full hover:bg-red-600 hover:text-white transition-all">
+  <X size={20} />
+</button>
+                    <div className="p-5 border-t border-white/5 bg-black/40 space-y-4 animate-in slide-in-from-top-2">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div>
+                          <p className="text-[8px] font-black text-green-400 uppercase mb-1 ml-1 italic">Access Mode</p>
+                          <select value={item.status || (item.isGuestEnabled ? 'public' : 'premium')} onChange={(e) => updateField(item.id, item.source, 'status', e.target.value)} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-[9px] font-black outline-none">
+                            <option value="public">🌍 Public</option>
+                            <option value="premium">💎 Premium</option>
+                            <option value="locked">🔒 Locked</option>
+                          </select>
+                        </div>
+                        <div><p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1">Class</p><select value={item.class || '10'} onChange={(e) => updateField(item.id, item.source, 'class', e.target.value)} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-xs font-black">{[5,6,7,8,9,10,11,12].map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                        <div className="md:col-span-2">
+                          <p className="text-[8px] font-black text-yellow-500 uppercase mb-1 ml-1">Complexity Level</p>
+                          <select value={item.level || 'Moderate'} onChange={(e) => updateField(item.id, item.source, 'level', e.target.value)} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-xs font-black">
+                            {['Easy', 'Moderate', 'Hard'].map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1">Exam Name</p><input type="text" defaultValue={item.name} onBlur={(e) => updateField(item.id, item.source, 'name', e.target.value.toUpperCase())} className="w-full p-2.5 rounded-xl border border-white/10 bg-black text-white text-xs font-black outline-none focus:border-blue-500" /></div>
+                        <div><p className="text-[8px] font-black text-purple-400 uppercase mb-1 ml-1 italic tracking-widest">Dynamic Folder/Chapter Name</p><input type="text" defaultValue={item.chapter} onBlur={(e) => updateField(item.id, item.source, 'chapter', e.target.value.toUpperCase())} className="w-full p-2.5 rounded-xl border border-white/10 bg-black text-white text-xs font-black outline-none focus:border-purple-500" /></div>
+                      </div>
+                      <div className="flex flex-wrap gap-3">
+                        <div className="bg-black p-2.5 rounded-xl border border-white/10 shadow-sm min-w-[120px]"><p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1">Time Limit</p><div className="flex items-center gap-1"><input type="number" defaultValue={item.hours} onBlur={(e) => updateField(item.id, item.source, 'hours', e.target.value)} className="w-10 text-center font-black bg-slate-900 rounded-lg outline-none text-white" /> <span className="font-bold text-[9px]">H</span><input type="number" defaultValue={item.minutes} onBlur={(e) => updateField(item.id, item.source, 'minutes', e.target.value)} className="w-10 text-center font-black bg-slate-900 rounded-lg outline-none text-white" /> <span className="font-bold text-[9px]">M</span></div></div>
+                        <div className="flex-1 bg-black p-2.5 rounded-xl border border-white/10 shadow-sm"><p className="text-[8px] font-black text-slate-500 uppercase mb-1 ml-1">Google Drive Link</p><input type="text" defaultValue={item.fileUrl} onBlur={(e) => updateField(item.id, item.source, 'fileUrl', e.target.value)} className="w-full p-2 rounded-lg border border-white/5 bg-black text-white text-[10px] outline-none font-bold" /></div><div>
+  <p className="text-[8px] font-black text-green-500 uppercase mb-1 ml-1">Update Answer Link</p>
+  <input 
+    type="text" 
+    defaultValue={item.answerPdfUrl} 
+    onBlur={(e) => updateField(item.id, item.source, 'answerPdfUrl', e.target.value)} 
+    className="w-full p-2 rounded-lg border border-white/5 bg-black text-white text-[10px] outline-none font-bold" 
+    placeholder="New Answer PDF Link"
+  />
+</div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><p className="text-[8px] font-black text-yellow-500 uppercase mb-1 ml-1 italic">Correct Answer Key</p><input type="text" defaultValue={item.answerKey} onBlur={(e) => updateField(item.id, item.source, 'answerKey', e.target.value.toUpperCase())} className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-xs font-bold text-white outline-none" placeholder="e.g. A,B,W,D" /></div>
+                        <div><p className="text-[8px] font-black text-green-500 uppercase mb-1 ml-1 italic">Marks per Question</p><input type="text" defaultValue={item.questionMarks} onBlur={(e) => updateField(item.id, item.source, 'questionMarks', e.target.value)} className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-xs font-bold text-white outline-none" placeholder="e.g. 1,1,5,1" /></div>
+      {/* নেগেটিভ মার্কিং আপডেট করার অপশন */}
+<div className="md:col-span-2">
+  <p className="text-[8px] font-black text-red-500 uppercase mb-1 ml-1 italic">Update Negative Mark (Ex: 0.25)</p>
+  <input 
+    type="number" 
+    step="0.01" 
+    defaultValue={item.negativeMark} 
+    onBlur={(e) => updateField(item.id, item.source, 'negativeMark', e.target.value)} 
+    className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-xs font-bold text-white outline-none focus:border-red-500" 
+    placeholder="0 for no negative" 
+  />
+</div>
+                      </div>
+                    </div>
+      </div>
+      </div>
+                  )}
+                </div>
+)
+              ))}
+            </div>
+          ))}
         </div>
       </div>
     );
-};
+  };
+
   return (
     <div className="w-full flex flex-col items-center">
       <div className="bg-slate-950/80 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-2xl border-t-8 border-blue-700 w-full mb-8 text-left animate-in fade-in print:hidden border-x border-b border-white/5">
