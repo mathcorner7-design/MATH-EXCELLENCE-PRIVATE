@@ -962,7 +962,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
 
   setTabSwitches(prev => {
     const newCount = prev + 1;
-    if (newCount >= 2) triggerBanProcess();
+    if (newCount >= 4) triggerBanProcess();
     return newCount;
   });
 
@@ -976,7 +976,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
           // আগের বাইরে থাকার সময়ের সাথে বর্তমানের সময় যোগ করা
           setInactiveTime(prev => {
             const totalAway = prev + secondsAway;
-            if (totalAway >= 60 ) {
+            if (totalAway >= 100 ) {
               triggerBanProcess();
             }
             return totalAway;
