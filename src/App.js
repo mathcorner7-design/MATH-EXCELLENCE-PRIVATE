@@ -1091,18 +1091,48 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
       let totalObtainedMarks = 0;
       let totalPossibleMarks = 0;
       const detailResults = answerKeyArray.map((key, index) => {
-        const qNum = index + 1;
-        const qMark = marksArray[index] !== undefined ? marksArray[index] : 1;
-        const studentAns = answers[qNum] || 'None';
-        const isCorrect = studentAns === key;
-        const isWrong = studentAns !== 'None' && studentAns !== key;
-        totalPossibleMarks += qMark;
-        if (key !== 'W') {
-          if (isCorrect) totalObtainedMarks += qMark;
-          else if (isWrong) totalObtainedMarks -= negVal;
-        }
-        return { qNum, selected: studentAns, correct: key, status: isCorrect, mark: qMark, type: key === 'W' ? 'written' : 'mcq', pending: key === 'W' };
-      });
+  const qNum = index + 1;
+  const qMark = marksArray[index] !== undefined ? marksArray[index] : 1;
+  const studentAns = answers[qNum] || 'None';
+  
+  totalPossibleMarks += qMark;
+
+  // যদি প্রশ্নটি Written ('W') হয়
+  if (key === 'W') {
+    // চেক করছি স্টুডেন্ট কোনো ইমেজ আপলোড করেছে কিনা (যদি অ্যারে হয় এবং লেন্থ ০ এর বেশি হয়)
+    const hasUploadedImage = Array.isArray(studentAns) && studentAns.length > 0;
+    
+    return {
+      qNum,
+      selected: hasUploadedImage ? studentAns : "NOT ATTEMPTED",
+      correct: key,
+      status: false, // যেহেতু ছবি দেয়নি, তাই এটি সঠিক নয় (ভুল/লাল দেখাবে)
+      mark: 0,       // অটোমেটিক ০ নম্বর পেয়ে যাবে
+      type: 'written',
+      pending: hasUploadedImage ? true : false // ছবি আপলোড করলেই কেবল শিক্ষকের রিভিউতে (Pending) যাবে, না করলে সরাসরি ক্লোজ
+    };
+  } 
+  
+  // MCQ প্রশ্নের জন্য আগের লজিকই থাকবে
+  const isCorrect = studentAns === key;
+  const isWrong = studentAns !== 'None' && studentAns !== key;
+  
+  if (isCorrect) {
+    totalObtainedMarks += qMark;
+  } else if (isWrong) {
+    totalObtainedMarks -= negVal;
+  }
+
+  return { 
+    qNum, 
+    selected: studentAns, 
+    correct: key, 
+    status: isCorrect, 
+    mark: isCorrect ? qMark : 0, // ভুল হলে ০ (বা নেগেটিভ থাকলে উপরেই মাইনাস হচ্ছে)
+    type: 'mcq', 
+    pending: false 
+  };
+});
       const percent = totalPossibleMarks > 0 ? Math.round((totalObtainedMarks / totalPossibleMarks) * 100) : 0;
       const d = new Date();
       let finalName = exam.studentName.toUpperCase();
