@@ -297,40 +297,51 @@ const App = () => {
       `}</style>
 
       {showNameModal && (
-  <div className="fixed inset-0 bg-black/90 z-[1000] flex items-center justify-center p-6 backdrop-blur-md print:hidden">
-    <div className="bg-slate-900 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border-2 border-slate-800">
-      
-      {/* ছবির মতো তালা আইকন লজিক */}
-      {(currentExam?.status === 'public' || currentExam?.isGuestEnabled) ? 
-        <Unlock size={40} className="text-green-500 mx-auto mb-4" /> : 
-        <Lock size={40} className="text-blue-500 mx-auto mb-4" />
-      }
+    <div className="fixed inset-0 bg-black/90 z-[1000] flex items-center justify-center p-6 backdrop-blur-md print:hidden">
+        <div className="bg-slate-900 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border-2 border-slate-800">
+            {/* তালা আইকন লজিক */}
+            {currentExam?.status === 'locked' ? (
+                <Lock size={40} className="text-red-500 mx-auto mb-4 animate-pulse" />
+            ) : ((currentExam?.status === 'public' || currentExam?.isGuestEnabled) ? (
+                <Unlock size={40} className="text-green-500 mx-auto mb-4" />
+            ) : (
+                <Lock size={40} className="text-blue-500 mx-auto mb-4" />
+            ))}
 
-      {/* ছবির টাইটেল */}
-      <h3 className="font-bold text-lg mb-2 uppercase tracking-tight italic text-white">
-        {(currentExam?.status === 'public' || currentExam?.isGuestEnabled) ? 'Public Entrance' : 'Student Login'}
-      </h3>
+            {/* হেডিং টাইটেল পরিবর্তন */}
+            <h3 className="font-bold text-lg mb-2 uppercase tracking-tight italic text-white">
+                {currentExam?.status === 'locked' ? 'Teacher Preview Mode' : ((currentExam?.status === 'public' || currentExam?.isGuestEnabled) ? 'Public Entrance' : 'Student Login')}
+            </h3>
 
-      {/* তোমার ছবির সেই লাল রঙের লেখাটি হুবহু এখানে */}
-      {(currentExam?.status === 'public' || currentExam?.isGuestEnabled) && (
-        <p className="text-[10px] font-black text-red-500 mb-6 uppercase italic leading-tight animate-pulse">
-          * REGISTERED STUDENTS MUST ENTER THEIR UNIQUE CODE TO GENERATE A PERFORMANCE TRANSCRIPT IN THE GROWTH SECTION.
-        </p>
-      )}
-      
-      {/* প্রিমিয়াম এক্সাম হলে ছোট মেসেজ */}
-      {!(currentExam?.status === 'public' || currentExam?.isGuestEnabled) && (
-        <p className="text-[9px] text-slate-500 mb-6 uppercase">Private Exam: Code Required</p>
-      )}
+            {/* পাবলিক এক্সামের নোটিশ */}
+            {(currentExam?.status === 'public' || currentExam?.isGuestEnabled) && currentExam?.status !== 'locked' && (
+                <p className="text-[10px] font-black text-red-500 mb-6 uppercase italic leading-tight animate-pulse">
+                    * REGISTERED STUDENTS MUST ENTER THEIR UNIQUE CODE TO GENERATE A PERFORMANCE TRANSCRIPT IN THE GROWTH SECTION.
+                </p>
+            )}
 
-      <div className="space-y-4">
-        <input autoFocus type="text" value={studentNameInput} onChange={(e) => setStudentNameInput(e.target.value)} className="w-full p-3 rounded-xl border-2 border-slate-700 bg-black text-white font-bold text-center outline-none focus:border-blue-500 uppercase" placeholder="NAME" />
-        
-        {/* ছবির সেই UNIQUE CODE (OPTIONAL) লেখাটি */}
-        <input type="text" value={studentCodeInput} onChange={(e) => setStudentCodeInput(e.target.value)} className="w-full p-3 rounded-xl border-2 border-slate-700 bg-black text-white font-bold text-center outline-none focus:border-blue-500" 
-          placeholder={(currentExam?.status === 'public' || currentExam?.isGuestEnabled) ? "UNIQUE CODE (OPTIONAL)" : "ENTER UNIQUE CODE"} 
-        />
-      </div>
+            {/* প্রিমিয়াম এক্সামের নোটিশ (লকড এক্সাম হলে এটি দেখাবে না) */}
+            {!(currentExam?.status === 'public' || currentExam?.isGuestEnabled) && currentExam?.status !== 'locked' && (
+                <p className="text-[9px] text-slate-500 mb-6 uppercase">Private Exam: Code Required</p>
+            )}
+
+            {/* লকড এক্সাম নোটিশ */}
+            {currentExam?.status === 'locked' && (
+                <p className="text-[10px] text-yellow-500 font-bold mb-6 uppercase italic">Protected Area: Identity Verification Required</p>
+            )}
+
+            <div className="space-y-4">
+                {/* যদি লকড এক্সাম হয়, তবে NAME ইনপুট বক্সটি দেখাবে না */}
+                {currentExam?.status !== 'locked' ? (
+                    <input autoFocus type="text" value={studentNameInput} onChange={(e) => setStudentNameInput(e.target.value)} className="w-full p-3 rounded-xl border-2 border-slate-700 bg-black text-white font-bold text-center outline-none focus:border-blue-500 uppercase" placeholder="NAME" />
+                ) : (
+                    // লকড এক্সাম হলে ব্যাকগ্রাউন্ডে নাম অটোমেটিক ADMIN ইনপুট নিয়ে নেবে
+                    <div className="hidden">{(() => { if(!studentNameInput) setStudentNameInput('ADMIN'); })()}</div>
+                )}
+
+                {/* পিন/কোড ইনপুট বক্সের প্লেসহোল্ডার পরিবর্তন */}
+                <input autoFocus={currentExam?.status === 'locked'} type="password" value={studentCodeInput} onChange={(e) => setStudentCodeInput(e.target.value)} className="w-full p-3 rounded-xl border-2 border-slate-700 bg-black text-white font-bold text-center outline-none focus:border-blue-500" placeholder={currentExam?.status === 'locked' ? "ENTER ADMIN PIN" : ((currentExam?.status === 'public' || currentExam?.isGuestEnabled) ? "UNIQUE CODE (OPTIONAL)" : "ENTER UNIQUE CODE")} />
+            </div>
 
       <div className="flex gap-4 mt-8">
         <button onClick={() => setShowNameModal(false)} className="flex-1 py-3 rounded-xl bg-slate-800 text-white font-bold text-[10px] uppercase">Cancel</button>
