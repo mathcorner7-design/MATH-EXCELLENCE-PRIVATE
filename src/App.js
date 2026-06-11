@@ -1362,26 +1362,47 @@ const GrowthSectionView = ({ results, students, teacherPin }) => {
 )}
 </div>
                       </div>
-                     <div className="flex-shrink-0 flex flex-col gap-2 print:hidden">
-  {/* কুইক রিভিউ বাটন */}
-  <button onClick={() => setSelectedReview(r)} className="bg-slate-800 text-blue-400 p-2 md:p-3 rounded-2xl border border-white/10 shadow-sm hover:bg-blue-600 hover:text-white transition-all flex flex-col items-center min-w-[65px]">
-    <Eye size={16} />
-    <span className="text-[7px] font-black mt-1 uppercase italic">Quick</span>
-  </button>
+                     <div className="flex-shrink-0 flex flex-col gap-2 print:hidden relative">
+    {/* কুইক রিভিউ বাটন */}
+    <button onClick={() => setSelectedReview(r)} className="bg-slate-800 text-blue-400 p-2 md:p-3 rounded-2xl border border-white/10 shadow-sm hover:bg-blue-600 hover:text-white transition-all flex flex-col items-center min-w-[65px]">
+        <Eye size={16} />
+        <span className="text-[7px] font-black mt-1 uppercase italic">Quick</span>
+    </button>
 
-  {/* ডিটেল রিভিউ (লিঙ্ক থাকলে দেখাবে, না থাকলে লক) */}
-  {r.answerPdfUrl ? (
-    <a href={r.answerPdfUrl} target="_blank" rel="noreferrer" className="bg-slate-800 text-green-400 p-2 md:p-3 rounded-2xl border border-white/10 shadow-sm hover:bg-green-600 hover:text-white transition-all flex flex-col items-center min-w-[65px]">
-      <FileText size={16} />
-      <span className="text-[7px] font-black mt-1 uppercase italic">Detail</span>
-    </a>
-  ) : (
-    <div className="bg-slate-900/40 text-slate-600 p-1.5 rounded-xl border border-white/5 flex flex-col items-center opacity-50 min-w-[65px]">
-      <Lock size={12} />
-      <span className="text-[6px] font-black uppercase text-center leading-tight">No Link<br/>Available</span>
+    {/* মেইন Detail বাটন - ক্লিক করলে ড্রপডাউন টগল হবে */}
+    <button 
+        onClick={(e) => {
+            e.stopPropagation();
+            const el = document.getElementById(`drop-${r.id}`);
+            if(el) el.classList.toggle('hidden');
+        }} 
+        className="bg-slate-800 text-green-400 p-2 md:p-3 rounded-2xl border border-white/10 shadow-sm hover:bg-green-600 hover:text-white transition-all flex flex-col items-center min-w-[65px]"
+    >
+        <Settings2 size={16} />
+        <span className="text-[7px] font-black mt-1 uppercase italic">Detail</span>
+    </button>
+
+    {/* ড্রপডাউন সাব-মেনু (Question Paper & Detail Answer) */}
+    <div id={`drop-${r.id}`} className="hidden absolute right-20 top-0 z-[100] w-48 p-2 bg-slate-950 border border-white/10 rounded-2xl shadow-2xl flex flex-col gap-2 animate-in fade-in zoom-in duration-150">
+        {r.fileUrl ? (
+            <a href={r.fileUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 hover:bg-amber-950/40 border border-transparent hover:border-amber-900/50 transition-all text-left">
+                <BookOpen size={14} className="text-amber-400" />
+                <span className="text-[10px] font-black uppercase italic text-amber-300">1. Question Paper</span>
+            </a>
+        ) : (
+            <div className="flex items-center gap-2 p-2.5 text-slate-600 text-[10px] font-bold uppercase italic"><Lock size={12} /> No QP</div>
+        )}
+
+        {r.answerPdfUrl ? (
+            <a href={r.answerPdfUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 hover:bg-green-950/40 border border-transparent hover:border-green-900/50 transition-all text-left">
+                <FileText size={14} className="text-green-400" />
+                <span className="text-[10px] font-black uppercase italic text-green-300">2. Detail Answer</span>
+            </a>
+        ) : (
+            <div className="flex items-center gap-2 p-2.5 text-slate-600 text-[10px] font-bold uppercase italic"><Lock size={12} /> No Ans</div>
+        )}
     </div>
-  )}
-</div> 
+</div>
                     </div>
                   );
                 });
