@@ -892,11 +892,11 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
                   <div className="flex items-center gap-2 print:hidden">
                     <input id={`bonus-in-${r.id}`} type="number" placeholder="+" className="w-12 p-2 bg-black border border-slate-700 rounded-xl text-[10px] font-black text-center text-yellow-400 outline-none focus:border-yellow-500" />
                     <button onClick={async () => { const bVal = document.getElementById(`bonus-in-${r.id}`).value; if(!bVal) return alert("Enter marks"); const newB = (parseFloat(r.bonus) || 0) + parseFloat(bVal); await setDoc(doc(db, "results", r.id), { bonus: newB }, { merge: true }); document.getElementById(`bonus-in-${r.id}`).value = ''; alert("Bonus Applied!"); }} className="p-2 bg-yellow-600 text-white rounded-xl shadow-lg active:scale-90 transition-all"><PlusCircle size={18}/></button> <button onClick={() => setSelectedReview(r)} className="p-2 bg-blue-600 text-white rounded-xl shadow-lg active:scale-90 transition-all"><Eye size={18}/></button>
-      {/* অ্যাডমিন প্যানেলের জন্য Detail ড্রপডাউন সুইচ */}
+          {/* অ্যাডমিন প্যানেলের জন্য Detail ড্রপডাউন সুইচ */}
     <button 
         onClick={(e) => {
             e.stopPropagation();
-            const el = document.getElementById(`admin-drop-${r.id}`);
+            const el = e.currentTarget.nextElementSibling;
             if(el) el.classList.toggle('hidden');
         }} 
         className="p-2 bg-green-600 text-white rounded-xl shadow-lg active:scale-90 transition-all"
@@ -906,9 +906,9 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
     </button>
 
     {/* অ্যাডমিন প্যানেলের ড্রপডাউন সাব-মেনু (Question Paper & Detail Answer) */}
-    <div id={`admin-drop-${r.id}`} className="hidden absolute right-0 top-12 z-[150] w-48 p-2 bg-slate-950 border border-white/10 rounded-2xl shadow-2xl flex flex-col gap-2 animate-in fade-in zoom-in duration-150">
-        {r.fileUrl ? (
-            <a href={r.fileUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 hover:bg-amber-950/40 border border-transparent hover:border-amber-900/50 transition-all text-left text-white">
+    <div className="hidden absolute right-0 top-12 z-[150] w-48 p-2 bg-slate-950 border border-white/10 rounded-2xl shadow-2xl flex flex-col gap-2 animate-in fade-in zoom-in duration-150">
+        {r.fileUrl || r.questionPdfUrl ? (
+            <a href={r.fileUrl || r.questionPdfUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 hover:bg-amber-950/40 border border-transparent hover:border-amber-900/50 transition-all text-left text-white">
                 <BookOpen size={14} className="text-amber-400" />
                 <span className="text-[10px] font-black uppercase italic text-amber-300">1. Question Paper</span>
             </a>
