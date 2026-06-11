@@ -220,6 +220,13 @@ const App = () => {
     setShowNameModal(false);
     return;
   }
+    // 🌟 নতুন সংযোজন: লকড এক্সামের জন্য কড়া সিকিউরিটি চেক
+    if (currentExam?.status === 'locked' || currentExam?.level === 'locked') {
+        if (enteredCode !== teacherPin) {
+            alert("THIS EXAM IS LOCKED! ONLY ADMIN PIN CAN ACCESS.");
+            return;
+        }
+    }
 
   // ২. গেস্ট সেশন চেক (তোমার ডাটাবেসের status ফিল্ড আর পুরনো প্রপার্টি দুটোই চেক করবে)
   const isGuestSessionEnabled = currentExam?.isGuestEnabled || currentExam?.status === 'public';
@@ -447,7 +454,7 @@ const App = () => {
           <div className="space-y-4 w-full text-left print:hidden">
             <h2 className="font-bold uppercase text-blue-300 border-b border-white/10 pb-2 text-[10px] flex items-center gap-2 bg-black/40 p-2 rounded-lg backdrop-blur-md"><Clock size={14} className="text-red-500" /> Ongoing Live Mocks</h2>
             {ongoingLive.length > 0 ? ongoingLive.map((m, i) => (
-              <div key={m.id} onClick={() => { const s = m.status || (m.isGuestEnabled ? 'public' : 'premium'); if (s === 'locked') return; handleStartExamFlow(m); }} className={`w-full p-6 rounded-[2rem] shadow-xl flex justify-between items-center border transition-all cursor-pointer relative overflow-hidden group ${(m.status || (m.isGuestEnabled ? 'public' : 'premium')) === 'locked' ? 'bg-white/5 border-white/5 opacity-60 cursor-not-allowed' : 'bg-black/60 backdrop-blur-xl border-white/10 active:scale-95 hover:border-blue-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`} >
+              <div key={m.id} onClick={() => { const s = m.status || (m.isGuestEnabled ? 'public' : 'premium'); handleStartExamFlow(m); }} className={`w-full p-6 rounded-[2rem] shadow-xl flex justify-between items-center border transition-all cursor-pointer relative overflow-hidden group ${(m.status || (m.isGuestEnabled ? 'public' : 'premium')) === 'locked' ? 'bg-white/5 border-white/5 opacity-60 cursor-not-allowed' : 'bg-black/60 backdrop-blur-xl border-white/10 active:scale-95 hover:border-blue-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`} >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="text-sm font-black uppercase italic tracking-tighter text-white">{i + 1}. {m.name}</h3>
@@ -551,7 +558,7 @@ const App = () => {
           {classExams.filter(e => (e.chapter || 'GENERAL').toUpperCase() === chName).map((p, i) => (
             <div key={p.id} onClick={() => {
                 const s = p.status || (p.isGuestEnabled ? 'public' : 'premium');
-                if (s === 'locked') return;
+               
                 handleStartExamFlow(p);
               }} 
               className={`w-full p-6 rounded-[2rem] shadow-xl flex justify-between items-center border transition-all cursor-pointer relative overflow-hidden group ${(p.status || (p.isGuestEnabled ? 'public' : 'premium')) === 'locked' ? 'bg-white/5 border-white/5 opacity-60 cursor-not-allowed' : 'bg-black/60 backdrop-blur-xl border-white/10 active:scale-95 hover:border-blue-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
