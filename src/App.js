@@ -62,6 +62,45 @@ const ImagePreviewModal = ({ src, onClose }) => {
     </div>
   );
 };
+// --- শুধুমাত্র স্টুডেন্টদের জন্য রাজকীয় পিডিএফ ভিউয়ার ও ডাউনলোড মোডাল ---
+const StudentPdfModal = ({ src, title, onClose }) => {
+  if (!src) return null;
+  // গুগল ড্রাইভ লিঙ্ককে প্রিভিউ মোডে নেওয়া
+  const previewSrc = src.replace('/view?usp=sharing', '/preview').replace('/view', '/preview');
+  
+  return (
+    <div className="fixed inset-0 bg-black/95 z-[5000] flex flex-col p-4 backdrop-blur-md animate-in fade-in print:hidden">
+      <div className="w-full max-w-5xl mx-auto flex justify-between items-center mb-3 border-b border-white/10 pb-2">
+        <h3 className="text-sm font-black uppercase italic tracking-tighter text-blue-400">{title}</h3>
+        
+        <div className="flex items-center gap-3">
+          {/* ডাউনলোড বাটন */}
+          <a 
+            href={src} 
+            target="_blank" 
+            rel="noreferrer" 
+            className="text-black px-4 py-1.5 bg-yellow-400 hover:bg-yellow-500 rounded-full text-[10px] font-black uppercase shadow-md flex items-center gap-1 transition-all"
+          >
+            <Download size={12} /> Download / Open Original
+          </a>
+          
+          {/* ক্লোজ বাটন */}
+          <button 
+            onClick={onClose} 
+            className="text-white px-4 py-1.5 bg-red-600 hover:bg-red-700 rounded-full text-[10px] font-black uppercase shadow-md flex items-center gap-1 transition-all"
+          >
+            <X size={12} /> Close
+          </button>
+        </div>
+      </div>
+      
+      {/* রাজকীয় আইফ্রেম উইন্ডো */}
+      <div className="w-full max-w-5xl mx-auto flex-1 bg-slate-950 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+        <iframe src={previewSrc} className="w-full h-full border-none opacity-95" title={title} />
+      </div>
+    </div>
+  );
+};
 
 const ReviewResultModal = ({ result, onClose }) => {
   if (!result) return null;
@@ -112,6 +151,7 @@ const App = () => {
   const [openClass, setOpenClass] = useState(null);
   const [ads, setAds] = useState([]);
   const [qaChapter, setQaChapter] = useState('');
+  const [studentPdf, setStudentPdf] = useState(null);
   const [openChapter, setOpenChapter] = useState(null);
 
   useEffect(() => {
@@ -150,6 +190,7 @@ const App = () => {
     onSnapshot(collection(db, "advertisements"), (s) => {
       setAds(s.docs.map(d => ({ id: d.id, ...d.data() })));
     });
+    window.setStudentPdf = setStudentPdf;
     return () => unsubscribeAuth();
   }, []);
 
@@ -555,6 +596,14 @@ const App = () => {
           </div>
         )}
       </main>
+{/* গ্রোথ সেকশনের স্টুডেন্টদের জন্য পিডিএফ পপ-আপ */}
+  {studentPdf && (
+    <StudentPdfModal 
+      src={studentPdf.url} 
+      title={studentPdf.title} 
+      onClose={() => setStudentPdf(null)} 
+    />
+  )}
         {isAppSubmitting && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[9999] flex flex-col items-center justify-center p-6 text-center text-white">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
@@ -1420,22 +1469,28 @@ const GrowthSectionView = ({ results, students, teacherPin }) => {
         <span className="text-[7px] font-black mt-1 uppercase italic">Detail</span>
     </button>
 
-    {/* ড্রপডাউন সাব-মেনু (Question Paper & Detail Answer) */}
+       {/* ড্রপডাউন সাব-মেনু (Question Paper & Detail Answer) */}
     <div id={`drop-${r.id}`} className="hidden absolute right-20 top-0 z-[100] w-48 p-2 bg-slate-950 border border-white/10 rounded-2xl shadow-2xl flex flex-col gap-2 animate-in fade-in zoom-in duration-150">
         {r.fileUrl ? (
-            <a href={r.fileUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 hover:bg-amber-950/40 border border-transparent hover:border-amber-900/50 transition-all text-left">
+            <button 
+                onClick={() => window.setStudentPdf ? window.setStudentPdf({url: r.fileUrl, title: `${r.exam} - Question Paper`}) : alert("Please reload")} 
+                className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 hover:bg-amber-950/40 border border-transparent hover:border-amber-900/50 transition-all text-left text-white"
+            >
                 <BookOpen size={14} className="text-amber-400" />
                 <span className="text-[10px] font-black uppercase italic text-amber-300">1. Question Paper</span>
-            </a>
+            </button>
         ) : (
             <div className="flex items-center gap-2 p-2.5 text-slate-600 text-[10px] font-bold uppercase italic"><Lock size={12} /> No QP</div>
         )}
 
         {r.answerPdfUrl ? (
-            <a href={r.answerPdfUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 hover:bg-green-950/40 border border-transparent hover:border-green-900/50 transition-all text-left">
+            <button 
+                onClick={() => window.setStudentPdf ? window.setStudentPdf({url: r.answerPdfUrl, title: `${r.exam} - Detailed Answer`}) : alert("Please reload")} 
+                className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 hover:bg-green-950/40 border border-transparent hover:border-green-900/50 transition-all text-left text-white"
+            >
                 <FileText size={14} className="text-green-400" />
                 <span className="text-[10px] font-black uppercase italic text-green-300">2. Detail Answer</span>
-            </a>
+            </button>
         ) : (
             <div className="flex items-center gap-2 p-2.5 text-slate-600 text-[10px] font-bold uppercase italic"><Lock size={12} /> No Ans</div>
         )}
