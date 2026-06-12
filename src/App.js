@@ -692,8 +692,11 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   const adminLive = liveMocks.filter(m => (Date.now() - (m.timestamp || 0) < 6 * 3600000)).sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
   const adminShifted = [...practiceSets, ...liveMocks.filter(m => (Date.now() - (m.timestamp || 0) >= 6 * 3600000))].sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
 
-  const AdminPaperManager = ({ title, items, color }) => {
+ const AdminPaperManager = ({ title, items, color }) => {
   const classes = [...new Set(items.map(m => m.class || 'Other'))].sort((a, b) => parseInt(a) - parseInt(b));
+  
+  // 🌟 মেইন ফিক্স: রি-রেন্ডার বা লাইভ বাটন টিপলেও যাতে অধ্যায় বন্ধ না হয়, তার জন্য চ্যাপ্টার স্টেট ট্র্যাকিং
+  const [openAdminChapter, setOpenAdminChapter] = useState(null);
 
   return (
     <div className="bg-black/60 backdrop-blur-xl rounded-[2rem] shadow-2xl border-t-8 border-slate-900 mb-8 w-full overflow-hidden print:hidden border-x border-b border-white/5">
@@ -708,10 +711,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
           return (
             <div key={cls} className="space-y-3">
               {/* 📁 মেইন ক্লাস হেডার */}
-              <div 
-                onClick={() => window.setOpenAdminClass(window.openAdminClass === cls ? null : cls)} 
-                className="flex justify-between items-center cursor-pointer p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 transition-all"
-              >
+              <div onClick={() => setOpenAdminClass(openAdminClass === cls ? null : cls)} className="flex justify-between items-center cursor-pointer p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 transition-all" >
                 <h4 className="text-[10px] font-black text-blue-400 uppercase italic flex items-center gap-2">
                   📁 Class {cls}
                 </h4>
@@ -721,54 +721,59 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
               </div>
 
               {/* 📑 যদি ক্লাসটি ওপেন করা হয় */}
-              {window.openAdminClass === cls && (
+              {openAdminClass === cls && (
                 <div className="pl-4 space-y-3 mt-2 animate-in slide-in-from-top-2 duration-200">
-                  
                   {/* 🌟 প্র্যাকটিস সেটের জন্য অধ্যায় ভিত্তিক নেস্টেড ড্রপডাউন */}
                   {title === "Practice Sets" ? (
                     chapters.map(chName => {
                       const chItems = classItems.filter(e => (e.chapter || 'GENERAL').toUpperCase() === chName);
+                      // বর্তমান চ্যাপ্টারটি খোলা আছে কিনা চেক করা হচ্ছে
+                      const isChOpen = openAdminChapter === `${cls}-${chName}`;
+
                       return (
-                        <details key={chName} className="group bg-black/40 border border-slate-800/60 rounded-2xl p-3 [&_summary::-webkit-details-marker]:hidden">
-                          <summary className="flex items-center justify-between cursor-pointer focus:outline-none">
+                        <div key={chName} className="bg-black/40 border border-slate-800/60 rounded-2xl p-3">
+                          {/* অধ্যায়ের হেডার বাটন */}
+                          <div 
+                            onClick={(e) => { e.stopPropagation(); setOpenAdminChapter(isChOpen ? null : `${cls}-${chName}`); }} 
+                            className="flex items-center justify-between cursor-pointer focus:outline-none"
+                          >
                             <div className="flex items-center gap-2">
-                              <span className="text-yellow-500 text-[10px] transition-transform group-open:rotate-90">▶</span>
-                              <h5 className="text-[10px] font-black text-purple-400 uppercase italic tracking-tight group-hover:text-yellow-400 transition-colors">
+                              <span className={`text-yellow-500 text-[10px] transition-transform duration-200 ${isChOpen ? 'rotate-90' : ''}`}>▶</span>
+                              <h5 className="text-[10px] font-black text-purple-400 uppercase italic tracking-tight hover:text-yellow-400 transition-colors">
                                 📖 {chName}
                               </h5>
                             </div>
                             <span className="text-[9px] bg-slate-800 text-slate-500 px-2 rounded-md font-bold">
                               {chItems.length} Sets
                             </span>
-                          </summary>
+                          </div>
 
-                          {/* 📝 অধ্যায়ের ভেতরের কোশ্চেন লিস্ট */}
-                          <div className="mt-3 pt-3 border-t border-white/5 space-y-3 animate-in fade-in duration-150">
-                            {chItems.map((item) => (
-                              <div key={item.id} className="bg-slate-950 rounded-2xl border border-white/5 p-4 flex justify-between items-center hover:border-slate-700 transition-all">
-                                <div className="flex-1 pr-2">
-                                  <div className="flex items-center gap-2">
-                                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.isPublished ? 'bg-green-500 animate-pulse' : 'bg-slate-700'}`}></div>
-                                    <span className="text-xs font-black uppercase italic text-white break-words">{item.name}</span>
-                                    {item.status === 'public' && <span className="text-[7px] bg-green-600 px-1.5 py-0.5 rounded text-white font-black italic">FREE</span>}
-                                    {item.level && <span className="text-[7px] bg-blue-900 px-1.5 py-0.5 rounded text-blue-300 font-black italic">{item.level}</span>}
+                          {/* 📝 অধ্যায়ের ভেতরের কোশ্চেন লিস্ট - শুধুমাত্র স্টেট ট্রু থাকলেই খুলবে */}
+                          {isChOpen && (
+                            <div className="mt-3 pt-3 border-t border-white/5 space-y-3 animate-in fade-in duration-150">
+                              {chItems.map((item) => (
+                                <div key={item.id} className="bg-slate-950 rounded-2xl border border-white/5 p-4 flex justify-between items-center hover:border-slate-700 transition-all">
+                                  <div className="flex-1 pr-2">
+                                    <div className="flex items-center gap-2">
+                                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.isPublished ? 'bg-green-500 animate-pulse' : 'bg-slate-700'}`}></div>
+                                      <span className="text-xs font-black uppercase italic text-white break-words">{item.name}</span>
+                                      {item.status === 'public' && <span className="text-[7px] bg-green-600 px-1.5 py-0.5 rounded text-white font-black italic">FREE</span>}
+                                      {item.level && <span className="text-[7px] bg-blue-900 px-1.5 py-0.5 rounded text-blue-300 font-black italic">{item.level}</span>}
+                                    </div>
+                                    <p className="text-[8px] font-bold text-slate-500 uppercase italic ml-4 mt-1">
+                                      Last Change: {item.timestamp ? `${new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • ${new Date(item.timestamp).toLocaleDateString('en-GB')}` : 'N/A'}
+                                    </p>
                                   </div>
-                                  <p className="text-[8px] font-bold text-slate-500 uppercase italic ml-4 mt-1">
-                                    Last Change: {item.timestamp ? `${new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • ${new Date(item.timestamp).toLocaleDateString('en-GB')}` : 'N/A'}
-                                  </p>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <button onClick={(e) => { e.stopPropagation(); updateField(item.id, item.source, 'isPublished', !item.isPublished); }} className={`px-4 py-1.5 rounded-full text-[8px] font-black shadow-sm ${item.isPublished ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-500'}`}>{item.isPublished ? 'LIVE' : 'HIDDEN'}</button>
-                                  
-                                  {/* 🛠️ এখানে এডিট ক্লিক করলে মেইন পপ-আপ উইন্ডোটি ট্রিগার হবে */}
-                                  <button onClick={(e) => { e.stopPropagation(); setExpandedId(expandedId === item.id ? null : item.id); }} className="px-3 py-1.5 bg-blue-900/40 text-blue-400 rounded-xl text-[8px] font-black uppercase border border-blue-800/40">Edit</button>
-                                  
-                                  <button onClick={async (e) => { e.stopPropagation(); if(window.confirm("Permanent delete?")) { await deleteDoc(doc(db, item.source === 'live' ? 'liveMocks' : 'practiceSets', item.id)); } }} className="p-2 text-slate-600 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
+                                  <div className="flex items-center gap-3">
+                                    <button onClick={(e) => { e.stopPropagation(); updateField(item.id, item.source, 'isPublished', !item.isPublished); }} className={`px-4 py-1.5 rounded-full text-[8px] font-black shadow-sm ${item.isPublished ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-500'}`}>{item.isPublished ? 'LIVE' : 'HIDDEN'}</button>
+                                    <button onClick={(e) => { e.stopPropagation(); setExpandedId(expandedId === item.id ? null : item.id); }} className="px-3 py-1.5 bg-blue-900/40 text-blue-400 rounded-xl text-[8px] font-black uppercase border border-blue-800/40">Edit</button>
+                                    <button onClick={async (e) => { e.stopPropagation(); if(window.confirm("Permanent delete?")) { await deleteDoc(doc(db, item.source === 'live' ? 'liveMocks' : 'practiceSets', item.id)); } }} className="p-2 text-slate-600 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
                                 </div>
                               </div>
                             ))}
                           </div>
-                        </details>
+                          )}
+                        </div>
                       );
                     })
                   ) : (
@@ -792,7 +797,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                     ))
                   )}
 
-                  {/* 🌟 রাজকীয় ১১টি অপশন যুক্ত ফুল এডিট মোডাল উইন্ডো (লুপের ঠিক বাইরে থাকবে যাতে সাব-মেনু ক্র্যাশ না করে) */}
+                  {/* 🌟 রাজকীয় ১১টি অপশন যুক্ত ফুল এডিট মোডাল উইন্ডো */}
                   {classItems.map((item) => expandedId === item.id && (
                     <div key={`edit-modal-${item.id}`} className="fixed inset-0 bg-black/90 backdrop-blur-md z-[5000] flex justify-center items-start overflow-y-auto pt-10 pb-10">
                       <div className="bg-slate-950 w-full max-w-2xl p-8 rounded-[2.5rem] border border-white/10 shadow-2xl relative mb-10 text-white">
@@ -801,7 +806,6 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                         </button>
                         <h4 className="text-sm font-black uppercase italic text-blue-400 mb-6 border-b border-white/10 pb-2">✏️ Edit Settings: {item.name}</h4>
                         <div className="bg-black/40 space-y-4 animate-in slide-in-from-top-2">
-                          
                           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                             <div>
                               <p className="text-[8px] font-black text-green-400 uppercase mb-1 ml-1 italic">Access Mode</p>
