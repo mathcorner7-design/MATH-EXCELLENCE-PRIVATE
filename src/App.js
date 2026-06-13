@@ -1,4 +1,4 @@
-  import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, deleteDoc, getDocs, writeBatch, getDoc } from "firebase/firestore";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "firebase/auth";
@@ -1071,7 +1071,7 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
                   <div className="bg-orange-950/30 border border-orange-900/50 rounded-[2rem] p-4 flex flex-col gap-3 shadow-inner print:hidden"><p className="text-[10px] font-black text-orange-400 uppercase italic text-center animate-pulse tracking-widest">Action Required: Written Solutions</p><div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory"> {r.details.filter(d => d.pending).map((pendingQ, pIdx) => { const photoList = Array.isArray(pendingQ.selected) ? pendingQ.selected : [pendingQ.selected]; return photoList.map((photoUrl, imgIdx) => ( <div key={`${pIdx}-${imgIdx}`} className="min-w-[200px] bg-black border border-white/10 shadow-md rounded-2xl p-4 flex flex-col items-center gap-3 snap-center"><p className="text-[9px] font-black text-slate-500 uppercase italic">
     Q{pendingQ.qNum} - Page {imgIdx + 1} <span className="text-yellow-500 ml-1">({pendingQ.mark || 0} Marks)</span>
 </p>
-                  <button onClick={() => setPreviewImg(photoUrl)} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">View Page</button> {imgIdx === photoList.length - 1 && (<div className="flex gap-2 w-full mt-2"><input id={`mark-input-${r.id}-${pendingQ.qNum}`} type="number" placeholder="Marks" className="w-1/2 p-2 border border-slate-700 rounded-xl text-center font-black text-[10px] outline-none focus:border-orange-500 bg-black text-white" /><button onClick={async () => { const markVal = document.getElementById(`mark-input-${r.id}-${pendingQ.qNum}`).value; if (!markVal) return alert("Enter marks!"); const updatedDetails = r.details.map(d => (d.pending && d.qNum === pendingQ.qNum) ? { ...d, status: parseFloat(markVal) > 0 ? true : false, mark: parseFloat(markVal), fullMark: d.mark, pending: false, selected: "CHECKED BY ANSHU SIR" } : d); const newObt = updatedDetails.reduce((sum, d) => sum + (d.status ? d.mark : 0), 0); await setDoc(doc(db, "results", r.id), { details: updatedDetails, obtained: newObt, percent: Math.round((newObt / r.total) * 100) }, { merge: true }); alert(`Q${pendingQ.qNum} Marks Updated!`); }} className="w-1/2 py-2 bg-orange-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">Save</button></div>)}</div>)); })}</div></div>)}
+                  <button onClick={() => setPreviewImg(photoUrl)} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">View Page</button> {imgIdx === photoList.length - 1 && (<div className="flex gap-2 w-full mt-2"><input id={`mark-input-${r.id}-${pendingQ.qNum}`} type="number" placeholder="Marks" className="w-1/2 p-2 border border-slate-700 rounded-xl text-center font-black text-[10px] outline-none focus:border-orange-500 bg-black text-white" /><button onClick={async () => { const markVal = document.getElementById(`mark-input-${r.id}-${pendingQ.qNum}`).value; if (!markVal) return alert("Enter marks!"); const updatedDetails = r.details.map(d => (d.pending && d.qNum === pendingQ.qNum) ? { ...d, status: true, mark: parseFloat(markVal), pending: false, selected: "CHECKED BY ANSHU SIR" } : d); const newObt = updatedDetails.reduce((sum, d) => sum + (d.status ? d.mark : 0), 0); await setDoc(doc(db, "results", r.id), { details: updatedDetails, obtained: newObt, percent: Math.round((newObt / r.total) * 100) }, { merge: true }); alert(`Q${pendingQ.qNum} Marks Updated!`); }} className="w-1/2 py-2 bg-orange-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">Save</button></div>)}</div>)); })}</div></div>)}
               </div>
             );
           })}
@@ -1363,18 +1363,10 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
           <p className="text-[9px] font-black text-slate-500 uppercase italic mb-3 text-center">Quick Review:</p>
           <div className="grid grid-cols-5 gap-2">
             {scoreData?.details?.map((item, idx) => (
-             <div key={idx} className={`p-2 rounded-lg border flex flex-col items-center justify-between min-h-[55px] ${item.type === 'written' ? (item.pending ? 'bg-orange-900/20 border-orange-800 text-orange-400' : (parseFloat(item.mark) > 0 ? 'bg-green-900/20 border-green-800 text-green-400' : 'bg-red-900/20 border-red-800 text-red-400')) : (item.status ? 'bg-green-900/20 border-green-800 text-green-400' : 'bg-red-900/20 border-red-800 text-red-400')}`}>
-  <span className="text-[8px] font-black">Q{item.qNum}</span>
-  
-  <div className="my-0.5">
-    {item.type === 'written' ? (item.pending ? <Clock size={10} /> : (parseFloat(item.mark) > 0 ? <CheckCircle size={10} /> : <X size={10} />)) : (item.status ? <CheckCircle size={10} /> : <X size={10} />)}
-  </div>
-
-  {/* 🌟 নিখুঁত লজিক: পেন্ডিং থাকলে PENDING দেখাবে, কোনো ভুল নম্বর দেখাবে না */}
-  <span className="text-[8px] font-bold mt-0.5 block italic bg-black/40 px-1 rounded uppercase">
-    {item.type === 'written' ? (item.pending ? 'PENDING' : `${item.mark}/${item.fullMark || item.mark || 0}`) : (item.status ? `${item.mark}/${item.mark}` : `0/${item.mark || 1}`)}
-  </span>
-</div>
+              <div key={idx} className={`p-2 rounded-lg border flex flex-col items-center ${item.type === 'written' ? 'bg-orange-900/20 border-orange-800 text-orange-400' : (item.status ? 'bg-green-900/20 border-green-800 text-green-400' : 'bg-red-900/20 border-red-800 text-red-400')}`}>
+                <span className="text-[8px] font-black">Q{item.qNum}</span>
+                {item.type === 'written' ? <Clock size={10} /> : (item.status ? <CheckCircle size={10} /> : <X size={10} />)}
+              </div>
             ))}
           </div>
         </div>
