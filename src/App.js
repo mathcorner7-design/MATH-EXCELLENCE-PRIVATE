@@ -120,7 +120,7 @@ const ReviewResultModal = ({ result, onClose }) => {
 <p className="font-black text-xs uppercase italic tracking-tighter">
   Question Q{item.qNum} 
   <span className="text-[9px] opacity-60 ml-1">
-    ({item.pending ? '0' : item.mark} / {item.type === 'written' ? (item.pending ? item.mark : item.mark) : (item.status ? item.mark : (r.total / r.details.length))} Marks)
+    ({item.pending ? '0' : item.mark} / {item.type === 'written' ? item.mark : (item.status ? item.mark : (result.total / (result.details?.length || 1)))} Marks)
   </span>
 </p>
                 <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">
