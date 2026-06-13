@@ -112,16 +112,58 @@ const ReviewResultModal = ({ result, onClose }) => {
       </div>
       <div className="w-full max-w-lg space-y-3 mb-14 text-left">
         {result.details && result.details.map((item, idx) => {
-          const isCorrect = item.type === 'written' ? item.mark > 0 : item.status;
+          
+          // ১. প্রতিটি প্রশ্নের ফুল মার্কস নির্ধারণ (ডাটাবেজ থেকে অথবা ইকুয়াল ডিস্ট্রিবিউশন)
+          const qMaxMark = item.mark !== undefined ? item.mark : (result.total / result.details.length);
+          const obtainedMark = item.pending ? 0 : (item.mark || 0);
+
+          // ২. ডায়াগ্রামের কন্ডিশন অনুযায়ী কালার ও বর্ডার স্টাইল নির্ধারণের লজিক
+          let boxStyle = "";
+
+          if (item.type === 'written') {
+            if (item.pending) {
+              // Condition 4: ছবি আপলোড হয়েছে কিন্তু রিভিউ হয়নি -> কমলা বক্স
+              boxStyle = "bg-orange-950/40 border-orange-700 text-orange-200 shadow-sm";
+            } else if (item.selected === "NOT ATTEMPTED" || obtainedMark === 0) {
+              // Condition 3: ছবি আপলোড করেনি বা ০ পেয়েছে -> লাল বক্স
+              boxStyle = "bg-red-950/40 border-red-700 text-red-200 shadow-sm";
+            } else if (obtainedMark < qMaxMark) {
+              // Condition 5: শিক্ষক খাতা দেখার পর ফুল নম্বরের কম পেয়েছে -> হলুদ বক্স
+              boxStyle = "bg-yellow-950/30 border-yellow-600/80 text-yellow-200 shadow-sm";
+            } else if (obtainedMark === qMaxMark) {
+              // Condition 6: শিক্ষক খাতা দেখার পর ফুল নম্বর পেয়েছে -> সবুজ বক্স
+              boxStyle = "bg-green-950/40 border-green-700 text-green-200 shadow-sm";
+            }
+          } else {
+            // MCQ এর লজিক (Condition 1 & 2)
+            if (item.status) {
+              // সঠিক উত্তর -> সবুজ বক্স
+              boxStyle = "bg-green-950/40 border-green-700 text-green-200 shadow-sm";
+            } else {
+              // ভুল উত্তর -> লাল বক্স
+              boxStyle = "bg-red-950/40 border-red-700 text-red-200 shadow-sm";
+            }
+          }
+
           return (
-            <div key={idx} className={`p-4 rounded-2xl border-2 flex justify-between items-center transition-all ${item.pending ? 'bg-orange-900/40 border-orange-700 text-orange-200' : (isCorrect ? 'bg-green-900/40 border-green-700 text-green-200 shadow-sm' : 'bg-red-900/40 border-red-700 text-red-200 shadow-sm')}`}>
+            <div key={idx} className={`p-4 rounded-2xl border-2 flex justify-between items-center transition-all ${boxStyle}`}>
               <div>
-                <p className="font-black text-xs uppercase italic tracking-tighter">Question Q{item.qNum} <span className="text-[9px] opacity-60 ml-1">({item.mark} Marks)</span></p>
+                <p className="font-black text-xs uppercase italic tracking-tighter">
+                  Question Q{item.qNum} 
+                  <span className="text-[10px] opacity-75 ml-2 font-bold text-slate-300">
+                    ({obtainedMark} / {item.type === 'written' ? item.mark : qMaxMark} Marks)
+                  </span>
+                </p>
                 <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">
-                  Choice: {Array.isArray(item.selected) ? `IMAGE (${item.selected.length} Pgs)` : (item.selected?.startsWith('data:image') ? 'IMAGE' : item.selected)} • Correct: {item.correct === 'W' ? 'WRITTEN' : item.correct} {item.pending && <span className="ml-2 bg-orange-600 px-2 py-0.5 rounded text-[8px] text-white"> PENDING FOR REVIEW</span>}
+                  Choice: {Array.isArray(item.selected) ? `IMAGE (${item.selected.length} Pgs)` : (item.selected?.startsWith('data:image') ? 'IMAGE' : item.selected)} • Correct: {item.correct === 'W' ? 'WRITTEN' : item.correct}
+                  {item.pending && <span className="ml-2 bg-orange-600 px-2 py-0.5 rounded text-[8px] text-white font-black animate-pulse"> PENDING FOR REVIEW</span>}
                 </p>
               </div>
-              {item.pending ? <Clock size={18} className="animate-pulse" /> : (isCorrect ? <CheckSquare size={18} /> : <AlertCircle size={18} />)}
+              
+              {/* ডানপাশের আইকন পরিবর্তন */}
+              {item.pending ? (
+                <Clock size={18} className="text-orange-400 animate-pulse" />
+              ) : (item.type === 'written' ? (obtainedMark === qMaxMark ? <CheckSquare size={18} className="text-green-400" /> : <AlertCircle size={18} className={obtainedMark > 0 ? "text-yellow-400" : "text-red-400"} />) : (item.status ? <CheckSquare size={18} className="text-green-400" /> : <AlertCircle size={18} className="text-red-400" />))}
             </div>
           );
         })}
