@@ -113,30 +113,34 @@ const ReviewResultModal = ({ result, onClose }) => {
       <div className="w-full max-w-lg space-y-3 mb-14 text-left">
         {result.details && result.details.map((item, idx) => {
           
-          // ১. ফুল মার্কস এবং প্রাপ্ত নম্বর (Obtained Marks) নিখুঁতভাবে বের করার লজিক
-          const fullMark = parseFloat(item.mark) || 1;
+          // 💡 প্রবলেম ফিক্স লজিক: পরীক্ষার আসল কনফিগারেশন (কোশ্চেন মার্কস অ্যারে) থেকে ওই নম্বরের প্রশ্নের আসল ফুল মার্কস বের করা
+          const examQuestionMarks = result.questionMarks ? result.questionMarks.split(',').map(m => parseFloat(m.trim()) || 1) : [];
+          const fullMark = examQuestionMarks[idx] !== undefined ? examQuestionMarks[idx] : (parseFloat(item.mark) || 1);
           
-          // যদি প্রশ্নটি রিটেন হয় এবং আপনি (টিচার) নাম্বার সেট করে থাকেন, তবে item.mark-এ প্রাপ্ত নম্বর থাকে।
-          // আর এমসিকিউ সঠিক হলে ফুল মার্কস পাবে, নতুবা ০।
-          const obtainedMark = item.pending ? 0 : (item.type === 'written' ? (parseFloat(item.mark) || 0) : (item.status ? fullMark : 0));
-
-          // ২. ৪টি আলাদা কালার বক্সের কন্ডিশনাল লজিক (আপনার রিকোয়েস্ট অনুযায়ী)
-          let boxColors = "";
-          if (item.pending) {
-            // কমলা বক্স: যদি রিটেন সলিউশন এখনও রিভিউ পেন্ডিং থাকে
-            boxColors = "bg-orange-900/40 border-orange-700 text-orange-200";
-          } else if (obtainedMark === 0) {
-            // লাল বক্স: যদি ভুল উত্তর দেয়, রেসপন্স না করে বা ছবি আপলোড না করায় নম্বর ০ হয়
-            boxColors = "bg-red-900/40 border-red-700 text-red-200 shadow-sm";
-          } else if (obtainedMark > 0 && obtainedMark < fullMark) {
-            // হলুদ বক্স: কারেক্ট বা পার্শিয়াল নম্বর পেয়েছে কিন্তু ফুল নম্বর পায়নি (যেমন: ১.৫ আউট অফ ২)
-            boxColors = "bg-yellow-900/40 border-yellow-700 text-yellow-200 shadow-sm";
-          } else if (obtainedMark === fullMark) {
-            // সবুজ বক্স: একদম কারেক্ট এবং ফুল নম্বর পেয়েছে (যেমন: ২ আউট অফ ২)
-            boxColors = "bg-green-900/40 border-green-700 text-green-200 shadow-sm";
+          // প্রাপ্ত নম্বর (Obtained Mark) নিখুঁতভাবে নির্ধারণ
+          let obtainedMark = 0;
+          if (!item.pending) {
+            if (item.type === 'written') {
+              // যদি নট অ্যাটেম্পটেড হয় তবে সরাসরি ০, আর আপনি নাম্বার দিলে সেই নাম্বারটি বসবে
+              obtainedMark = item.selected === "NOT ATTEMPTED" ? 0 : (parseFloat(item.mark) || 0);
+            } else {
+              obtainedMark = item.status ? fullMark : 0;
+            }
           }
 
-          // ৩. ডাইনামিক মার্কস ডিসপ্লে ফরম্যাট
+          // 🎨 ৪টি আলাদা কালার বক্সের ১০০% সঠিক কন্ডিশন
+          let boxColors = "";
+          if (item.pending) {
+            boxColors = "bg-orange-900/40 border-orange-700 text-orange-200"; // কমলা বক্স (Pending)
+          } else if (item.selected === "NOT ATTEMPTED" || obtainedMark === 0) {
+            boxColors = "bg-red-900/40 border-red-700 text-red-200 shadow-sm"; // লাল বক্স (Zero/Not Attempted)
+          } else if (obtainedMark > 0 && obtainedMark < fullMark) {
+            boxColors = "bg-yellow-900/40 border-yellow-700 text-yellow-200 shadow-sm"; // হলুদ বক্স (Partial Marks)
+          } else if (obtainedMark === fullMark) {
+            boxColors = "bg-green-900/40 border-green-700 text-green-200 shadow-sm"; // সবুজ বক্স (Full Marks)
+          }
+
+          // ডিসপ্লে ফরম্যাট
           const marksDisplay = item.pending 
             ? `Pending Out Of ${fullMark} Marks` 
             : `${obtainedMark} Out Of ${fullMark} Marks`;
@@ -146,7 +150,6 @@ const ReviewResultModal = ({ result, onClose }) => {
               <div>
                 <p className="font-black text-xs uppercase italic tracking-tighter">
                   Question Q{item.qNum} 
-                  {/* এখানে ওয়ান মার্কস লেখার জায়গায় ডাইনামিক প্রাপ্ত নম্বর আউট অফ ফুল নম্বর বসানো হয়েছে */}
                   <span className="text-[10px] font-bold ml-2 opacity-90 tracking-normal">({marksDisplay})</span>
                 </p>
                 <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">
@@ -154,7 +157,6 @@ const ReviewResultModal = ({ result, onClose }) => {
                   {item.pending && <span className="ml-2 bg-orange-600 px-2 py-0.5 rounded text-[8px] text-white font-black animate-pulse"> PENDING FOR REVIEW</span>}
                 </p>
               </div>
-              {/* আইকন কালারও বক্সের সাথে সামঞ্জস্যপূর্ণ করা হলো */}
               {item.pending ? (
                 <Clock size={18} className="animate-pulse text-orange-400" />
               ) : obtainedMark === fullMark ? (
@@ -1112,7 +1114,36 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
                   <div className="bg-orange-950/30 border border-orange-900/50 rounded-[2rem] p-4 flex flex-col gap-3 shadow-inner print:hidden"><p className="text-[10px] font-black text-orange-400 uppercase italic text-center animate-pulse tracking-widest">Action Required: Written Solutions</p><div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory"> {r.details.filter(d => d.pending).map((pendingQ, pIdx) => { const photoList = Array.isArray(pendingQ.selected) ? pendingQ.selected : [pendingQ.selected]; return photoList.map((photoUrl, imgIdx) => ( <div key={`${pIdx}-${imgIdx}`} className="min-w-[200px] bg-black border border-white/10 shadow-md rounded-2xl p-4 flex flex-col items-center gap-3 snap-center"><p className="text-[9px] font-black text-slate-500 uppercase italic">
     Q{pendingQ.qNum} - Page {imgIdx + 1} <span className="text-yellow-500 ml-1">({pendingQ.mark || 0} Marks)</span>
 </p>
-                  <button onClick={() => setPreviewImg(photoUrl)} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">View Page</button> {imgIdx === photoList.length - 1 && (<div className="flex gap-2 w-full mt-2"><input id={`mark-input-${r.id}-${pendingQ.qNum}`} type="number" placeholder="Marks" className="w-1/2 p-2 border border-slate-700 rounded-xl text-center font-black text-[10px] outline-none focus:border-orange-500 bg-black text-white" /><button onClick={async () => { const markVal = document.getElementById(`mark-input-${r.id}-${pendingQ.qNum}`).value; if (!markVal) return alert("Enter marks!"); const updatedDetails = r.details.map(d => (d.pending && d.qNum === pendingQ.qNum) ? { ...d, status: true, mark: parseFloat(markVal), pending: false, selected: "CHECKED BY ANSHU SIR" } : d); const newObt = updatedDetails.reduce((sum, d) => sum + (d.status ? d.mark : 0), 0); await setDoc(doc(db, "results", r.id), { details: updatedDetails, obtained: newObt, percent: Math.round((newObt / r.total) * 100) }, { merge: true }); alert(`Q${pendingQ.qNum} Marks Updated!`); }} className="w-1/2 py-2 bg-orange-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">Save</button></div>)}</div>)); })}</div></div>)}
+                  <button onClick={() => setPreviewImg(photoUrl)} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">View Page</button> {imgIdx === photoList.length - 1 && (<div className="flex gap-2 w-full mt-2"><input id={`mark-input-${r.id}-${pendingQ.qNum}`} type="number" placeholder="Marks" className="w-1/2 p-2 border border-slate-700 rounded-xl text-center font-black text-[10px] outline-none focus:border-orange-500 bg-black text-white" />// 💡 এই বাটনটি আপনার কোডের ভেতরে টিচারের মার্কস আপডেট করার ইনপুটের পাশে আছে
+<button 
+  onClick={async () => {
+    const markVal = document.getElementById(`mark-input-${r.id}-${pendingQ.qNum}`).value;
+    if (!markVal) return alert("Enter marks!");
+    
+    // এখানে আমরা প্রশ্নের আসল fullMark নষ্ট না করে, প্রাপ্ত নম্বরটিকে আলাদাভাবে সংরক্ষণের লজিক ফিক্স করেছি
+    const updatedDetails = r.details.map(d => 
+      (d.pending && d.qNum === pendingQ.qNum) 
+        ? { ...d, status: parseFloat(markVal) > 0, mark: parseFloat(markVal), pending: false, selected: "CHECKED BY ANSHU SIR" } 
+        : d
+    );
+    
+    // মোট প্রাপ্ত নম্বর নতুন করে হিসাব করা
+    const newObt = updatedDetails.reduce((sum, d) => sum + ((d.type === 'written' && !d.pending) ? (parseFloat(d.mark) || 0) : (d.status ? (parseFloat(d.mark) || 1) : 0)), 0);
+    
+    // ডাটাবেজে রেজাল্ট আপডেট করার সময় মূল পরীক্ষার questionMarks স্ট্রাকচারটিকেও সাথে পাঠিয়ে দেওয়া হচ্ছে যাতে কুইক রিভিউ উইন্ডো প্রশ্নের আসল ফুল মার্কস সবসময় মনে রাখতে পারে
+    await setDoc(doc(db, "results", r.id), { 
+      details: updatedDetails, 
+      obtained: newObt, 
+      percent: Math.round((newObt / r.total) * 100),
+      questionMarks: r.questionMarks || "" // ফিক্স: আসল কোশ্চেন মার্কসের ট্র্যাকিং ডাটাবেজের রেজাল্টেও কপি করে রাখা হলো
+    }, { merge: true });
+    
+    alert(`Q${pendingQ.qNum} Marks Updated!`);
+  }} 
+  className="w-1/2 py-2 bg-orange-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm"
+>
+  Save
+</button></div>)}</div>)); })}</div></div>)}
               </div>
             );
           })}
