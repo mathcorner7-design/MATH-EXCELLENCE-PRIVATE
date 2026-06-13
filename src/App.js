@@ -1378,66 +1378,61 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
     </div>
   );
 
-  if (isSubmitted) return (
+ if (isSubmitted) return (
   <div className="fixed inset-0 bg-black/95 z-[5000] flex flex-col items-center p-4 md:p-10 text-white font-sans animate-in fade-in duration-500 overflow-hidden">
     
     {/* ব্যাকগ্রাউন্ড গ্লো */}
     <div className="absolute inset-0 bg-gradient-to-b from-blue-950/20 via-black to-black pointer-events-none"></div>
 
-    <div className="w-full max-w-3xl flex-1 flex flex-col z-10 animate-in zoom-in-95 duration-500 mt-4">
+    <div className="w-full max-w-3xl flex-1 flex flex-col z-10 animate-in zoom-in-95 duration-500 mt-2">
       
-      {/* হেডার সেকশন */}
-      <div className="text-center mb-6 flex-shrink-0">
-        <CheckCircle size={64} className="text-green-500 mx-auto mb-3 animate-bounce shadow-[0_0_30px_rgba(34,197,94,0.3)] rounded-full" />
-        <h2 className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-400 leading-none">
-          Session Completed Successfully
-        </h2>
-        <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase italic tracking-widest mt-2">
-          Your responses have been securely deployed to the cloud registry
-        </p>
-      </div>
+      <div className="text-center mb-4 flex-shrink-0">
+  {/* বড় করে এক্সাম কমপ্লিটেড হেডিং */}
+  <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-400 leading-none mb-3 animate-pulse">
+    EXAM IS COMPLETED
+  </h2>
+  
+  <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1 opacity-80">
+    MCQ SCORE ONLY
+  </p>
+  <h3 className="text-5xl font-black text-blue-400 italic tracking-tighter leading-none shadow-sm">
+    {scoreData?.correct}
+  </h3>
+</div>
 
       {/* মূল ফুল-স্ক্রিন কন্টেইনার */}
-      <div className="flex-1 bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-4 md:p-8 flex flex-col min-h-0 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+      <div className="flex-1 bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-4 md:p-6 flex flex-col min-h-0 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
         
         <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3 flex-shrink-0">
           <h4 className="text-xs font-black uppercase italic tracking-widest text-blue-400">
-            🚀 Instant Performance Transcript
+            🚀 Instant Exam Review
           </h4>
           {exam.isGuest && (
-            <span className="bg-orange-600/20 text-orange-400 border border-orange-800 text-[8px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider animate-pulse">
+            <span className="bg-orange-600/20 text-orange-400 border border-orange-800 text-[8px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
               Guest Session
             </span>
           )}
         </div>
 
         {/* স্ক্রিন ভর্তি লম্বাটে কুইক রিভিউ প্যানেল (স্ক্রোলেবল) */}
-        <div className="flex-1 overflow-y-auto pr-1 space-y-3 no-scrollbar max-h-[52vh]">
+        <div className="flex-1 overflow-y-auto pr-1 space-y-3 no-scrollbar max-h-[48vh]">
           {scoreData?.details?.map((item, idx) => {
-            
-            // 🎯 লজিক ১: গ্রোথ সেকশনের মতো হুবহু আসল ফুল মার্কস ট্র্যাকিং (ভাগফল ছাড়া)
             const qMaxMark = item.qFullMark !== undefined ? item.qFullMark : (item.type === 'written' ? 3 : 1);
             const obtainedMark = item.pending ? 0 : (item.mark || 0);
 
-            // 🎯 লজিক ২: আপনার ডায়াগ্রামের ৬টি কন্ডিশনের শতভাগ সঠিক কালার কোডিং
             let boxStyle = "";
 
             if (item.type === 'written') {
               if (item.pending) {
-                // Condition 4: রিটেন খাতা জমা হয়েছে -> কমলা বক্স
                 boxStyle = "bg-orange-950/40 border-orange-700 text-orange-200 shadow-sm";
               } else if (item.selected === "NOT ATTEMPTED" || obtainedMark === 0) {
-                // Condition 3: খাতা দেয়নি বা ০ -> লাল বক্স
                 boxStyle = "bg-red-950/40 border-red-700 text-red-200 shadow-sm";
               } else if (obtainedMark < qMaxMark) {
-                // Condition 5: কম নম্বর -> হলুদ বক্স
                 boxStyle = "bg-yellow-950/30 border-yellow-600/80 text-yellow-200 shadow-sm";
               } else if (obtainedMark === qMaxMark) {
-                // Condition 6: ফুল নম্বর -> সবুজ বক্স
                 boxStyle = "bg-green-950/40 border-green-700 text-green-200 shadow-sm";
               }
             } else {
-              // MCQ এর লজিক (Condition 1 & 2)
               if (item.status) {
                 boxStyle = "bg-green-950/40 border-green-700 text-green-200 shadow-sm";
               } else {
@@ -1446,11 +1441,10 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
             }
 
             return (
-              <div key={idx} className={`p-4 rounded-2xl border-2 flex justify-between items-center transition-all duration-300 hover:scale-[1.01] ${boxStyle}`}>
+              <div key={idx} className={`p-4 rounded-2xl border-2 flex justify-between items-center transition-all ${boxStyle}`}>
                 <div>
                   <p className="font-black text-xs uppercase italic tracking-tighter text-white">
                     Question Q{item.qNum} 
-                    {/* গ্রোথ সেকশনের মতো নিখুঁত (প্রাপ্ত নম্বর / আসল ফুল নম্বর) */}
                     <span className="text-[10px] opacity-75 ml-2 font-bold text-slate-300">
                       ({obtainedMark} / {qMaxMark} Marks)
                     </span>
@@ -1460,7 +1454,6 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
                     {item.pending && <span className="ml-2 bg-orange-600 px-2 py-0.5 rounded text-[8px] text-white font-black animate-pulse"> PENDING FOR REVIEW</span>}
                   </p>
                 </div>
-                {/* আইকন লজিক */}
                 {item.pending ? (
                   <Clock size={18} className="text-orange-400 animate-pulse" />
                 ) : (item.type === 'written' ? (obtainedMark === qMaxMark ? <CheckSquare size={18} className="text-green-400" /> : <AlertCircle size={18} className={obtainedMark > 0 ? "text-yellow-400" : "text-red-400"} />) : (item.status ? <CheckSquare size={18} className="text-green-400" /> : <AlertCircle size={18} className="text-red-400" />))}
@@ -1469,21 +1462,24 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
           })}
         </div>
 
-        {/* ফুটার নোটিশ */}
+        {/* 🔥 গ্লোয়িং ও বড় নোটিশ সেকশন (শুধুমাত্র রেজিস্টার্ড স্টুডেন্টদের জন্য) */}
         {!exam.isGuest && (
-          <p className="text-[9px] font-bold text-slate-500 uppercase italic text-center mt-3 tracking-wide">
-            * Descriptive sheets are safely stored. Final score will auto-update after Anshu Sir's review.
-          </p>
+          <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-2xl flex items-center justify-center gap-2 animate-pulse shadow-[0_0_20px_rgba(234,179,8,0.15)] flex-shrink-0">
+            <AlertCircle size={18} className="text-yellow-400 flex-shrink-0" />
+            <p className="text-xs md:text-sm font-black text-yellow-400 uppercase italic text-center tracking-tight leading-tight">
+              Final score FOR REGISTERED STUDENT will auto-update after ANSHU SIR'S review.
+            </p>
+          </div>
         )}
       </div>
 
-      {/* ক্লোজ বাটন */}
-      <div className="text-center mt-6 mb-4 flex-shrink-0">
+      {/* 🔥 হোমে ফিরে যাওয়ার মেইন বাটন */}
+      <div className="text-center mt-5 mb-2 flex-shrink-0">
         <button 
           onClick={onFinish} 
           className="bg-blue-600 hover:bg-blue-500 text-white px-20 py-4 rounded-full font-black uppercase text-xs shadow-[0_10px_30px_rgba(37,99,235,0.4)] active:scale-95 transition-all border-b-4 border-blue-800 active:border-b-0 tracking-widest italic"
         >
-          Exit Exam Hall
+          Return to Home
         </button>
       </div>
       
