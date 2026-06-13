@@ -113,11 +113,14 @@ const ReviewResultModal = ({ result, onClose }) => {
       <div className="w-full max-w-lg space-y-3 mb-14 text-left">
         {result.details && result.details.map((item, idx) => {
           
-          // ১. প্রতিটি প্রশ্নের ফুল মার্কস নির্ধারণ (ডাটাবেজ থেকে অথবা ইকুয়াল ডিস্ট্রিবিউশন)
-          const qMaxMark = item.mark !== undefined ? item.mark : (result.total / result.details.length);
+          // 🔥 মূল ফিক্স: প্রাপ্ত নম্বর এবং আসল ফুল মার্কস-এর লিংক আলাদা করা হলো
+          // পরীক্ষার মোট নম্বরকে মোট প্রশ্নের সংখ্যা দিয়ে ভাগ করে প্রতিটি প্রশ্নের আসল ফুল মার্কস বের করা হচ্ছে
+          const qMaxMark = result.total && result.details.length ? (parseFloat(result.total) / result.details.length) : 1;
+          
+          // প্রাপ্ত নম্বর নির্ধারণ
           const obtainedMark = item.pending ? 0 : (item.mark || 0);
 
-          // ২. ডায়াগ্রামের কন্ডিশন অনুযায়ী কালার ও বর্ডার স্টাইল নির্ধারণের লজিক
+          // ডায়াগ্রামের কন্ডিশন অনুযায়ী কালার নির্ধারণ
           let boxStyle = "";
 
           if (item.type === 'written') {
@@ -128,19 +131,17 @@ const ReviewResultModal = ({ result, onClose }) => {
               // Condition 3: ছবি আপলোড করেনি বা ০ পেয়েছে -> লাল বক্স
               boxStyle = "bg-red-950/40 border-red-700 text-red-200 shadow-sm";
             } else if (obtainedMark < qMaxMark) {
-              // Condition 5: শিক্ষক খাতা দেখার পর ফুল নম্বরের কম পেয়েছে -> হলুদ বক্স
+              // Condition 5: প্রাপ্ত নম্বর ফুল মার্কসের চেয়ে কম -> নিশ্চিতভাবে হলুদ বক্স
               boxStyle = "bg-yellow-950/30 border-yellow-600/80 text-yellow-200 shadow-sm";
             } else if (obtainedMark === qMaxMark) {
-              // Condition 6: শিক্ষক খাতা দেখার পর ফুল নম্বর পেয়েছে -> সবুজ বক্স
+              // Condition 6: প্রাপ্ত নম্বর ফুল মার্কসের সমান -> সবুজ বক্স
               boxStyle = "bg-green-950/40 border-green-700 text-green-200 shadow-sm";
             }
           } else {
-            // MCQ এর লজিক (Condition 1 & 2)
+            // MCQ এর লजিক (Condition 1 & 2)
             if (item.status) {
-              // সঠিক উত্তর -> সবুজ বক্স
               boxStyle = "bg-green-950/40 border-green-700 text-green-200 shadow-sm";
             } else {
-              // ভুল উত্তর -> লাল বক্স
               boxStyle = "bg-red-950/40 border-red-700 text-red-200 shadow-sm";
             }
           }
@@ -150,8 +151,9 @@ const ReviewResultModal = ({ result, onClose }) => {
               <div>
                 <p className="font-black text-xs uppercase italic tracking-tighter">
                   Question Q{item.qNum} 
+                  {/* এখানে এখন সঠিক নম্বর জোড়া দেখাবে */}
                   <span className="text-[10px] opacity-75 ml-2 font-bold text-slate-300">
-                    ({obtainedMark} / {item.type === 'written' ? item.mark : qMaxMark} Marks)
+                    ({obtainedMark} / {qMaxMark} Marks)
                   </span>
                 </p>
                 <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">
@@ -160,7 +162,7 @@ const ReviewResultModal = ({ result, onClose }) => {
                 </p>
               </div>
               
-              {/* ডানপাশের আইকন পরিবর্তন */}
+              {/* ডানপাশের আইকন */}
               {item.pending ? (
                 <Clock size={18} className="text-orange-400 animate-pulse" />
               ) : (item.type === 'written' ? (obtainedMark === qMaxMark ? <CheckSquare size={18} className="text-green-400" /> : <AlertCircle size={18} className={obtainedMark > 0 ? "text-yellow-400" : "text-red-400"} />) : (item.status ? <CheckSquare size={18} className="text-green-400" /> : <AlertCircle size={18} className="text-red-400" />))}
@@ -172,7 +174,6 @@ const ReviewResultModal = ({ result, onClose }) => {
     </div>
   );
 };
-
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [isAppSubmitting, setIsAppSubmitting] = useState(false);
