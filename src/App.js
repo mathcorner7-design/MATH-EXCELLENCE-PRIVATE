@@ -116,7 +116,13 @@ const ReviewResultModal = ({ result, onClose }) => {
           return (
             <div key={idx} className={`p-4 rounded-2xl border-2 flex justify-between items-center transition-all ${item.pending ? 'bg-orange-900/40 border-orange-700 text-orange-200' : (isCorrect ? 'bg-green-900/40 border-green-700 text-green-200 shadow-sm' : 'bg-red-900/40 border-red-700 text-red-200 shadow-sm')}`}>
               <div>
-                <p className="font-black text-xs uppercase italic tracking-tighter">Question Q{item.qNum} <span className="text-[9px] opacity-60 ml-1">({item.mark} Marks)</span></p>
+                // ✅ সংশোধিত কোড (প্রাপ্ত নম্বর / ফুল নম্বর দেখাবে):
+<p className="font-black text-xs uppercase italic tracking-tighter">
+  Question Q{item.qNum} 
+  <span className="text-[9px] opacity-60 ml-1">
+    ({item.pending ? '0' : item.mark} / {item.type === 'written' ? (item.pending ? item.mark : item.mark) : (item.status ? item.mark : (r.total / r.details.length))} Marks)
+  </span>
+</p>
                 <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">
                   Choice: {Array.isArray(item.selected) ? `IMAGE (${item.selected.length} Pgs)` : (item.selected?.startsWith('data:image') ? 'IMAGE' : item.selected)} • Correct: {item.correct === 'W' ? 'WRITTEN' : item.correct} {item.pending && <span className="ml-2 bg-orange-600 px-2 py-0.5 rounded text-[8px] text-white"> PENDING FOR REVIEW</span>}
                 </p>
@@ -1364,7 +1370,8 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
           <div className="grid grid-cols-5 gap-2">
             {scoreData?.details?.map((item, idx) => (
               <div key={idx} className={`p-2 rounded-lg border flex flex-col items-center ${item.type === 'written' ? 'bg-orange-900/20 border-orange-800 text-orange-400' : (item.status ? 'bg-green-900/20 border-green-800 text-green-400' : 'bg-red-900/20 border-red-800 text-red-400')}`}>
-                <span className="text-[8px] font-black">Q{item.qNum}</span>
+               // ✅ সংশোধিত কোড:
+<span className="text-[8px] font-black">Q{item.qNum} ({item.mark}/{item.type === 'written' ? item.mark : (item.status ? item.mark : exam.questionMarks.split(',')[idx]?.trim() || 1)}M)</span>
                 {item.type === 'written' ? <Clock size={10} /> : (item.status ? <CheckCircle size={10} /> : <X size={10} />)}
               </div>
             ))}
