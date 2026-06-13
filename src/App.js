@@ -113,32 +113,23 @@ const ReviewResultModal = ({ result, onClose }) => {
       <div className="w-full max-w-lg space-y-3 mb-14 text-left">
         {result.details && result.details.map((item, idx) => {
           
-          // 🔥 মূল ফিক্স: প্রাপ্ত নম্বর এবং আসল ফুল মার্কস-এর লিংক আলাদা করা হলো
-          // পরীক্ষার মোট নম্বরকে মোট প্রশ্নের সংখ্যা দিয়ে ভাগ করে প্রতিটি প্রশ্নের আসল ফুল মার্কস বের করা হচ্ছে
-          const qMaxMark = result.total && result.details.length ? (parseFloat(result.total) / result.details.length) : 1;
-          
-          // প্রাপ্ত নম্বর নির্ধারণ
+          // 🔥 ফিক্স: সরাসরি ডাটাবেজ থেকে আসল ফুল মার্কস নেওয়া হচ্ছে, কোনো ভাগ করা হচ্ছে না
+          const qMaxMark = item.qFullMark !== undefined ? item.qFullMark : (item.type === 'written' ? 3 : 1); 
           const obtainedMark = item.pending ? 0 : (item.mark || 0);
 
-          // ডায়াগ্রামের কন্ডিশন অনুযায়ী কালার নির্ধারণ
           let boxStyle = "";
 
           if (item.type === 'written') {
             if (item.pending) {
-              // Condition 4: ছবি আপলোড হয়েছে কিন্তু রিভিউ হয়নি -> কমলা বক্স
               boxStyle = "bg-orange-950/40 border-orange-700 text-orange-200 shadow-sm";
             } else if (item.selected === "NOT ATTEMPTED" || obtainedMark === 0) {
-              // Condition 3: ছবি আপলোড করেনি বা ০ পেয়েছে -> লাল বক্স
               boxStyle = "bg-red-950/40 border-red-700 text-red-200 shadow-sm";
             } else if (obtainedMark < qMaxMark) {
-              // Condition 5: প্রাপ্ত নম্বর ফুল মার্কসের চেয়ে কম -> নিশ্চিতভাবে হলুদ বক্স
               boxStyle = "bg-yellow-950/30 border-yellow-600/80 text-yellow-200 shadow-sm";
             } else if (obtainedMark === qMaxMark) {
-              // Condition 6: প্রাপ্ত নম্বর ফুল মার্কসের সমান -> সবুজ বক্স
               boxStyle = "bg-green-950/40 border-green-700 text-green-200 shadow-sm";
             }
           } else {
-            // MCQ এর লजিক (Condition 1 & 2)
             if (item.status) {
               boxStyle = "bg-green-950/40 border-green-700 text-green-200 shadow-sm";
             } else {
@@ -151,7 +142,7 @@ const ReviewResultModal = ({ result, onClose }) => {
               <div>
                 <p className="font-black text-xs uppercase italic tracking-tighter">
                   Question Q{item.qNum} 
-                  {/* এখানে এখন সঠিক নম্বর জোড়া দেখাবে */}
+                  {/* 🎯 এখানে এখন নিখুঁতভাবে (প্রাপ্ত নম্বর / আসল ফুল নম্বর) দেখাবে */}
                   <span className="text-[10px] opacity-75 ml-2 font-bold text-slate-300">
                     ({obtainedMark} / {qMaxMark} Marks)
                   </span>
@@ -161,8 +152,6 @@ const ReviewResultModal = ({ result, onClose }) => {
                   {item.pending && <span className="ml-2 bg-orange-600 px-2 py-0.5 rounded text-[8px] text-white font-black animate-pulse"> PENDING FOR REVIEW</span>}
                 </p>
               </div>
-              
-              {/* ডানপাশের আইকন */}
               {item.pending ? (
                 <Clock size={18} className="text-orange-400 animate-pulse" />
               ) : (item.type === 'written' ? (obtainedMark === qMaxMark ? <CheckSquare size={18} className="text-green-400" /> : <AlertCircle size={18} className={obtainedMark > 0 ? "text-yellow-400" : "text-red-400"} />) : (item.status ? <CheckSquare size={18} className="text-green-400" /> : <AlertCircle size={18} className="text-red-400" />))}
@@ -1308,47 +1297,43 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
       const timeDuration = `${minutesTaken}m ${secondsTaken}s`;
       let totalObtainedMarks = 0;
       let totalPossibleMarks = 0;
-      const detailResults = answerKeyArray.map((key, index) => {
+     const detailResults = answerKeyArray.map((key, index) => {
   const qNum = index + 1;
   const qMark = marksArray[index] !== undefined ? marksArray[index] : 1;
   const studentAns = answers[qNum] || 'None';
-  
   totalPossibleMarks += qMark;
 
-  // যদি প্রশ্নটি Written ('W') হয়
   if (key === 'W') {
-    // চেক করছি স্টুডেন্ট কোনো ইমেজ আপলোড করেছে কিনা (যদি অ্যারে হয় এবং লেন্থ ০ এর বেশি হয়)
     const hasUploadedImage = Array.isArray(studentAns) && studentAns.length > 0;
-    
     return {
       qNum,
       selected: hasUploadedImage ? studentAns : "NOT ATTEMPTED",
       correct: key,
-      status: false, // যেহেতু ছবি দেয়নি, তাই এটি সঠিক নয় (ভুল/লাল দেখাবে)
-      mark: hasUploadedImage? qMark : 0,       // অটোমেটিক ০ নম্বর পেয়ে যাবে
+      status: false,
+      mark: 0, // প্রথম অবস্থায় প্রাপ্ত নম্বর ০ থাকবে
+      qFullMark: qMark, // 🌟 এই নতুন প্রপার্টিটি প্রশ্নের আসল ফুল মার্কস আজীবনের জন্য সেভ রাখবে
       type: 'written',
-      pending: hasUploadedImage ? true : false // ছবি আপলোড করলেই কেবল শিক্ষকের রিভিউতে (Pending) যাবে, না করলে সরাসরি ক্লোজ
+      pending: hasUploadedImage ? true : false
     };
-  } 
-  
-  // MCQ প্রশ্নের জন্য আগের লজিকই থাকবে
+  }
+
+  // MCQ প্রশ্নের জন্য আসল ফুল মার্কস সেভ রাখার লজিক
   const isCorrect = studentAns === key;
   const isWrong = studentAns !== 'None' && studentAns !== key;
-  
   if (isCorrect) {
     totalObtainedMarks += qMark;
   } else if (isWrong) {
     totalObtainedMarks -= negVal;
   }
-
-  return { 
-    qNum, 
-    selected: studentAns, 
-    correct: key, 
-    status: isCorrect, 
-    mark: isCorrect ? qMark : 0, // ভুল হলে ০ (বা নেগেটিভ থাকলে উপরেই মাইনাস হচ্ছে)
-    type: 'mcq', 
-    pending: false 
+  return {
+    qNum,
+    selected: studentAns,
+    correct: key,
+    status: isCorrect,
+    mark: isCorrect ? qMark : 0,
+    qFullMark: qMark, // 🌟 MCQ এর জন্যও আসল ফুল মার্কস সেভ রাখা হলো
+    type: 'mcq',
+    pending: false
   };
 });
       const percent = totalPossibleMarks > 0 ? Math.round((totalObtainedMarks / totalPossibleMarks) * 100) : 0;
