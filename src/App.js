@@ -1282,7 +1282,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
       selected: hasUploadedImage ? studentAns : "NOT ATTEMPTED",
       correct: key,
       status: false, // যেহেতু ছবি দেয়নি, তাই এটি সঠিক নয় (ভুল/লাল দেখাবে)
-      mark: qMark,       // অটোমেটিক ০ নম্বর পেয়ে যাবে
+      mark: hasUploadedImage? qMark : 0,       // অটোমেটিক ০ নম্বর পেয়ে যাবে
       type: 'written',
       pending: hasUploadedImage ? true : false // ছবি আপলোড করলেই কেবল শিক্ষকের রিভিউতে (Pending) যাবে, না করলে সরাসরি ক্লোজ
     };
