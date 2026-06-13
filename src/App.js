@@ -112,16 +112,58 @@ const ReviewResultModal = ({ result, onClose }) => {
       </div>
       <div className="w-full max-w-lg space-y-3 mb-14 text-left">
         {result.details && result.details.map((item, idx) => {
-          const isCorrect = item.type === 'written' ? item.mark > 0 : item.status;
+          
+          // ১. ফুল মার্কস এবং প্রাপ্ত নম্বর (Obtained Marks) নিখুঁতভাবে বের করার লজিক
+          const fullMark = parseFloat(item.mark) || 1;
+          
+          // যদি প্রশ্নটি রিটেন হয় এবং আপনি (টিচার) নাম্বার সেট করে থাকেন, তবে item.mark-এ প্রাপ্ত নম্বর থাকে।
+          // আর এমসিকিউ সঠিক হলে ফুল মার্কস পাবে, নতুবা ০।
+          const obtainedMark = item.pending ? 0 : (item.type === 'written' ? (parseFloat(item.mark) || 0) : (item.status ? fullMark : 0));
+
+          // ২. ৪টি আলাদা কালার বক্সের কন্ডিশনাল লজিক (আপনার রিকোয়েস্ট অনুযায়ী)
+          let boxColors = "";
+          if (item.pending) {
+            // কমলা বক্স: যদি রিটেন সলিউশন এখনও রিভিউ পেন্ডিং থাকে
+            boxColors = "bg-orange-900/40 border-orange-700 text-orange-200";
+          } else if (obtainedMark === 0) {
+            // লাল বক্স: যদি ভুল উত্তর দেয়, রেসপন্স না করে বা ছবি আপলোড না করায় নম্বর ০ হয়
+            boxColors = "bg-red-900/40 border-red-700 text-red-200 shadow-sm";
+          } else if (obtainedMark > 0 && obtainedMark < fullMark) {
+            // হলুদ বক্স: কারেক্ট বা পার্শিয়াল নম্বর পেয়েছে কিন্তু ফুল নম্বর পায়নি (যেমন: ১.৫ আউট অফ ২)
+            boxColors = "bg-yellow-900/40 border-yellow-700 text-yellow-200 shadow-sm";
+          } else if (obtainedMark === fullMark) {
+            // সবুজ বক্স: একদম কারেক্ট এবং ফুল নম্বর পেয়েছে (যেমন: ২ আউট অফ ২)
+            boxColors = "bg-green-900/40 border-green-700 text-green-200 shadow-sm";
+          }
+
+          // ৩. ডাইনামিক মার্কস ডিসপ্লে ফরম্যাট
+          const marksDisplay = item.pending 
+            ? `Pending Out Of ${fullMark} Marks` 
+            : `${obtainedMark} Out Of ${fullMark} Marks`;
+
           return (
-            <div key={idx} className={`p-4 rounded-2xl border-2 flex justify-between items-center transition-all ${item.pending ? 'bg-orange-900/40 border-orange-700 text-orange-200' : (isCorrect ? 'bg-green-900/40 border-green-700 text-green-200 shadow-sm' : 'bg-red-900/40 border-red-700 text-red-200 shadow-sm')}`}>
+            <div key={idx} className={`p-4 rounded-2xl border-2 flex justify-between items-center transition-all ${boxColors}`}>
               <div>
-                <p className="font-black text-xs uppercase italic tracking-tighter">Question Q{item.qNum} <span className="text-[9px] opacity-60 ml-1">({item.mark} Marks)</span></p>
+                <p className="font-black text-xs uppercase italic tracking-tighter">
+                  Question Q{item.qNum} 
+                  {/* এখানে ওয়ান মার্কস লেখার জায়গায় ডাইনামিক প্রাপ্ত নম্বর আউট অফ ফুল নম্বর বসানো হয়েছে */}
+                  <span className="text-[10px] font-bold ml-2 opacity-90 tracking-normal">({marksDisplay})</span>
+                </p>
                 <p className="text-[10px] font-bold opacity-80 mt-1 uppercase italic">
-                  Choice: {Array.isArray(item.selected) ? `IMAGE (${item.selected.length} Pgs)` : (item.selected?.startsWith('data:image') ? 'IMAGE' : item.selected)} • Correct: {item.correct === 'W' ? 'WRITTEN' : item.correct} {item.pending && <span className="ml-2 bg-orange-600 px-2 py-0.5 rounded text-[8px] text-white"> PENDING FOR REVIEW</span>}
+                  Choice: {Array.isArray(item.selected) ? `IMAGE (${item.selected.length} Pgs)` : (item.selected?.startsWith('data:image') ? 'IMAGE' : item.selected)} • Correct: {item.correct === 'W' ? 'WRITTEN' : item.correct} 
+                  {item.pending && <span className="ml-2 bg-orange-600 px-2 py-0.5 rounded text-[8px] text-white font-black animate-pulse"> PENDING FOR REVIEW</span>}
                 </p>
               </div>
-              {item.pending ? <Clock size={18} className="animate-pulse" /> : (isCorrect ? <CheckSquare size={18} /> : <AlertCircle size={18} />)}
+              {/* আইকন কালারও বক্সের সাথে সামঞ্জস্যপূর্ণ করা হলো */}
+              {item.pending ? (
+                <Clock size={18} className="animate-pulse text-orange-400" />
+              ) : obtainedMark === fullMark ? (
+                <CheckSquare size={18} className="text-green-400" />
+              ) : obtainedMark > 0 ? (
+                <CheckSquare size={18} className="text-yellow-400" />
+              ) : (
+                <AlertCircle size={18} className="text-red-400" />
+              )}
             </div>
           );
         })}
@@ -130,7 +172,6 @@ const ReviewResultModal = ({ result, onClose }) => {
     </div>
   );
 };
-
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [isAppSubmitting, setIsAppSubmitting] = useState(false);
@@ -1265,30 +1306,29 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
       const timeDuration = `${minutesTaken}m ${secondsTaken}s`;
       let totalObtainedMarks = 0;
       let totalPossibleMarks = 0;
-      const detailResults = answerKeyArray.map((key, index) => {
+     const detailResults = answerKeyArray.map((key, index) => {
   const qNum = index + 1;
   const qMark = marksArray[index] !== undefined ? marksArray[index] : 1;
   const studentAns = answers[qNum] || 'None';
-  
   totalPossibleMarks += qMark;
 
   // যদি প্রশ্নটি Written ('W') হয়
   if (key === 'W') {
-    // চেক করছি স্টুডেন্ট কোনো ইমেজ আপলোড করেছে কিনা (যদি অ্যারে হয় এবং লেন্থ ০ এর বেশি হয়)
+    // স্টুডেন্ট কোনো ইমেজ আপলোড করেছে কি না তা চেক করা হচ্ছে
     const hasUploadedImage = Array.isArray(studentAns) && studentAns.length > 0;
     
-    return {
-      qNum,
-      selected: hasUploadedImage ? studentAns : "NOT ATTEMPTED",
-      correct: key,
-      status: false, // যেহেতু ছবি দেয়নি, তাই এটি সঠিক নয় (ভুল/লাল দেখাবে)
-      mark: qMark,       // অটোমেটিক ০ নম্বর পেয়ে যাবে
-      type: 'written',
-      pending: hasUploadedImage ? true : false // ছবি আপলোড করলেই কেবল শিক্ষকের রিভিউতে (Pending) যাবে, না করলে সরাসরি ক্লোজ
+    return { 
+      qNum, 
+      selected: hasUploadedImage ? studentAns : "NOT ATTEMPTED", 
+      correct: key, 
+      status: false, // কোনো নম্বর না পাওয়ায় বা পেন্ডিং থাকায় প্রাথমিক স্ট্যাটাস false
+      mark: qMark,   // এই প্রশ্নের ফুল মার্কস (ডাটাবেজে রাখার জন্য, যাতে রিভিউ করার সময় ফুল মার্কস চেনা যায়)
+      type: 'written', 
+      pending: hasUploadedImage ? true : false // ছবি আপলোড করলেই কেবল রিভিউতে (Pending) যাবে, না করলে সরাসরি ক্লোজ (প্রাপ্ত নম্বর ০)
     };
-  } 
-  
-  // MCQ প্রশ্নের জন্য আগের লজিকই থাকবে
+  }
+
+  // MCQ প্রশ্নের জন্য আগের লজিক
   const isCorrect = studentAns === key;
   const isWrong = studentAns !== 'None' && studentAns !== key;
   
@@ -1297,13 +1337,13 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
   } else if (isWrong) {
     totalObtainedMarks -= negVal;
   }
-
+  
   return { 
     qNum, 
     selected: studentAns, 
     correct: key, 
     status: isCorrect, 
-    mark: isCorrect ? qMark : 0, // ভুল হলে ০ (বা নেগেটিভ থাকলে উপরেই মাইনাস হচ্ছে)
+    mark: isCorrect ? qMark : 0, 
     type: 'mcq', 
     pending: false 
   };
