@@ -1150,6 +1150,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
       <div>
         <p className="text-[8px] font-black text-green-400 uppercase mb-1 ml-1 italic">Image Filter Effects</p>
         <select name="w_filter" defaultValue={imgFilter} className="w-full p-3 bg-black border border-white/10 rounded-xl text-[10px] text-white outline-none font-black">
+          <option value="grayscale(100%) contrast(300%) brightness(140%)">📸 CamScanner Magic Mode (Highly Recommended)</option>
           <option value="grayscale(100%) contrast(120%)">Black & White High Contrast (Default)</option>
           <option value="contrast(130%) brightness(110%)">Vibrant Color (রঙিন খাতা)</option>
           <option value="none">Original Quality (No Filter)</option>
