@@ -706,7 +706,23 @@ maxTabSwitches={maxTabSwitches}
 
 const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, setTeacherPin, studentResults, ads, qaChapter, setQaChapter, maxTabSwitches, maxInactiveTime, maxImgWidth, imgQuality, imgFilter }) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const handleUpdateAppConfig = async (e) => { ... };
+    const handleUpdateAppConfig = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    try {
+      await setDoc(doc(db, "settings", "adminConfig"), {
+        maxTabSwitches: Number(formData.get('w_tab')),
+        maxInactiveTime: Number(formData.get('w_time')),
+        maxImgWidth: Number(formData.get('w_width')),
+        imgQuality: Number(formData.get('w_qty')),
+        imgFilter: formData.get('w_filter')
+      }, { merge: true });
+      alert("System Settings Updated Successfully!");
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      alert("Failed to update settings.");
+    }
+  };
   const [isChangingPin, setIsChangingPin] = useState(false);
   const [pinVal, setPinVal] = useState('');
   const [expandedId, setExpandedId] = useState(null);
