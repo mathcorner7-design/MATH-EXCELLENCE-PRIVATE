@@ -188,6 +188,11 @@ window.setOpenAdminClass = setOpenAdminClass;
   const [qaChapter, setQaChapter] = useState('');
   const [studentPdf, setStudentPdf] = useState(null);
   const [openChapter, setOpenChapter] = useState(null);
+  const [maxTabSwitches, setMaxTabSwitches] = useState(4);
+const [maxInactiveTime, setMaxInactiveTime] = useState(100);
+const [maxImgWidth, setMaxImgWidth] = useState(700);
+const [imgQuality, setImgQuality] = useState(0.4);
+const [imgFilter, setImgFilter] = useState("grayscale(100%) contrast(120%)");
 
   useEffect(() => {
     const fetchPin = async () => {
@@ -218,7 +223,17 @@ window.setOpenAdminClass = setOpenAdminClass;
     });
     onSnapshot(collection(db, "results"), (s) => setStudentResults(s.docs.map(d => ({ id: d.id, ...d.data() }))));
     onSnapshot(collection(db, "students"), (s) => setStudents(s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => a.name.localeCompare(b.name))));
-    onSnapshot(doc(db, "settings", "adminConfig"), (d) => {
+ onSnapshot(doc(db, "settings", "adminConfig"), (d) => {
+  if (d.exists()) {
+    const data = d.data();
+    if (data.pin) setTeacherPin(data.pin);
+    if (data.maxTabSwitches !== undefined) setMaxTabSwitches(Number(data.maxTabSwitches));
+    if (data.maxInactiveTime !== undefined) setMaxInactiveTime(Number(data.maxInactiveTime));
+    if (data.maxImgWidth !== undefined) setMaxImgWidth(Number(data.maxImgWidth));
+    if (data.imgQuality !== undefined) setImgQuality(Number(data.imgQuality));
+    if (data.imgFilter !== undefined) setImgFilter(data.imgFilter);
+  }
+});
       if (d.exists()) setTeacherPin(d.data().pin);
     });
     onSnapshot(query(collection(db, "logs"), orderBy("timestamp", "desc")), (s) => setActivityLogs(s.docs.map(d => ({ id: d.id, ...d.data() }))));
@@ -306,7 +321,19 @@ window.setOpenAdminClass = setOpenAdminClass;
   const ongoingLive = liveMocks.filter(m => m.isPublished && (Date.now() - (m.timestamp || 0) < 6 * 3600000));
   const shiftedLive = liveMocks.filter(m => m.isPublished && (Date.now() - (m.timestamp || 0) >= 6 * 3600000));
 
-  if (isExamActive) return <InteractiveExamHall exam={currentExam} onFinish={() => setIsExamActive(false)} setIsAppSubmitting={setIsAppSubmitting} studentsList={students} />;
+  if (isExamActive) return (
+  <InteractiveExamHall 
+    exam={currentExam} 
+    onFinish={() => setIsExamActive(false)} 
+    setIsAppSubmitting={setIsAppSubmitting} 
+    studentsList={students} 
+    maxTabSwitches={maxTabSwitches}
+    maxInactiveTime={maxInactiveTime}
+    maxImgWidth={maxImgWidth}
+    imgQuality={imgQuality}
+    imgFilter={imgFilter}
+  />
+);
 
   const LevelBadge = ({ level }) => {
     if (!level) return null;
@@ -557,6 +584,11 @@ window.setOpenAdminClass = setOpenAdminClass;
                 qaChapter={qaChapter}
                 setQaChapter={setQaChapter}
                 setTeacherPin={async (v) => await setDoc(doc(db, "settings", "adminConfig"), { pin: v }, { merge: true })} 
+maxTabSwitches={maxTabSwitches}
+  maxInactiveTime={maxInactiveTime}
+  maxImgWidth={maxImgWidth}
+  imgQuality={imgQuality}
+  imgFilter={imgFilter}
               />
             </div>
           )
@@ -673,8 +705,9 @@ window.setOpenAdminClass = setOpenAdminClass;
   );
 };
 
-const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, setTeacherPin, studentResults, ads, qaChapter, setQaChapter }) => {
+const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, setTeacherPin, studentResults, ads, qaChapter, setQaChapter, maxTabSwitches, maxInactiveTime, maxImgWidth, imgQuality, imgFilter }) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const handleUpdateAppConfig = async (e) => { ... };
   const [isChangingPin, setIsChangingPin] = useState(false);
   const [pinVal, setPinVal] = useState('');
   const [expandedId, setExpandedId] = useState(null);
@@ -994,6 +1027,41 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
           ))}
         </div>
       </div>
+            {/* --- নতুন সিস্টেম সেটিংস সেকশন --- */}
+<div className="bg-black/60 backdrop-blur-xl p-8 rounded-[2.5rem] border-t-8 border-purple-600 w-full mb-8 text-left border-x border-b border-white/5">
+  <h3 className="font-black text-xs uppercase mb-6 flex items-center gap-2 italic text-purple-400"><Settings2 size={20} /> System Core Settings</h3>
+  <form onSubmit={handleUpdateAppConfig} className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <p className="text-[8px] font-black text-red-400 uppercase mb-1 ml-1 italic">Max Tab Switches (Warning limit)</p>
+        <input name="w_tab" type="number" defaultValue={maxTabSwitches} className="w-full p-3 bg-black border border-white/10 rounded-xl text-[10px] text-white outline-none font-bold" />
+      </div>
+      <div>
+        <p className="text-[8px] font-black text-red-400 uppercase mb-1 ml-1 italic">Max Inactive Time (Seconds)</p>
+        <input name="w_time" type="number" defaultValue={maxInactiveTime} className="w-full p-3 bg-black border border-white/10 rounded-xl text-[10px] text-white outline-none font-bold" />
+      </div>
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1 italic">Image Target Width (px)</p>
+        <input name="w_width" type="number" defaultValue={maxImgWidth} className="w-full p-3 bg-black border border-white/10 rounded-xl text-[10px] text-white outline-none font-bold" />
+      </div>
+      <div>
+        <p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1 italic">Compression Quality (0.1 to 1.0)</p>
+        <input name="w_qty" type="number" step="0.1" min="0.1" max="1" defaultValue={imgQuality} className="w-full p-3 bg-black border border-white/10 rounded-xl text-[10px] text-white outline-none font-bold" />
+      </div>
+      <div>
+        <p className="text-[8px] font-black text-green-400 uppercase mb-1 ml-1 italic">Image Filter Effects</p>
+        <select name="w_filter" defaultValue={imgFilter} className="w-full p-3 bg-black border border-white/10 rounded-xl text-[10px] text-white outline-none font-black">
+          <option value="grayscale(100%) contrast(120%)">Black & White High Contrast (Default)</option>
+          <option value="contrast(130%) brightness(110%)">Vibrant Color (রঙিন খাতা)</option>
+          <option value="none">Original Quality (No Filter)</option>
+        </select>
+      </div>
+    </div>
+    <button type="submit" className="w-full bg-purple-700 hover:bg-purple-600 py-3 rounded-xl font-black text-[10px] uppercase text-white transition-all shadow-lg">Save System Settings</button>
+  </form>
+</div>
       <div className="bg-black/60 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border-t-8 border-slate-900 w-full mb-20 text-center print:hidden border-x border-b border-white/5">
         <h3 className="font-black text-xs uppercase mb-8 flex items-center justify-center gap-3 italic text-blue-300"><Trophy size={28} className="text-yellow-500" /> Student Registry</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1121,7 +1189,7 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
   );
 };
 
-const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting }) => {
+const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting, maxTabSwitches, maxInactiveTime, maxImgWidth, imgQuality, imgFilter }) => {
   const recoveryKey = `exam_recovery_${exam.studentCode}_${exam.id}`;
   const timerKey = `timer_end_${exam.studentCode}_${exam.id}`;
   const [timeLeft, setTimeLeft] = useState(() => {
@@ -1169,7 +1237,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
 
   setTabSwitches(prev => {
     const newCount = prev + 1;
-    if (newCount >= 4) triggerBanProcess();
+    if (newCount >= maxTabSwitches) triggerBanProcess();
     return newCount;
   });
 
@@ -1183,8 +1251,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
           // আগের বাইরে থাকার সময়ের সাথে বর্তমানের সময় যোগ করা
           setInactiveTime(prev => {
             const totalAway = prev + secondsAway;
-            if (totalAway >= 100 ) {
-              triggerBanProcess();
+           if (totalAway >= maxInactiveTime) triggerBanProcess();
             }
             return totalAway;
           });
@@ -1230,13 +1297,13 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting 
       img.src = event.target.result;
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 700;
+        const MAX_WIDTH = maxImgWidth;
         canvas.width = MAX_WIDTH;
         canvas.height = img.height * (MAX_WIDTH / img.width);
         const ctx = canvas.getContext('2d');
-        ctx.filter = "grayscale(100%) contrast(120%)";
+        ctx.filter = imgFilter;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.4);
+       const compressedBase64 = canvas.toDataURL('image/jpeg', imgQuality);
         setAnswers(prev => {
           const existingPhotos = Array.isArray(prev[qNum]) ? prev[qNum] : [];
           return { ...prev, [qNum]: [...existingPhotos, compressedBase64] };
