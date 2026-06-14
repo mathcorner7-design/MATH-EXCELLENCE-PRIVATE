@@ -1258,7 +1258,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
 
   startTime = new Date().getTime();
 } else {
-        // ৩. ফিরে আসার পর সময় পরীক্ষা করা
+                // ৩. ফিরে আসার পর সময় পরীক্ষা করা
         if (startTime) {
           const endTime = new Date().getTime();
           const secondsAway = Math.floor((endTime - startTime) / 1000);
@@ -1266,7 +1266,8 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
           // আগের বাইরে থাকার সময়ের সাথে বর্তমানের সময় যোগ করা
           setInactiveTime(prev => {
             const totalAway = prev + secondsAway;
-           if (totalAway >= maxInactiveTime) triggerBanProcess();
+            if (totalAway >= maxInactiveTime) {
+              triggerBanProcess();
             }
             return totalAway;
           });
