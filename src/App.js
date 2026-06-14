@@ -856,6 +856,47 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                                 <div className="flex items-center gap-3">
                                   <button onClick={(e) => { e.stopPropagation(); updateField(item.id, item.source, 'isPublished', !item.isPublished); }} className={`px-4 py-1.5 rounded-full text-[8px] font-black shadow-sm ${item.isPublished ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-500'}`}>{item.isPublished ? 'LIVE' : 'HIDDEN'}</button>
                                   <button onClick={(e) => { e.stopPropagation(); setExpandedId(expandedId === item.id ? null : item.id); }} className="px-3 py-1.5 bg-blue-900/40 text-blue-400 rounded-xl text-[8px] font-black uppercase border border-blue-800/40">Edit</button>
+                                  {/* --- অ্যাডমিনদের জন্য কুইক পিডিএফ ভিউ ড্রপডাউন --- */}
+<div className="relative inline-block">
+  <button 
+    onClick={(e) => { 
+      e.stopPropagation(); 
+      const el = document.getElementById(`admin-pdf-drop-${item.id}`);
+      if(el) el.classList.toggle('hidden'); 
+    }} 
+    className="p-2 bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-lg active:scale-90 transition-all flex items-center justify-center"
+    title="View PDF directly"
+  >
+    <Settings2 size={14} />
+  </button>
+
+  {/* ড্রপডাউন সাব-মেনু */}
+  <div id={`admin-pdf-drop-${item.id}`} className="hidden absolute right-0 top-9 z-[3000] w-44 p-2 bg-slate-950 border border-white/10 rounded-2xl shadow-2xl flex flex-col gap-2 animate-in fade-in zoom-in duration-150">
+    {item.fileUrl ? (
+      <button 
+        onClick={() => window.setStudentPdf ? window.setStudentPdf({url: item.fileUrl, title: `${item.name} - Question Paper`}) : alert("Please reload")} 
+        className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 hover:bg-amber-950/40 border border-transparent hover:border-amber-900/50 transition-all text-left text-white"
+      >
+        <BookOpen size={12} className="text-amber-400" />
+        <span className="text-[9px] font-black uppercase italic text-amber-300">1. Question Paper</span>
+      </button>
+    ) : (
+      <div className="flex items-center gap-2 p-2.5 text-slate-600 text-[9px] font-bold uppercase italic"><Lock size={10} /> No QP</div>
+    )}
+
+    {item.answerPdfUrl ? (
+      <button 
+        onClick={() => window.setStudentPdf ? window.setStudentPdf({url: item.answerPdfUrl, title: `${item.name} - Detailed Answer`}) : alert("Please reload")} 
+        className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 hover:bg-green-950/40 border border-transparent hover:border-green-900/50 transition-all text-left text-white"
+      >
+        <FileText size={12} className="text-green-400" />
+        <span className="text-[9px] font-black uppercase italic text-green-300">2. Detail Answer</span>
+      </button>
+    ) : (
+      <div className="flex items-center gap-2 p-2.5 text-slate-600 text-[9px] font-bold uppercase italic"><Lock size={10} /> No Ans</div>
+    )}
+  </div>
+</div>    
                                   <button onClick={async (e) => { e.stopPropagation(); if(window.confirm("Permanent delete?")) { await deleteDoc(doc(db, item.source === 'live' ? 'liveMocks' : 'practiceSets', item.id)); } }} className="p-2 text-slate-600 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
                                 </div>
                               </div>
@@ -879,6 +920,47 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                         <div className="flex items-center gap-3">
                           <button onClick={(e) => { e.stopPropagation(); updateField(item.id, item.source, 'isPublished', !item.isPublished); }} className={`px-4 py-1.5 rounded-full text-[8px] font-black shadow-sm ${item.isPublished ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-500'}`}>{item.isPublished ? 'LIVE' : 'HIDDEN'}</button>
                           <button onClick={(e) => { e.stopPropagation(); setExpandedId(expandedId === item.id ? null : item.id); }} className="px-3 py-1.5 bg-blue-900/40 text-blue-400 rounded-xl text-[8px] font-black uppercase border border-blue-800/40">Edit</button>
+                      {/* --- অ্যাডমিনদের জন্য কুইক পিডিএফ ভিউ ড্রপডাউন --- */}
+<div className="relative inline-block">
+  <button 
+    onClick={(e) => { 
+      e.stopPropagation(); 
+      const el = document.getElementById(`admin-pdf-drop-${item.id}`);
+      if(el) el.classList.toggle('hidden'); 
+    }} 
+    className="p-2 bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-lg active:scale-90 transition-all flex items-center justify-center"
+    title="View PDF directly"
+  >
+    <Settings2 size={14} />
+  </button>
+
+  {/* ড্রপডাউন সাব-মেনু */}
+  <div id={`admin-pdf-drop-${item.id}`} className="hidden absolute right-0 top-9 z-[3000] w-44 p-2 bg-slate-950 border border-white/10 rounded-2xl shadow-2xl flex flex-col gap-2 animate-in fade-in zoom-in duration-150">
+    {item.fileUrl ? (
+      <button 
+        onClick={() => window.setStudentPdf ? window.setStudentPdf({url: item.fileUrl, title: `${item.name} - Question Paper`}) : alert("Please reload")} 
+        className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 hover:bg-amber-950/40 border border-transparent hover:border-amber-900/50 transition-all text-left text-white"
+      >
+        <BookOpen size={12} className="text-amber-400" />
+        <span className="text-[9px] font-black uppercase italic text-amber-300">1. Question Paper</span>
+      </button>
+    ) : (
+      <div className="flex items-center gap-2 p-2.5 text-slate-600 text-[9px] font-bold uppercase italic"><Lock size={10} /> No QP</div>
+    )}
+
+    {item.answerPdfUrl ? (
+      <button 
+        onClick={() => window.setStudentPdf ? window.setStudentPdf({url: item.answerPdfUrl, title: `${item.name} - Detailed Answer`}) : alert("Please reload")} 
+        className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 hover:bg-green-950/40 border border-transparent hover:border-green-900/50 transition-all text-left text-white"
+      >
+        <FileText size={12} className="text-green-400" />
+        <span className="text-[9px] font-black uppercase italic text-green-300">2. Detail Answer</span>
+      </button>
+    ) : (
+      <div className="flex items-center gap-2 p-2.5 text-slate-600 text-[9px] font-bold uppercase italic"><Lock size={10} /> No Ans</div>
+    )}
+  </div>
+</div>
                           <button onClick={async (e) => { e.stopPropagation(); if(window.confirm("Permanent delete?")) { await deleteDoc(doc(db, item.source === 'live' ? 'liveMocks' : 'practiceSets', item.id)); } }} className="p-2 text-slate-600 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
                         </div>
                       </div>
