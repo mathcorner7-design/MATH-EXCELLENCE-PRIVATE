@@ -234,8 +234,7 @@ const [imgFilter, setImgFilter] = useState("grayscale(100%) contrast(120%)");
     if (data.imgFilter !== undefined) setImgFilter(data.imgFilter);
   }
 });
-      if (d.exists()) setTeacherPin(d.data().pin);
-    });
+    
     onSnapshot(query(collection(db, "logs"), orderBy("timestamp", "desc")), (s) => setActivityLogs(s.docs.map(d => ({ id: d.id, ...d.data() }))));
     onSnapshot(collection(db, "advertisements"), (s) => {
       setAds(s.docs.map(d => ({ id: d.id, ...d.data() })));
