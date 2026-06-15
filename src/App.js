@@ -1926,7 +1926,7 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
             {localCapturePreview && (
               <div className="flex flex-col items-center gap-3 w-full max-w-2xl animate-in zoom-in-95 duration-200">
                 <p className="text-yellow-400 font-black text-[10px] uppercase italic tracking-widest animate-pulse">📝 Check Snapshot Quality:</p>
-                <div className="w-full aspect-[4/3] bg-black rounded-2xl overflow-hidden border-2 border-yellow-500 shadow-2xl">
+                <div className="w-full max-w-2xl md:max-w-3xl h-[60vh] bg-black rounded-2xl overflow-hidden border-2 border-yellow-500 shadow-2xl">
                   <img src={localCapturePreview} alt="Captured Draft" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex gap-4 w-full mt-1">
@@ -1960,8 +1960,8 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
 
             {/* ৩. 📸 লাইভ ওমি-টিভি ক্যামেরা উইন্ডো (প্রিভিউ স্ক্রিন অন না থাকলে তবেই ব্যাকগ্রাউন্ডে জ্বলবে) */}
             {isCapturing && !localCapturePreview && (
-              <div className="relative w-full max-w-2xl aspect-[4/3] bg-black rounded-2xl overflow-hidden border-2 border-blue-500 shadow-2xl mb-4">
-                <video id="exam-live-video" autoPlay playsInline className="w-full h-full object-cover" />
+              <div className="relative w-full max-w-2xl md:max-w-3xl h-[60vh] bg-black rounded-2xl overflow-hidden border-2 border-blue-500 shadow-2xl mb-4">
+                <video id="exam-live-video" autoPlay playsInline className="w-full h-full object-cover min-w-full min-h-full" />
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-[8px] font-black text-blue-400 uppercase tracking-widest animate-pulse">
                   • LIVE CAMERA ACTIVE
                 </div>
