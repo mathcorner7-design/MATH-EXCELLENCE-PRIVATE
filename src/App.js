@@ -966,8 +966,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                                 <div className="flex-1 pr-2">
                                   <div className="flex items-center gap-2">
                                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.isPublished ? 'bg-green-500 animate-pulse' : 'bg-slate-700'}`}></div>
-                                   // ✨ নাম বড় হলে কেটে ৩টি ডট (...) চলে আসবে, ফলে ডিলিট বাটন নিজের জায়গায় লক থাকবে
-<span className="text-xs font-black uppercase italic text-white truncate max-w-[140px] block">{item.name}</span>
+                                    <span className="text-xs font-black uppercase italic text-white break-words">{item.name}</span>
                                     {item.status === 'public' && <span className="text-[7px] bg-green-600 px-1.5 py-0.5 rounded text-white font-black italic">FREE</span>}
                                     {item.level && <span className="text-[7px] bg-blue-900 px-1.5 py-0.5 rounded text-blue-300 font-black italic">{item.level}</span>}
                                   </div>
@@ -1034,8 +1033,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                         <div className="flex-1 pr-2">
                           <div className="flex items-center gap-3">
                             <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.isPublished ? 'bg-green-500 animate-pulse' : 'bg-slate-700'}`}></div>
-                  
-<span className="text-xs font-black uppercase italic text-white truncate max-w-[140px] block">{item.name}</span>
+                            <span className="text-xs font-black uppercase italic text-white break-words">{item.name}</span>
                             {item.status === 'public' && <span className="text-[7px] bg-green-600 px-1.5 py-0.5 rounded text-white font-black italic">FREE</span>}
                           </div>
                           <p className="text-[8px] font-black text-purple-400 uppercase italic ml-5 mt-1">Chapter: {item.chapter || 'GENERAL'}</p>
@@ -1879,7 +1877,7 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
     <div className="fixed inset-0 bg-black z-[100] flex flex-col overflow-hidden animate-in fade-in duration-500">
       <div className="bg-slate-900 p-2 md:p-3 flex justify-between items-center border-b-4 border-yellow-500 shadow-2xl relative z-50 text-white">
 <div className="flex-1 min-w-0 pr-2">
-<h2 className="font-black text-xs uppercase italic tracking-tighter leading-none text-white">Exam Hall</h2>
+          <h2 className="font-black text-[10px] uppercase italic tracking-tighter leading-none truncate max-w-[150px]">{exam?.name}</h2>
           <p className="text-[8px] md:text-[9px] text-blue-400 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName} {exam.isGuest && '(GUEST)'}</p>
         </div>
         <div className="flex items-center gap-6">
@@ -1976,7 +1974,7 @@ height: '100%',
     📝
   </button>
 ) : (
-  <div className={`absolute bottom-0 left-0 right-0 z-[9999] fixed bg-slate-900/98 border-t-2 border-white/10 backdrop-blur-xl p-3 md:p-4 shadow-2xl`}>
+  <div className={`absolute bottom-0 left-0 right-0 z-50 bg-slate-900/98 border-t-2 border-white/10 backdrop-blur-xl p-3 md:p-4 shadow-2xl`}>
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center justify-between mb-2 px-2">
                {/* 👁️ রেসপন্স ইন্টারফেসের বাম পাশে টাইটেল এবং ডান পাশে হাইড বোতাম */}
