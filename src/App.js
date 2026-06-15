@@ -1507,12 +1507,13 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
   }, 3000);
 };
 
-    const handleVisibilityChange = () => {
-  // 📸 ক্যামেরা অন থাকলে বা ছবি প্রসেস হতে থাকলে ট্র্যাকিং এখানেই থেমে যাবে, নিচে নামবে না
-  if (isCapturing || window.isCameraActive) return; 
+   const handleVisibilityChange = () => {
+  // 🔒 যদি ক্যামেরা অন থাকে বা ছবি প্রসেস হয়, তবে চুরিরোধক লজিক কোনো রিড-ই করবে না, এখানেই থেমে যাবে
+  if (isCapturing || isCameraLock) return; 
 
   if (document.hidden) {
-    const now = Date.now(); // ⏰ আপনার আসল কোডের এই লাইনটি এখানে সুরক্ষিত রইল
+    const now = Date.now();
+// ... বাকি কোড নিচে যেমন আছে একদম একই থাকবে
 
     setTabSwitches(prev => {
       const newCount = prev + 1;
@@ -1549,6 +1550,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
   });
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [isZenMode, setIsZenMode] = useState(false);
+  const [isCameraLock, setIsCameraLock] = useState(false);
   const [scoreData, setScoreData] = useState(null);
 
   useEffect(() => {
@@ -1609,13 +1611,13 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
             return { ...prev, [qNum]: [...existingPhotos, compressedBase64] };
           });
         }
-      } catch (err) {
-        console.error("Upload error:", err);
-        alert("ERROR: কিছু একটা সমস্যা হয়েছে।");
-      } finally {
-        setIsCapturing(false);
-        window.isCameraActive = false;
-      }
+     } catch (err) {
+  console.error("Upload error:", err);
+  alert("ERROR: কিছু একটা সমস্যা হয়েছে।");
+} finally {
+  setIsCapturing(false);
+  setIsCameraLock(false); // 🔓 ছবি আপলোড সফল বা ব্যর্থ যাই হোক, লক খুলে দেওয়া হলো
+}
     };
   };
 };
@@ -1939,14 +1941,14 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
         }
       }}
       onChange={(e) => {
-        if (e.target.files && e.target.files[0]) {
-          setIsCapturing(true); // ছবি তোলার ঠিক পরেই আপলোডিং মোড অন হবে 
-          window.isCameraActive = true;
-          setLastCaptureTime(Date.now());
-          setTimeout(() => { setIsCapturing(false); }, 30000); // ৩০ সেকেন্ড ম্যাক্সিমাম ব্যাকআপ টাইম
-          handleImageUpload(activeQuestion, e.target.files[0]);
-        }
-      }} 
+  if (e.target.files && e.target.files[0]) {
+    setIsCapturing(true);
+    setIsCameraLock(true); // 🔒 ছবি তোলার সাথে সাথে চুরিরোধক রোবটকে লক করে দেওয়া হলো
+    setLastCaptureTime(Date.now());
+    setTimeout(() => { setIsCapturing(false); setIsCameraLock(false); }, 30000); // ব্যাকআপ ৩০ সেকেন্ড পর অটো আনলক
+    handleImageUpload(activeQuestion, e.target.files[0]);
+  }
+}}
     />
   </label>
 
