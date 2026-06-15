@@ -1508,12 +1508,13 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
 };
 
    const handleVisibilityChange = () => {
-  // 🔒 যদি ক্যামেরা অন থাকে বা ছবি প্রসেস হয়, তবে চুরিরোধক লজিক কোনো রিড-ই করবে না, এখানেই থেমে যাবে
-  if (isCapturing || isCameraLock) return; 
+  // 📝 স্টুডেন্ট যখনই ক্যামেরার বোতামে চাপ দেবে, তখন আমরা 'lastCaptureTime' এ কারেন্ট টাইম সেভ করছি।
+  // ছবি তোলার সময় বা ঠিক তার পরের ৪৫ সেকেন্ডের মধ্যে ব্রাউজার ব্যাকগ্রাউন্ডে গেলে ওটাকে সম্পূর্ণ মাফ করে দেওয়া হবে।
+  const isInsideCameraWindow = (Date.now() - lastCaptureTime) < 45000;
 
   if (document.hidden) {
-    const now = Date.now();
-// ... বাকি কোড নিচে যেমন আছে একদম একই থাকবে
+    // 📸 যদি স্টুডেন্ট ক্যামেরা অন করার কারণে বাইরে গিয়ে থাকে, তবে ট্যাব সুইচ কাউন্ট হবে না
+    if (isCapturing || isInsideCameraWindow) return;
 
     setTabSwitches(prev => {
       const newCount = prev + 1;
@@ -1524,6 +1525,12 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
     startTime = new Date().getTime();
   } else {
     // ↩️ স্টুডেন্ট যখন বাইরে থেকে আবার এক্সাম স্ক্রিনে ফিরে আসবে
+    if (isInsideCameraWindow) {
+      // ক্যামেরা মোড থেকে ফিরলে ইনঅ্যাক্টিভ টাইম রিসেট করে দাও, কোনো পেনাল্টি হবে না
+      startTime = null;
+      return;
+    }
+
     if (startTime) {
       const endTime = new Date().getTime();
       const secondsAway = Math.floor((endTime - startTime) / 1000);
