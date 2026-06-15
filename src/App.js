@@ -23,36 +23,49 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
-// --- ImgBB API Configuration & Core Upload Function (Step 1) ---
-const IMGBB_API_KEY = "5e0f1af96cf0e7b7c4c941e2be6c56"; // আপনার দেওয়া ImgBB API Key
+// --- ImgBB API Configuration & Core Upload Function (Updated Step 1) ---
+const IMGBB_API_KEY = "aa5e0f1af96cf0e7b7c4c941e2be6c56"; 
 
 const uploadImageToImgBB = async (base64WithHeader) => {
   try {
-    // Base64 স্ট্রিং থেকে হেডার বাদ দিয়ে আসল ডেটা নেওয়া
-    const base64Data = base64WithHeader.split(",")[1];
+    // ১. Base64 থেকে হেডার এবং ডেটা আলাদা করা
+    const parts = base64WithHeader.split(",");
+    const mime = parts[0].match(/:(.*?);/)[1];
+    const bstr = atob(parts[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
     
-    const formData = new FormData();
-    formData.append("image", base64Data);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
 
-    // expiration=518400 (৬ দিন পর ImgBB সার্ভার থেকে খাতা অটোমেটিক ডিলিট হয়ে যাবে)
+    // ২. Base64 টেক্সটটিকে একটি আসল ফাইল বা Blob অবজেক্টে রূপান্তর (ImgBB এর নিয়ম অনুযায়ী)
+    const imageBlob = new Blob([u8arr], { type: mime });
+
+    // ৩. FormData-তে আসল ফাইলের মতো করে যুক্ত করা
+    const formData = new FormData();
+    formData.append("image", imageBlob, "khata_page.jpg");
+
+    // ৪. ৬ দিন পর অটো-ডিলিট হওয়ার লজিকসহ সার্ভারে পাঠানো
     const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}&expiration=518400`, {
       method: "POST",
-      body: formData,
+      body: formData, // ব্রাউজার নিজে থেকেই সঠিক multipart/form-data হেডার সেট করে নেবে
     });
 
     const result = await response.json();
 
     if (result.success) {
-      return result.data.url; // ImgBB থেকে জেনারেট হওয়া লাইভ ওয়েব লিঙ্ক
+      return result.data.url; // সফল হলে লাইভ লিঙ্ক ফেরত দেবে
     } else {
-      console.error("ImgBB Upload Failed:", result.error);
+      console.error("ImgBB Error Response:", result.error);
       return null;
     }
   } catch (error) {
-    console.error("Error in ImgBB Upload:", error);
+    console.error("Error in ImgBB Fetch Upload:", error);
     return null;
   }
 };
+// -----------------------------------------------------------------
 // -----------------------------------------------------------------
 // --- Helper Functions ---
 const getRemainingDays = (expiryDate) => {
