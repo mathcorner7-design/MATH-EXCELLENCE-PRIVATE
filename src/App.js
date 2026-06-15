@@ -1915,7 +1915,7 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
 
             {/* ২. ছবি তোলার পর তাৎক্ষণিক প্রিভিউ স্ক্রিন এবং অ্যাকশন বোতাম */}
             {localCapturePreview && (
-              <div className="flex flex-col items-center gap-3 w-full max-w-sm animate-in zoom-in-95 duration-200">
+              <div className="flex flex-col items-center gap-3 w-full max-w-2xl animate-in zoom-in-95 duration-200">
                 <p className="text-yellow-400 font-black text-[10px] uppercase italic tracking-widest animate-pulse">📝 Check Snapshot Quality:</p>
                 <div className="w-full aspect-[4/3] bg-black rounded-2xl overflow-hidden border-2 border-yellow-500 shadow-2xl">
                   <img src={localCapturePreview} alt="Captured Draft" className="w-full h-full object-cover" />
@@ -1951,7 +1951,7 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
 
             {/* ৩. 📸 লাইভ ওমি-টিভি ক্যামেরা উইন্ডো (প্রিভিউ স্ক্রিন অন না থাকলে তবেই ব্যাকগ্রাউন্ডে জ্বলবে) */}
             {isCapturing && !localCapturePreview && (
-              <div className="relative w-full max-w-sm aspect-[4/3] bg-black rounded-2xl overflow-hidden border-2 border-blue-500 shadow-2xl mb-4">
+              <div className="relative w-full max-w-2xl aspect-[4/3] bg-black rounded-2xl overflow-hidden border-2 border-blue-500 shadow-2xl mb-4">
                 <video id="exam-live-video" autoPlay playsInline className="w-full h-full object-cover" />
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-[8px] font-black text-blue-400 uppercase tracking-widest animate-pulse">
                   • LIVE CAMERA ACTIVE
@@ -1962,43 +1962,63 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
             {/* ৪. ক্যামেরা অন ও স্ন্যাপ নেওয়ার মূল বোতামের লক বা কন্ডিশন সেট */}
             {!localCapturePreview && (
               <div className="flex gap-4">
-                <label 
-                  onClick={async () => {
-                    setIsCapturing(true);
-                    setLastCaptureTime(Date.now());
-                    // 🚀 ইন-অ্যাপ লাইভ ভিডিও অন করার অটো-ট্রিগার
-                    setTimeout(async () => {
-                      try {
-                        const video = document.getElementById('exam-live-video');
-                        const stream = await navigator.mediaDevices.getUserMedia({ 
-                          video: { facingMode: "environment" }, 
-                          audio: false 
-                        });
-                        if (video) {
-                          video.srcObject = stream;
-                          window.localCamStream = stream; // স্ট্রিম মেমোরিতে সেভ রাখা হলো
-                        }
-                      } catch (err) {
-                        console.error("Camera access denied:", err);
-                        alert("ক্যামেরা পারমিশন দিন বা ব্রাউজার সেটিং চেক করুন।");
-                        setIsCapturing(false);
-                      }
-                    }, 300);
-                  }} 
-                  className={`px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl flex items-center gap-2 transition-all ${ 
-                    isCapturing ? "bg-purple-900 text-purple-300 cursor-not-allowed animate-pulse" : "bg-blue-600 text-white cursor-pointer active:scale-95" 
-                  }`}
-                >
-                  {isCapturing ? (
-                    <>
-                      <Loader2 size={12} className="animate-spin" /> Live Stream Active...
-                    </>
-                  ) : (
-                    Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 ? "➕ Add Next Page" : "📸 Capture Answer"
-                  )}
-                  <input type="file" accept="image/*" capture="environment" hidden onClick={(e) => { if (isCapturing) e.preventDefault(); }} />
-                </label>
+                {/* 🎯 ওমি-টিভি স্টাইল ডাইনামিক বাটন কন্ট্রোল */}
+{isCapturing ? (
+  <button
+    onClick={() => {
+      const video = document.getElementById('exam-live-video');
+      if (!video) return alert("ক্যামেরা সচল হতে দিন বা অপেক্ষা করুন।");
 
+      // ১. ক্যানভাস তৈরি করে ভিডিওর বর্তমান ফ্রেম স্ন্যাপ নেওয়া
+      const canvas = document.createElement('canvas');
+      canvas.width = maxImgWidth || 700;
+      canvas.height = video.videoHeight * (canvas.width / video.videoWidth);
+      const ctx = canvas.getContext('2d');
+      
+      ctx.filter = imgFilter || "none";
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      // ২. ছবিটিকে বেস-৬৪ ফর্মে প্রিভিউ স্টেটে পাঠিয়ে দেওয়া
+      const compressedBase64 = canvas.toDataURL('image/jpeg', imgQuality || 0.4);
+      setLocalCapturePreview(compressedBase64);
+
+      // ৩. ছবি তোলা শেষ, তাই পেছনের লাইভ ক্যামেরা স্ট্রিমটি বন্ধ করে দেওয়া
+      if (window.localCamStream) {
+        window.localCamStream.getTracks().forEach(track => track.stop());
+      }
+    }}
+    className="bg-yellow-500 hover:bg-yellow-400 text-black px-8 py-3 rounded-xl font-black text-[11px] uppercase shadow-xl active:scale-95 transition-all flex items-center gap-2 border-b-4 border-yellow-700 italic tracking-tighter"
+  >
+    🎯 Take Snapshot / 📸 ছবি তোলো
+  </button>
+) : (
+  <label 
+    onClick={async () => {
+      setIsCapturing(true);
+      setLastCaptureTime(Date.now());
+      setTimeout(async () => {
+        try {
+          const video = document.getElementById('exam-live-video');
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "environment" }, 
+            audio: false 
+          });
+          if (video) {
+            video.srcObject = stream;
+            window.localCamStream = stream;
+          }
+        } catch (err) {
+          console.error("Camera access denied:", err);
+          alert("ক্যামেরা পারমিশন দিন।");
+          setIsCapturing(false);
+        }
+      }, 300);
+    }} 
+    className="px-6 py-3 bg-blue-600 text-white cursor-pointer active:scale-95 rounded-xl font-black text-[10px] uppercase shadow-xl flex items-center gap-2 transition-all"
+  >
+    📸 Open Web-Cam
+  </label>
+)}
                 {/* সব পেজ তোলা শেষ হলে বা ক্যামেরা বন্ধ করতে DONE বোতাম */}
                 {!isCapturing && Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (
                   <button onClick={() => setActiveQuestion(null)} className="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl active:scale-95 transition-all" > Done ✔ </button>
