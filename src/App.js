@@ -23,7 +23,37 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
+// --- ImgBB API Configuration & Core Upload Function (Step 1) ---
+const IMGBB_API_KEY = "5e0f1af96cf0e7b7c4c941e2be6c56"; // আপনার দেওয়া ImgBB API Key
 
+const uploadImageToImgBB = async (base64WithHeader) => {
+  try {
+    // Base64 স্ট্রিং থেকে হেডার বাদ দিয়ে আসল ডেটা নেওয়া
+    const base64Data = base64WithHeader.split(",")[1];
+    
+    const formData = new FormData();
+    formData.append("image", base64Data);
+
+    // expiration=518400 (৬ দিন পর ImgBB সার্ভার থেকে খাতা অটোমেটিক ডিলিট হয়ে যাবে)
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}&expiration=518400`, {
+      method: "POST",
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      return result.data.url; // ImgBB থেকে জেনারেট হওয়া লাইভ ওয়েব লিঙ্ক
+    } else {
+      console.error("ImgBB Upload Failed:", result.error);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error in ImgBB Upload:", error);
+    return null;
+  }
+};
+// -----------------------------------------------------------------
 // --- Helper Functions ---
 const getRemainingDays = (expiryDate) => {
   if (!expiryDate) return 0;
@@ -985,6 +1015,13 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
                                 <option value="locked">🔒 Locked</option>
                               </select>
                             </div>
+                    <div>
+  <p className="text-[8px] font-black text-purple-400 uppercase mb-1 ml-1 italic">Answer Upload Mode</p>
+  <select value={item.storageMode || 'normal'} onChange={(e) => updateField(item.id, item.source, 'storageMode', e.target.value)} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-[9px] font-black outline-none">
+    <option value="normal">📁 Normal Mode</option>
+    <option value="imgbb">🚀 ImgBB Mode</option>
+  </select>
+</div>
                             <div><p className="text-[8px] font-black text-blue-400 uppercase mb-1 ml-1">Class</p><select value={item.class || '10'} onChange={(e) => updateField(item.id, item.source, 'class', e.target.value)} className="w-full p-2 bg-black border border-white/10 rounded-xl text-white text-xs font-black">{[5,6,7,8,9,10,11,12].map(c => <option key={c} value={c}>{c}</option>)}</select></div>
                             <div className="md:col-span-2">
                               <p className="text-[8px] font-black text-yellow-500 uppercase mb-1 ml-1">Complexity Level</p>
@@ -1265,11 +1302,67 @@ const AdminMarksheetModal = ({ student, results, onClose }) => {
                     <button onClick={async () => { if (window.confirm("Purge record?")) await deleteDoc(doc(db, "results", r.id)); }} className="text-slate-600 hover:text-red-500 active:scale-90 transition-all flex-shrink-0"><Trash2 size={24} /></button>
                   </div>
                 </div>
-                {r.details && r.details.some(d => d.pending) && (
-                  <div className="bg-orange-950/30 border border-orange-900/50 rounded-[2rem] p-4 flex flex-col gap-3 shadow-inner print:hidden"><p className="text-[10px] font-black text-orange-400 uppercase italic text-center animate-pulse tracking-widest">Action Required: Written Solutions</p><div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory"> {r.details.filter(d => d.pending).map((pendingQ, pIdx) => { const photoList = Array.isArray(pendingQ.selected) ? pendingQ.selected : [pendingQ.selected]; return photoList.map((photoUrl, imgIdx) => ( <div key={`${pIdx}-${imgIdx}`} className="min-w-[200px] bg-black border border-white/10 shadow-md rounded-2xl p-4 flex flex-col items-center gap-3 snap-center"><p className="text-[9px] font-black text-slate-500 uppercase italic">
-    Q{pendingQ.qNum} - Page {imgIdx + 1} <span className="text-yellow-500 ml-1">({pendingQ.qFullMark !== undefined ? pendingQ.qFullMark : 'N/A'} Marks)</span>
-</p>
-                  <button onClick={() => setPreviewImg(photoUrl)} className="w-full py-2 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">View Page</button> {imgIdx === photoList.length - 1 && (<div className="flex gap-2 w-full mt-2"><input id={`mark-input-${r.id}-${pendingQ.qNum}`} type="number" placeholder="Marks" className="w-1/2 p-2 border border-slate-700 rounded-xl text-center font-black text-[10px] outline-none focus:border-orange-500 bg-black text-white" /><button onClick={async () => { const markVal = document.getElementById(`mark-input-${r.id}-${pendingQ.qNum}`).value; if (!markVal) return alert("Enter marks!"); const updatedDetails = r.details.map(d => (d.pending && d.qNum === pendingQ.qNum) ? { ...d, status: true, mark: parseFloat(markVal), pending: false, selected: "CHECKED BY ANSHU SIR" } : d); const newObt = updatedDetails.reduce((sum, d) => sum + (d.status ? d.mark : 0), 0); await setDoc(doc(db, "results", r.id), { details: updatedDetails, obtained: newObt, percent: Math.round((newObt / r.total) * 100) }, { merge: true }); alert(`Q${pendingQ.qNum} Marks Updated!`); }} className="w-1/2 py-2 bg-orange-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm">Save</button></div>)}</div>)); })}</div></div>)}
+               {r.details && r.details.some(d => d.pending) && (
+  <div className="bg-orange-950/30 border border-orange-900/50 rounded-[2rem] p-4 flex flex-col gap-3 shadow-inner print:hidden">
+    <p className="text-[10px] font-black text-orange-400 uppercase italic text-center animate-pulse tracking-widest">Action Required: Written Solutions</p>
+    <div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory"> 
+      {r.details.filter(d => d.pending).map((pendingQ, pIdx) => { 
+        const photoList = Array.isArray(pendingQ.selected) ? pendingQ.selected : [pendingQ.selected]; 
+        return photoList.map((photoUrl, imgIdx) => ( 
+          <div key={`${pIdx}-${imgIdx}`} className="min-w-[200px] bg-black border border-white/10 shadow-md rounded-2xl p-4 flex flex-col items-center gap-3 snap-center">
+            
+            {/* 📸 খাতার পেজ এবং তার প্রিভিউ দেখার থাম্বনেইল */}
+            <div className="w-full h-24 bg-slate-900 rounded-xl overflow-hidden border border-white/5 flex items-center justify-center relative group">
+              <img src={photoUrl} alt="Khata Page" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                <span className="text-[8px] bg-black/80 px-2 py-0.5 rounded-full text-white font-bold border border-white/10">Page {imgIdx + 1}</span>
+              </div>
+            </div>
+
+            <p className="text-[9px] font-black text-slate-400 uppercase italic mt-1"> 
+              Q{pendingQ.qNum} - Page {imgIdx + 1} 
+              <span className="text-yellow-500 ml-1">({pendingQ.qFullMark !== undefined ? pendingQ.qFullMark : 'N/A'} M)</span> 
+            </p> 
+            
+            <button onClick={() => setPreviewImg(photoUrl)} className="w-full py-2 bg-blue-700 hover:bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase shadow-sm transition-colors">View Full Page</button> 
+            
+            {/* মার্কস দেওয়ার ইনপুট ও সেভ বোতাম */}
+            {imgIdx === photoList.length - 1 && (
+              <div className="flex gap-2 w-full mt-1">
+                <input id={`mark-input-${r.id}-${pendingQ.qNum}`} type="number" placeholder="Marks" className="w-1/2 p-2 border border-slate-700 rounded-xl text-center font-black text-[10px] outline-none focus:border-orange-500 bg-black text-white" />
+                <button 
+                  onClick={async () => { 
+                    const markVal = document.getElementById(`mark-input-${r.id}-${pendingQ.qNum}`).value; 
+                    if (!markVal) return alert("Enter marks!"); 
+                    
+                    const updatedDetails = r.details.map(d => 
+                      (d.pending && d.qNum === pendingQ.qNum) 
+                        ? { ...d, status: true, mark: parseFloat(markVal), pending: false, selected: "CHECKED BY ANSHU SIR" } 
+                        : d
+                    ); 
+                    
+                    const newObt = updatedDetails.reduce((sum, d) => sum + (d.status ? d.mark : 0), 0); 
+                    
+                    await setDoc(doc(db, "results", r.id), { 
+                      details: updatedDetails, 
+                      obtained: newObt, 
+                      percent: Math.round((newObt / r.total) * 100) 
+                    }, { merge: true }); 
+                    
+                    alert(`Q${pendingQ.qNum} Marks Updated!`); 
+                  }} 
+                  className="w-1/2 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-xl font-black text-[9px] uppercase shadow-sm transition-colors"
+                >
+                  Save
+                </button>
+              </div>
+            )}
+          </div>
+        )); 
+      })}
+    </div>
+  </div>
+)} 
               </div>
             );
           })}
@@ -1386,15 +1479,19 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isSubmitted]);
 
-  const handleImageUpload = (qNum, file) => {
-    if (exam.isGuest) return alert("Guest users cannot upload images.");
-    if (!file) return;
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target.result;
-      img.onload = () => {
+ const handleImageUpload = (qNum, file) => {
+  if (exam.isGuest) return alert("Guest users cannot upload images.");
+  if (!file) return;
+
+  setIsCapturing(true); 
+
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = (event) => {
+    const img = new Image();
+    img.src = event.target.result;
+    img.onload = async () => {
+      try {
         const canvas = document.createElement('canvas');
         const MAX_WIDTH = maxImgWidth;
         canvas.width = MAX_WIDTH;
@@ -1402,16 +1499,38 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
         const ctx = canvas.getContext('2d');
         ctx.filter = imgFilter;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-       const compressedBase64 = canvas.toDataURL('image/jpeg', imgQuality);
-        setAnswers(prev => {
-          const existingPhotos = Array.isArray(prev[qNum]) ? prev[qNum] : [];
-          return { ...prev, [qNum]: [...existingPhotos, compressedBase64] };
-        });
+        
+        // ছবি আগের মতোই ব্ল্যাক-অ্যান্ড-হোয়াইট ও কম্প্রেস হলো
+        const compressedBase64 = canvas.toDataURL('image/jpeg', imgQuality);
+
+        // 🔥 আসল ম্যাজিক: এডমিন প্যানেলে যদি 'imgbb' মোড অন থাকে (আমরা ধাপ ৩-এ এডমিন প্যানেলে এটা বানাবো)
+        if (exam.storageMode === 'imgbb') {
+          // নতুন সিস্টেমে ইন্টারনেটে আপলোড হয়ে লিঙ্ক তৈরি হবে
+          const liveImageUrl = await uploadImageToImgBB(compressedBase64);
+          if (liveImageUrl) {
+            setAnswers(prev => {
+              const existingPhotos = Array.isArray(prev[qNum]) ? prev[qNum] : [];
+              return { ...prev, [qNum]: [...existingPhotos, liveImageUrl] };
+            });
+          } else {
+            alert("SERVER ERROR: খাতার পেজ আপলোড ব্যর্থ হয়েছে! আবার চেষ্টা করো।");
+          }
+        } else {
+          // 🔽 এডমিন যদি অন না করে, তবে আপনার আগের পুরোনো সিস্টেমটি হুবহু কাজ করবে (সরাসরি Base64 সেভ)
+          setAnswers(prev => {
+            const existingPhotos = Array.isArray(prev[qNum]) ? prev[qNum] : [];
+            return { ...prev, [qNum]: [...existingPhotos, compressedBase64] };
+          });
+        }
+      } catch (err) {
+        console.error("Upload error:", err);
+        alert("ERROR: কিছু একটা সমস্যা হয়েছে।");
+      } finally {
         setIsCapturing(false);
-      };
+      }
     };
   };
-
+};
   const removeImage = (qNum, indexToRemove) => {
     setAnswers(prev => {
       const existingPhotos = Array.isArray(prev[qNum]) ? prev[qNum] : [];
@@ -1694,36 +1813,47 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
                             </div>
                           ))}
                         </div> 
-                        <div className="flex gap-4">
-                          <label 
-  onClick={() => {
-    setIsCapturing(true);
-    setLastCaptureTime(Date.now());
-// 🔥 safety timeout
-    setTimeout(() => {
-      setIsCapturing(false);
-    }, 20000); // 20 sec
-  }}
-  className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase cursor-pointer shadow-xl flex items-center gap-2 active:scale-95 transition-all"
->
-    {/* 🔥 NEW (text add করেছি শুধু) */}
-    {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 
-      ? "ADD PAGE" 
-      : "CAPTURE"}
-
-    {/* 🔥 NEW (camera trigger input add করেছি শুধু) */}
-    <input
-      type="file"
-      accept="image/*"
-      capture="environment"
-      hidden
-      onChange={(e) => handleImageUpload(activeQuestion, e.target.files[0])}
-    />
+                       <div className="flex gap-4">
+  {/* 🔥 আপলোডিং চলার সময় বাটনটির ডিজাইন এবং লজিক পরিবর্তন */}
+  <label 
+    onClick={(e) => { 
+      if (isCapturing) {
+        e.preventDefault();
+        return; // আপলোড চলাকালীন নতুন করে ক্লিক করা যাবে না
+      }
+      setIsCapturing(true); 
+      setLastCaptureTime(Date.now()); 
+      setTimeout(() => { setIsCapturing(false); }, 20000); 
+    }} 
+    className={`px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl flex items-center gap-2 transition-all ${
+      isCapturing 
+        ? "bg-purple-900 text-purple-300 cursor-not-allowed animate-pulse" 
+        : "bg-blue-600 text-white cursor-pointer active:scale-95"
+    }`} 
+  > 
+    {isCapturing ? (
+      <>
+        <Loader2 size={12} className="animate-spin" />
+        Uploading Page...
+      </>
+    ) : (
+      Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 ? "ADD NEXT PAGE" : "CAPTURE ANSWER"
+    )} 
+    <input 
+      type="file" 
+      accept="image/*" 
+      capture="environment" 
+      hidden 
+      disabled={isCapturing} // আপলোড চলাকালীন ইনপুট লক থাকবে
+      onChange={(e) => handleImageUpload(activeQuestion, e.target.files[0])} 
+    /> 
   </label>
-                          {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (
-                            <button onClick={() => setActiveQuestion(null)} className="bg-green-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl">DONE</button>
-                          )}
-                        </div>
+
+  {/* আপলোড কমপ্লিট হলে বা আপলোড না চললে DONE বাটন দেখাবে */}
+  {!isCapturing && Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (
+    <button onClick={() => setActiveQuestion(null)} className="bg-green-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl active:scale-95 transition-all">DONE</button>
+  )}
+</div>
                       </>
                     )}
                   </div>
