@@ -1930,9 +1930,11 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
             className="transition-transform duration-75 ease-out w-full h-full"
             style={{
               transform: `translate(${window.qpPos?.x || 0}px, ${window.qpPos?.y || 0}px) rotate(${isLandscape ? 95 : 0}deg) scale(${qpScale})`,
-              transformOrigin: 'center center',
-              width: isLandscape ? '100vh' : '100%',
-              height: isLandscape ? '100vw' : '100%',
+              transformOrigin: 'top left',
+              // ✨ ল্যান্ডস্কেপ মোডের স্ক্রিন সাইজ ও রেশিও পারফেক্ট করার আসল লজিক:
+width: isLandscape ? 'calc(100vh - 180px)' : '100%',
+height: isLandscape ? '100vw' : '100%',
+maxHeight: isLandscape ? '580px' : '100%',
             }}
           >
             <iframe 
