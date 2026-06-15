@@ -1813,45 +1813,56 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
                             </div>
                           ))}
                         </div> 
-                       <div className="flex gap-4">
-  {/* 🔥 আপলোডিং চলার সময় বাটনটির ডিজাইন এবং লজিক পরিবর্তন */}
+                      <div className="flex gap-4">
+  {/* 📸 ক্যামেরা ওপেন এবং মাল্টিপল পেজ অ্যাড করার নিখুঁত বাটন */}
   <label 
-    onClick={(e) => { 
-      if (isCapturing) {
-        e.preventDefault();
-        return; // আপলোড চলাকালীন নতুন করে ক্লিক করা যাবে না
-      }
-      setIsCapturing(true); 
-      setLastCaptureTime(Date.now()); 
-      setTimeout(() => { setIsCapturing(false); }, 20000); 
-    }} 
     className={`px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl flex items-center gap-2 transition-all ${
       isCapturing 
         ? "bg-purple-900 text-purple-300 cursor-not-allowed animate-pulse" 
         : "bg-blue-600 text-white cursor-pointer active:scale-95"
-    }`} 
-  > 
+    }`}
+  >
     {isCapturing ? (
       <>
         <Loader2 size={12} className="animate-spin" />
         Uploading Page...
       </>
     ) : (
-      Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 ? "ADD NEXT PAGE" : "CAPTURE ANSWER"
-    )} 
+      Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 
+        ? "➕ Add Next Page" 
+        : "📸 Capture Answer"
+    )}
+
+    {/* ইনপুট ফিল্ড: এটি কোনো বাধা ছাড়াই মোবাইলের ক্যামেরা অন করবে */}
     <input 
       type="file" 
       accept="image/*" 
       capture="environment" 
       hidden 
-      disabled={isCapturing} // আপলোড চলাকালীন ইনপুট লক থাকবে
-      onChange={(e) => handleImageUpload(activeQuestion, e.target.files[0])} 
-    /> 
+      onClick={(e) => {
+        if (isCapturing) {
+          e.preventDefault(); // আপলোড চলাকালীন নতুন ক্লিক লক থাকবে
+        }
+      }}
+      onChange={(e) => {
+        if (e.target.files && e.target.files[0]) {
+          setIsCapturing(true); // ছবি তোলার ঠিক পরেই আপলোডিং মোড অন হবে
+          setLastCaptureTime(Date.now());
+          setTimeout(() => { setIsCapturing(false); }, 30000); // ৩০ সেকেন্ড ম্যাক্সিমাম ব্যাকআপ টাইম
+          handleImageUpload(activeQuestion, e.target.files[0]);
+        }
+      }} 
+    />
   </label>
 
-  {/* আপলোড কমপ্লিট হলে বা আপলোড না চললে DONE বাটন দেখাবে */}
+  {/* সব পেজ তোলা শেষ হলে DONE বাটনে চাপ দিলে ইন্টারফেসটি বন্ধ হবে */}
   {!isCapturing && Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (
-    <button onClick={() => setActiveQuestion(null)} className="bg-green-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl active:scale-95 transition-all">DONE</button>
+    <button 
+      onClick={() => setActiveQuestion(null)} 
+      className="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl active:scale-95 transition-all"
+    >
+      Done ✔
+    </button>
   )}
 </div>
                       </>
