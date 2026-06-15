@@ -2001,32 +2001,51 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
     🎯 Take Snapshot / 📸 ছবি তোলো
   </button>
 ) : (
-  <label 
-    onClick={async () => {
-      setIsCapturing(true);
-      setLastCaptureTime(Date.now());
-      setTimeout(async () => {
-        try {
-          const video = document.getElementById('exam-live-video');
-          const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "environment" }, 
-            audio: false 
-          });
-          if (video) {
-            video.srcObject = stream;
-            window.localCamStream = stream;
+  // ⚡ এই ডিভটি ওমি-টিভি বাটন এবং ল্যাপটপ বাটন দুটিকে পাশাপাশি সুন্দর করে সাজিয়ে রাখবে
+  <div className="flex flex-wrap gap-4 justify-center items-center">
+    
+    {/* ১. আপনার ওরিজিনাল ওমি-টিভি ক্যামেরা বোতাম */}
+    <label 
+      onClick={async () => {
+        setIsCapturing(true);
+        setLastCaptureTime(Date.now());
+        setTimeout(async () => {
+          try {
+            const video = document.getElementById('exam-live-video');
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+            if (video) { video.srcObject = stream; window.localCamStream = stream; }
+          } catch (err) { console.error(err); alert("ক্যামেরা পারমিশন দিন।"); setIsCapturing(false); }
+        }, 300);
+      }} 
+      className="px-6 py-3 bg-blue-600 text-white cursor-pointer active:scale-95 rounded-xl font-black text-[10px] uppercase shadow-xl flex items-center gap-2 transition-all"
+    >
+      📸 Open Web-Cam
+    </label>
+
+    {/* ২. ✨ নতুন ল্যাপটপ স্পেশাল ফাইল আপলোড বোতাম (যা সরাসরি প্রিভিউ মোড অন করে দেবে) */}
+    <label 
+      className="px-6 py-3 bg-slate-800 border border-slate-700 text-slate-300 cursor-pointer active:scale-95 rounded-xl font-black text-[10px] uppercase shadow-xl flex items-center gap-2 transition-all hover:bg-slate-700"
+    >
+      📁 Upload (Only Laptop)
+      <input 
+        type="file" 
+        accept="image/*" 
+        hidden 
+        onChange={(e) => {
+          if (e.target.files && e.target.files[0]) {
+            // 🧠 গ্যালারি থেকে ছবি সিলেক্ট করলেই ওটা সরাসরি রিড করে প্রিভিউ উইন্ডোতে লোড হয়ে যাবে
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+              setLocalCapturePreview(event.target.result); // সরাসরি আপনার তৈরি করা প্রিভিউ উইন্ডো খুলে যাবে
+            };
           }
-        } catch (err) {
-          console.error("Camera access denied:", err);
-          alert("ক্যামেরা পারমিশন দিন।");
-          setIsCapturing(false);
-        }
-      }, 300);
-    }} 
-    className="px-6 py-3 bg-blue-600 text-white cursor-pointer active:scale-95 rounded-xl font-black text-[10px] uppercase shadow-xl flex items-center gap-2 transition-all"
-  >
-    📸 Open Web-Cam
-  </label>
+        }} 
+      />
+    </label>
+
+  </div>
 )}
                 {/* সব পেজ তোলা শেষ হলে বা ক্যামেরা বন্ধ করতে DONE বোতাম */}
                 {!isCapturing && Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (
