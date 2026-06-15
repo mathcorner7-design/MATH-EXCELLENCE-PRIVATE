@@ -1486,6 +1486,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
   });
       const [isSubmitted, setIsSubmitted] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [localCapturePreview, setLocalCapturePreview] = useState(null);
   const [lastCaptureTime, setLastCaptureTime] = useState(0);
   const [tabSwitches, setTabSwitches] = useState(0);
   const [inactiveTime, setInactiveTime] = useState(0); // আগের ইনঅ্যাক্টিভ টাইমের রেকর্ড
@@ -1889,72 +1890,125 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
               {activeQuestion && <button onClick={() => setActiveQuestion(null)} className="text-white bg-slate-700 px-3 py-1 rounded-lg font-black text-[10px] uppercase shadow-lg">Close</button>}
             </div> 
             {activeQuestion ? (
-              <div className="flex flex-col items-center animate-in slide-in-from-bottom-2 pb-2">
-                <p className="text-slate-400 font-black text-xs mb-4 italic uppercase">{answerKeyArray[activeQuestion - 1] === 'W' ? `Page Capturing Q${activeQuestion}:` : `Choice for Q${activeQuestion}:`}</p> 
-                {answerKeyArray[activeQuestion - 1] === 'W' ? (
-                  <div className="flex flex-col items-center gap-4">
-                    {exam.isGuest ? (
-                      <div className="p-4 bg-orange-900/20 border-2 border-orange-800 rounded-2xl text-center">
-                        <AlertCircle className="text-orange-500 mx-auto mb-2" />
-                        <p className="text-[9px] font-black text-orange-200 uppercase">Guest users can't upload.</p>
-                      </div>
-                    ) : (
-                      <> 
-                        <div className="flex gap-2 flex-wrap justify-center">
-                          {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].map((_, i) => (
-                            <div key={i} className="relative">
-                              <div className="bg-green-600 text-white text-[8px] font-black px-2 py-1 rounded-lg uppercase">Page {i + 1} ✓</div>
-                              <button onClick={() => removeImage(activeQuestion, i)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-0.5 shadow-lg active:scale-75 transition-all"><X size={12} /></button>
-                            </div>
-                          ))}
-                        </div> 
-                      <div className="flex gap-4">
-  {/* 📸 ক্যামেরা ওপেন এবং মাল্টিপল পেজ অ্যাড করার নিখুঁত বাটন */}
-  {/* 📸 লেবেলের মাথায় onClick ফিরিয়ে আনা হলো যাতে ক্লিক করার সাথে সাথেই রোবট পজ হয়ে যায় */}
-<label 
-  onClick={() => {
-    setIsCapturing(true);
-    setLastCaptureTime(Date.now());
-  }}
-  className={`px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl flex items-center gap-2 transition-all ${
-    isCapturing ? "bg-purple-900 text-purple-300 cursor-not-allowed animate-pulse" : "bg-blue-600 text-white cursor-pointer active:scale-95"
-  }`}
->
-  {isCapturing ? (
-    <>
-      <Loader2 size={12} className="animate-spin" /> Uploading Page...
-    </>
-  ) : (
-    Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 ? "➕ Add Next Page" : "📸 Capture Answer"
-  )}
-  <input 
-    type="file" 
-    accept="image/*" 
-    capture="environment" 
-    hidden 
-    onClick={(e) => { if (isCapturing) e.preventDefault(); }} 
-    onChange={(e) => {
-      if (e.target.files && e.target.files[0]) {
-        handleImageUpload(activeQuestion, e.target.files[0]);
-      }
-    }} 
-  />
-</label>
-
-  {/* সব পেজ তোলা শেষ হলে DONE বাটনে চাপ দিলে ইন্টারফেসটি বন্ধ হবে */}
-  {!isCapturing && Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (
-    <button 
-      onClick={() => setActiveQuestion(null)} 
-      className="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl active:scale-95 transition-all"
-    >
-      Done ✔
-    </button>
-  )}
-</div>
-                      </>
-                    )}
+  <div className="flex flex-col items-center animate-in slide-in-from-bottom-2 pb-2">
+    <p className="text-slate-400 font-black text-xs mb-4 italic uppercase">{answerKeyArray[activeQuestion - 1] === 'W' ? `Page Capturing Q${activeQuestion}:` : `Choice for Q${activeQuestion}:`}</p>
+    {answerKeyArray[activeQuestion - 1] === 'W' ? (
+      <div className="flex flex-col items-center gap-4">
+        {exam.isGuest ? (
+          <div className="p-4 bg-orange-900/20 border-2 border-orange-800 rounded-2xl text-center">
+            <AlertCircle className="text-orange-500 mx-auto mb-2" />
+            <p className="text-[9px] font-black text-orange-200 uppercase">Guest users can't upload.</p>
+          </div>
+        ) : (
+          <>
+            {/* ১. অলরেডি আপলোড হওয়া পেজগুলোর স্ট্যাটাস কাউন্টার */}
+            {!localCapturePreview && (
+              <div className="flex gap-2 flex-wrap justify-center">
+                {Array.isArray(answers[activeQuestion]) && answers[activeQuestion].map((_, i) => (
+                  <div key={i} className="relative">
+                    <div className="bg-green-600 text-white text-[8px] font-black px-2 py-1 rounded-lg uppercase">Page {i + 1} ✓</div>
+                    <button onClick={() => removeImage(activeQuestion, i)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-0.5 shadow-lg active:scale-75 transition-all"><X size={12} /></button>
                   </div>
-                ) : (
+                ))}
+              </div>
+            )}
+
+            {/* ২. ছবি তোলার পর তাৎক্ষণিক প্রিভিউ স্ক্রিন এবং অ্যাকশন বোতাম */}
+            {localCapturePreview && (
+              <div className="flex flex-col items-center gap-3 w-full max-w-sm animate-in zoom-in-95 duration-200">
+                <p className="text-yellow-400 font-black text-[10px] uppercase italic tracking-widest animate-pulse">📝 Check Snapshot Quality:</p>
+                <div className="w-full aspect-[4/3] bg-black rounded-2xl overflow-hidden border-2 border-yellow-500 shadow-2xl">
+                  <img src={localCapturePreview} alt="Captured Draft" className="w-full h-full object-cover" />
+                </div>
+                <div className="flex gap-4 w-full mt-1">
+                  <button 
+                    onClick={() => {
+                      setLocalCapturePreview(null); // 🔄 প্রিভিউ ক্লিয়ার করে আবার ওমি-টিভি মোডে ফেরা
+                      setTimeout(async () => {
+                        try {
+                          const video = document.getElementById('exam-live-video');
+                          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+                          if (video) { video.srcObject = stream; window.localCamStream = stream; }
+                        } catch (e) { console.error(e); }
+                      }, 200);
+                    }} 
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl font-black text-[10px] uppercase shadow-md transition-all active:scale-95"
+                  >
+                    🔄 Retake
+                  </button>
+                  <button 
+                    onClick={() => {
+                      handleImageUpload(activeQuestion, localCapturePreview); // ✅ স্টুডেন্ট ওকে করলে তবেই আপলোড হবে
+                      setLocalCapturePreview(null);
+                    }} 
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl font-black text-[10px] uppercase shadow-md transition-all active:scale-95 border-b-4 border-green-900"
+                  >
+                    ✅ OK / Upload
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ৩. 📸 লাইভ ওমি-টিভি ক্যামেরা উইন্ডো (প্রিভিউ স্ক্রিন অন না থাকলে তবেই ব্যাকগ্রাউন্ডে জ্বলবে) */}
+            {isCapturing && !localCapturePreview && (
+              <div className="relative w-full max-w-sm aspect-[4/3] bg-black rounded-2xl overflow-hidden border-2 border-blue-500 shadow-2xl mb-4">
+                <video id="exam-live-video" autoPlay playsInline className="w-full h-full object-cover" />
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-[8px] font-black text-blue-400 uppercase tracking-widest animate-pulse">
+                  • LIVE CAMERA ACTIVE
+                </div>
+              </div>
+            )}
+
+            {/* ৪. ক্যামেরা অন ও স্ন্যাপ নেওয়ার মূল বোতামের লক বা কন্ডিশন সেট */}
+            {!localCapturePreview && (
+              <div className="flex gap-4">
+                <label 
+                  onClick={async () => {
+                    setIsCapturing(true);
+                    setLastCaptureTime(Date.now());
+                    // 🚀 ইন-অ্যাপ লাইভ ভিডিও অন করার অটো-ট্রিগার
+                    setTimeout(async () => {
+                      try {
+                        const video = document.getElementById('exam-live-video');
+                        const stream = await navigator.mediaDevices.getUserMedia({ 
+                          video: { facingMode: "environment" }, 
+                          audio: false 
+                        });
+                        if (video) {
+                          video.srcObject = stream;
+                          window.localCamStream = stream; // স্ট্রিম মেমোরিতে সেভ রাখা হলো
+                        }
+                      } catch (err) {
+                        console.error("Camera access denied:", err);
+                        alert("ক্যামেরা পারমিশন দিন বা ব্রাউজার সেটিং চেক করুন।");
+                        setIsCapturing(false);
+                      }
+                    }, 300);
+                  }} 
+                  className={`px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl flex items-center gap-2 transition-all ${ 
+                    isCapturing ? "bg-purple-900 text-purple-300 cursor-not-allowed animate-pulse" : "bg-blue-600 text-white cursor-pointer active:scale-95" 
+                  }`}
+                >
+                  {isCapturing ? (
+                    <>
+                      <Loader2 size={12} className="animate-spin" /> Live Stream Active...
+                    </>
+                  ) : (
+                    Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 ? "➕ Add Next Page" : "📸 Capture Answer"
+                  )}
+                  <input type="file" accept="image/*" capture="environment" hidden onClick={(e) => { if (isCapturing) e.preventDefault(); }} />
+                </label>
+
+                {/* সব পেজ তোলা শেষ হলে বা ক্যামেরা বন্ধ করতে DONE বোতাম */}
+                {!isCapturing && Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (
+                  <button onClick={() => setActiveQuestion(null)} className="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl active:scale-95 transition-all" > Done ✔ </button>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    ) : (
                   <div className="flex gap-5">
                     {['A', 'B', 'C', 'D'].map(opt => (
                       <button key={opt} onClick={() => handleOptionSelect(activeQuestion, opt)} className={`w-12 h-12 rounded-xl font-black text-xl flex items-center justify-center border-b-8 transition-all active:scale-90 ${answers[activeQuestion] === opt ? 'bg-blue-600 text-white border-blue-900 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'bg-slate-800 text-slate-400 border-black hover:bg-slate-700'}`}>{opt}</button>
