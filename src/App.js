@@ -1508,39 +1508,34 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
 };
 
     const handleVisibilityChange = () => {
-      if (document.hidden) {
+  // 📸 ক্যামেরা অন থাকলে বা ছবি প্রসেস হতে থাকলে ট্র্যাকিং এখানেই থেমে যাবে, নিচে নামবে না
+  if (isCapturing || window.isCameraActive) return; 
 
-  const now = Date.now();
+  if (document.hidden) {
+    const now = Date.now(); // ⏰ আপনার আসল কোডের এই লাইনটি এখানে সুরক্ষিত রইল
 
-  // 🔥 MAIN FIX
-  if (isCapturing || (now - lastCaptureTime < 3000)) {
-    return;
-  }
+    setTabSwitches(prev => {
+      const newCount = prev + 1;
+      if (newCount >= maxTabSwitches) triggerBanProcess();
+      return newCount;
+    });
 
-  setTabSwitches(prev => {
-    const newCount = prev + 1;
-    if (newCount >= maxTabSwitches) triggerBanProcess();
-    return newCount;
-  });
-
-  startTime = new Date().getTime();
-} else {
-                // ৩. ফিরে আসার পর সময় পরীক্ষা করা
-        if (startTime) {
-          const endTime = new Date().getTime();
-          const secondsAway = Math.floor((endTime - startTime) / 1000);
-          
-          // আগের বাইরে থাকার সময়ের সাথে বর্তমানের সময় যোগ করা
-          setInactiveTime(prev => {
-            const totalAway = prev + secondsAway;
-            if (totalAway >= maxInactiveTime) {
-              triggerBanProcess();
-            }
-            return totalAway;
-          });
+    startTime = new Date().getTime();
+  } else {
+    // ↩️ স্টুডেন্ট যখন বাইরে থেকে আবার এক্সাম স্ক্রিনে ফিরে আসবে
+    if (startTime) {
+      const endTime = new Date().getTime();
+      const secondsAway = Math.floor((endTime - startTime) / 1000);
+      setInactiveTime(prev => {
+        const totalAway = prev + secondsAway;
+        if (totalAway >= maxInactiveTime) {
+          triggerBanProcess();
         }
-      }
-    };
+        return totalAway;
+      });
+    }
+  }
+};
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
@@ -1619,6 +1614,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
         alert("ERROR: কিছু একটা সমস্যা হয়েছে।");
       } finally {
         setIsCapturing(false);
+        window.isCameraActive = false;
       }
     };
   };
@@ -1944,7 +1940,8 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
       }}
       onChange={(e) => {
         if (e.target.files && e.target.files[0]) {
-          setIsCapturing(true); // ছবি তোলার ঠিক পরেই আপলোডিং মোড অন হবে
+          setIsCapturing(true); // ছবি তোলার ঠিক পরেই আপলোডিং মোড অন হবে 
+          window.isCameraActive = true;
           setLastCaptureTime(Date.now());
           setTimeout(() => { setIsCapturing(false); }, 30000); // ৩০ সেকেন্ড ম্যাক্সিমাম ব্যাকআপ টাইম
           handleImageUpload(activeQuestion, e.target.files[0]);
