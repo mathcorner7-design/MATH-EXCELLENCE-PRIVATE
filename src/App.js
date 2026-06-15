@@ -1888,20 +1888,59 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
       </div>
       <div className="flex-1 bg-slate-950 overflow-y-auto overflow-x-hidden md:overflow-hidden relative touch-pan-y" style={{ height: "calc(100vh - 180px)" }}>
                 {/* 📄 ডাইনামিক জুম এবং ল্যান্ডস্কেপ ওরিয়েন্টেশন যুক্ত আইফ্রেম জানলা */}
+                {/* 📄 ডাইমানিক জুম, ল্যান্ডস্কেপ ও ফুল ড্রাগ-প্যান কন্ট্রোল যুক্ত আইফ্রেম জানলা */}
         <div 
-          className="w-full h-full flex items-center justify-center transition-all duration-300"
-          style={{
-            transform: `rotate(${isLandscape ? 95 : 0}deg) scale(${qpScale})`,
-            transformOrigin: 'center center',
-            width: isLandscape ? '100vh' : '100%',
-            height: isLandscape ? '100vw' : '100%',
+          className="w-full h-full flex items-center justify-center overflow-auto"
+          style={{ cursor: qpScale > 1 ? 'grab' : 'default' }}
+          onMouseDown={(e) => {
+            if (qpScale <= 1) return;
+            window.qpIsDragging = true;
+            window.qpDragStart = { x: e.clientX - (window.qpPos?.x || 0), y: e.clientY - (window.qpPos?.y || 0) };
           }}
+          onMouseMove={(e) => {
+            if (!window.qpIsDragging || qpScale <= 1) return;
+            e.preventDefault();
+            const x = e.clientX - window.qpDragStart.x;
+            const y = e.clientY - window.qpDragStart.y;
+            window.qpPos = { x, y };
+            const el = document.getElementById('qp-drag-wrapper');
+            if (el) el.style.transform = `translate(${x}px, ${y}px) rotate(${isLandscape ? 90 : 0}deg) scale(${qpScale})`;
+          }}
+          onMouseUp={() => window.qpIsDragging = false}
+          onMouseLeave={() => window.qpIsDragging = false}
+          
+          // 📱 মোবাইল স্টুডেন্টদের জন্য কাস্টম টাচ-ড্রাগ ও স্ক্রল ব্যালেন্স লজিক
+          onTouchStart={(e) => {
+            if (qpScale <= 1 || e.touches.length !== 1) return;
+            window.qpIsDragging = true;
+            window.qpDragStart = { x: e.touches[0].clientX - (window.qpPos?.x || 0), y: e.touches[0].clientY - (window.qpPos?.y || 0) };
+          }}
+          onTouchMove={(e) => {
+            if (!window.qpIsDragging || qpScale <= 1 || e.touches.length !== 1) return;
+            const x = e.touches[0].clientX - window.qpDragStart.x;
+            const y = e.touches[0].clientY - window.qpDragStart.y;
+            window.qpPos = { x, y };
+            const el = document.getElementById('qp-drag-wrapper');
+            if (el) el.style.transform = `translate(${x}px, ${y}px) rotate(${isLandscape ? 90 : 0}deg) scale(${qpScale})`;
+          }}
+          onTouchEnd={() => window.qpIsDragging = false}
         >
-          <iframe 
-            src={exam?.fileUrl?.replace('/view?usp=sharing', '/preview').replace('/view', '/preview')} 
-            className="w-full h-full border-none opacity-90" 
-            title="Paper" 
-          />
+          <div 
+            id="qp-drag-wrapper"
+            className="transition-transform duration-75 ease-out w-full h-full"
+            style={{
+              transform: `translate(${window.qpPos?.x || 0}px, ${window.qpPos?.y || 0}px) rotate(${isLandscape ? 95 : 0}deg) scale(${qpScale})`,
+              transformOrigin: 'center center',
+              width: isLandscape ? '100vh' : '100%',
+              height: isLandscape ? '100vw' : '100%',
+            }}
+          >
+            <iframe 
+              src={exam?.fileUrl ? `${exam.fileUrl.split('/view')[0]}/preview?rm=minimal` : ''} 
+              className="w-full h-full border-none opacity-90" 
+              title="Paper" 
+            />
+          </div>
         </div>
         {/* 🔍📱 প্রশ্নপত্রের ওপরে বামপাশে ৩টি অতি ক্ষুদ্র ভাসমান (Floating) কন্ট্রোল বোতাম */}
         <div className="absolute left-3 top-1/3 -translate-y-1/2 z-[40] flex flex-col gap-2 print:hidden">
