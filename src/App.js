@@ -96,12 +96,90 @@ const LiveCountdown = ({ timestamp, onExpire }) => {
   return <p className="text-[9px] font-black text-yellow-400 uppercase italic mt-1 animate-pulse">Ends in: {timeLeft}</p>;
 };
 
+// 🔥 কন্ট্রোল টুলবারসহ (Zoom, Pan, Rotate) সংশোধিত ইমেজ প্রিভিউ মোডাল
 const ImagePreviewModal = ({ src, onClose }) => {
   if (!src) return null;
+
+  const [scale, setScale] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  const handleZoomIn = () => setScale(prev => Math.min(prev + 0.25, 4));
+  const handleZoomOut = () => setScale(prev => Math.max(prev - 0.25, 0.5));
+  const handleRotate = () => setRotation(prev => (prev + 90) % 360);
+  
+  const handleReset = () => {
+    setScale(1);
+    setRotation(0);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+
   return (
-    <div className="fixed inset-0 bg-black/95 z-[3000] flex flex-col items-center justify-center p-4 backdrop-blur-md animate-in fade-in print:hidden">
-      <button onClick={onClose} className="absolute top-10 right-10 text-white p-3 bg-red-600 rounded-full shadow-2xl"><X size={32} /></button>
-      <img src={src} alt="Student Solution" className="max-w-full max-h-[80vh] rounded-xl shadow-2xl border-4 border-white animate-in zoom-in" />
+    <div className="fixed inset-0 bg-black/95 z-[9999] flex flex-col items-center justify-center p-4 select-none backdrop-blur-md print:hidden">
+      
+      {/* 🛠️ কন্ট্রোল টুলবার (টপ সেন্টার) */}
+      <div className="absolute top-6 bg-slate-900/90 border border-white/10 px-4 py-2 rounded-2xl flex items-center gap-3 z-[10000] backdrop-blur-md shadow-2xl">
+        <button onClick={handleZoomIn} className="px-3 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-white font-black text-[10px] uppercase flex items-center gap-1 transition-all active:scale-95">
+          🔍➕ Zoom In
+        </button>
+        <button onClick={handleZoomOut} className="px-3 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-white font-black text-[10px] uppercase flex items-center gap-1 transition-all active:scale-95">
+          🔍➖ Zoom Out
+        </button>
+        <button onClick={handleRotate} className="px-3 py-2 bg-purple-600 hover:bg-purple-500 rounded-xl text-white font-black text-[10px] uppercase flex items-center gap-1 transition-all active:scale-95">
+          🔄 Rotate 90°
+        </button>
+        <button onClick={handleReset} className="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-white font-black text-[10px] uppercase transition-all active:scale-95">
+          Reset ↩
+        </button>
+        <div className="h-6 w-[1px] bg-white/20 mx-1"></div>
+        <button onClick={onClose} className="px-3 py-2 bg-red-600 hover:bg-red-700 rounded-xl text-white font-black text-[10px] uppercase transition-all active:scale-95">
+          Close ❌
+        </button>
+      </div>
+
+      {/* 🖼️ ছবি দেখানোর এবং মাউস দিয়ে ড্র্যাগ (টেনে সরানোর) কন্টেইনার */}
+      <div 
+        className="w-full h-full flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
+        <div
+          style={{
+            transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`,
+            transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+          }}
+          className="max-w-[90%] max-h-[85%] flex items-center justify-center"
+        >
+          <img 
+            src={src} 
+            alt="Student Solution Full View" 
+            className="w-full h-auto max-h-[75vh] object-contain rounded-lg shadow-2xl border-4 border-white pointer-events-none"
+            draggable="false"
+          />
+        </div>
+      </div>
+
+      {/* 💡 নির্দেশিকা মেসেজ */}
+      <div className="absolute bottom-6 text-[10px] font-bold text-slate-400 bg-slate-900/80 border border-white/5 px-4 py-1.5 rounded-full italic pointer-events-none shadow-md">
+        🖐️ Tip: Click & Drag mouse to move the khata around after zooming!
+      </div>
     </div>
   );
 };
