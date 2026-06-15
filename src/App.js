@@ -1487,6 +1487,8 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
       const [isSubmitted, setIsSubmitted] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [isInterfaceHidden, setIsInterfaceHidden] = useState(false);
+    const [qpScale, setQpScale] = useState(1); 
+  const [isLandscape, setIsLandscape] = useState(false);
   const [localCapturePreview, setLocalCapturePreview] = useState(null);
   const [lastCaptureTime, setLastCaptureTime] = useState(0);
   const [tabSwitches, setTabSwitches] = useState(0);
@@ -1885,7 +1887,49 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
         </div>
       </div>
       <div className="flex-1 bg-slate-950 overflow-y-auto overflow-x-hidden md:overflow-hidden relative touch-pan-y" style={{ height: "calc(100vh - 180px)" }}>
-        <iframe src={exam?.fileUrl?.replace('/view?usp=sharing', '/preview').replace('/view', '/preview')} className="w-full h-full border-none opacity-90" title="Paper" />
+                {/* 📄 ডাইনামিক জুম এবং ল্যান্ডস্কেপ ওরিয়েন্টেশন যুক্ত আইফ্রেম জানলা */}
+        <div 
+          className="w-full h-full flex items-center justify-center transition-all duration-300"
+          style={{
+            transform: `rotate(${isLandscape ? 95 : 0}deg) scale(${qpScale})`,
+            transformOrigin: 'center center',
+            width: isLandscape ? '100vh' : '100%',
+            height: isLandscape ? '100vw' : '100%',
+          }}
+        >
+          <iframe 
+            src={exam?.fileUrl?.replace('/view?usp=sharing', '/preview').replace('/view', '/preview')} 
+            className="w-full h-full border-none opacity-90" 
+            title="Paper" 
+          />
+        </div>
+        {/* 🔍📱 প্রশ্নপত্রের ওপরে বামপাশে ৩টি অতি ক্ষুদ্র ভাসমান (Floating) কন্ট্রোল বোতাম */}
+        <div className="absolute left-3 top-1/3 -translate-y-1/2 z-[40] flex flex-col gap-2 print:hidden">
+          {/* জুম ইন বোতাম */}
+          <button 
+            onClick={() => setQpScale(prev => Math.min(prev + 0.2, 3))}
+            className="w-8 h-8 bg-slate-900/90 hover:bg-blue-600 border border-white/20 text-white rounded-lg flex items-center justify-center shadow-lg active:scale-90 transition-all font-black text-xs select-none"
+            title="Zoom In"
+          >
+            ➕
+          </button>
+          {/* জুম আউট বোতাম */}
+          <button 
+            onClick={() => setQpScale(prev => Math.max(prev - 0.2, 0.5))}
+            className="w-8 h-8 bg-slate-900/90 hover:bg-blue-600 border border-white/20 text-white rounded-lg flex items-center justify-center shadow-lg active:scale-90 transition-all font-black text-xs select-none"
+            title="Zoom Out"
+          >
+            ➖
+          </button>
+          {/* ওরিয়েন্টেশন রোটেশন বোতাম */}
+          <button 
+            onClick={() => setIsLandscape(!isLandscape)}
+            className={`w-8 h-8 border border-white/20 rounded-lg flex items-center justify-center shadow-lg active:scale-90 transition-all font-black text-xs select-none ${isLandscape ? 'bg-purple-600 text-white animate-pulse' : 'bg-slate-900/90 text-white'}`}
+            title="Rotate Paper"
+          >
+            🔄
+          </button>
+        </div>
         {/* 👁️ প্যানেল হাইড থাকলে ছোট গোল বাটন দেখাবে, নয়তো মূল ইন্টারফেস দেখাবে */}
 {isInterfaceHidden ? (
   <button 
