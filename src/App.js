@@ -1486,6 +1486,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
   });
       const [isSubmitted, setIsSubmitted] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [isInterfaceHidden, setIsInterfaceHidden] = useState(false);
   const [localCapturePreview, setLocalCapturePreview] = useState(null);
   const [lastCaptureTime, setLastCaptureTime] = useState(0);
   const [tabSwitches, setTabSwitches] = useState(0);
@@ -1550,7 +1551,6 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
     return savedAnswers ? JSON.parse(savedAnswers) : {};
   });
   const [activeQuestion, setActiveQuestion] = useState(null);
-  const [isZenMode, setIsZenMode] = useState(false);
   const [isCameraLock, setIsCameraLock] = useState(false);
   const [scoreData, setScoreData] = useState(null);
 
@@ -1880,24 +1880,37 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
           <p className="text-[8px] md:text-[9px] text-blue-400 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName} {exam.isGuest && '(GUEST)'}</p>
         </div>
         <div className="flex items-center gap-6">
-    <button 
-  onClick={() => setIsZenMode(!isZenMode)} 
-  className={`px-3 py-1.5 rounded-xl font-black text-[9px] uppercase shadow-md transition-all active:scale-95 ${isZenMode ? "bg-red-600 animate-pulse text-white" : "bg-blue-600 text-white"}`}
->
-  {isZenMode ? "⬅ Cancel Full Screen" : "🖥️ Full Screen QP"}
-</button>
           <div className="px-5 py-1.5 rounded-xl font-black text-2xl border-4 text-white border-slate-800 bg-black">{formatTime(timeLeft)}</div>
 <button onClick={() => { if (window.confirm("SUBMIT EXAM?")) submitExam(); }} className={`bg-green-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg ${isZenMode ? 'hidden' : ''}`}>SUBMIT</button>
         </div>
       </div>
-      <div className="flex-1 bg-slate-950 overflow-hidden relative">
+      <div className="flex-1 bg-slate-950 overflow-y-auto overflow-x-hidden md:overflow-hidden relative touch-pan-y" style={{ height: "calc(100vh - 180px)" }}>
         <iframe src={exam?.fileUrl?.replace('/view?usp=sharing', '/preview').replace('/view', '/preview')} className="w-full h-full border-none opacity-90" title="Paper" />
-        <div className={`absolute bottom-0 left-0 right-0 z-50 bg-slate-900/98 border-t-2 border-white/10 backdrop-blur-xl p-3 md:p-4 shadow-2xl ${isZenMode ? 'hidden' : ''}`}>
+        {/* 👁️ প্যানেল হাইড থাকলে ছোট গোল বাটন দেখাবে, নয়তো মূল ইন্টারফেস দেখাবে */}
+{isInterfaceHidden ? (
+  <button 
+    onClick={() => setIsInterfaceHidden(false)} 
+    className="fixed bottom-6 right-6 z-[999] w-12 h-12 bg-blue-600 hover:bg-blue-500 border-2 border-white/20 text-white rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.6)] animate-bounce active:scale-90 transition-all font-black text-xs"
+    title="Show Response Interface"
+  >
+    📝
+  </button>
+) : (
+  <div className={`absolute bottom-0 left-0 right-0 z-50 bg-slate-900/98 border-t-2 border-white/10 backdrop-blur-xl p-3 md:p-4 shadow-2xl`}>
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center justify-between mb-2 px-2">
-              <span className="text-[9px] font-black text-blue-400 uppercase italic flex items-center gap-3"><PenTool size={16} /> RESPONSE INTERFACE</span>
-              {activeQuestion && <button onClick={() => setActiveQuestion(null)} className="text-white bg-slate-700 px-3 py-1 rounded-lg font-black text-[10px] uppercase shadow-lg">Close</button>}
-            </div> 
+               {/* 👁️ রেসপন্স ইন্টারফেসের বাম পাশে টাইটেল এবং ডান পাশে হাইড বোতাম */}
+  <div className="flex items-center gap-3">
+    <span className="text-[9px] font-black text-blue-400 uppercase italic flex items-center gap-2"><PenTool size={14} /> RESPONSE INTERFACE</span>
+    <button 
+      onClick={() => setIsInterfaceHidden(true)} 
+      className="px-2.5 py-1 bg-red-950/60 hover:bg-red-900/60 border border-red-800/40 rounded-lg font-black text-[8px] text-red-400 uppercase shadow-md transition-all active:scale-95 italic tracking-tighter"
+    >
+      👁️ Hide Panel
+    </button>
+  </div>
+  {activeQuestion && <button onClick={() => setActiveQuestion(null)} className="text-white bg-slate-700 px-3 py-1 rounded-lg font-black text-[10px] uppercase shadow-lg">Close</button>}
+    </div> 
             {activeQuestion ? (
   <div className="flex flex-col items-center animate-in slide-in-from-bottom-2 pb-2">
     <p className="text-slate-400 font-black text-xs mb-4 italic uppercase">{answerKeyArray[activeQuestion - 1] === 'W' ? `Page Capturing Q${activeQuestion}:` : `Choice for Q${activeQuestion}:`}</p>
@@ -2074,6 +2087,7 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
             )}
           </div>
         </div>
+              )}
       </div>
     </div>
   );
