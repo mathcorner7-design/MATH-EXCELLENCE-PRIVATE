@@ -1572,6 +1572,15 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
  const handleImageUpload = (qNum, file) => {
   if (exam.isGuest) return alert("Guest users cannot upload images.");
   if (!file) return;
+     // 💡 যদি সরাসরি প্রিভিউ স্ক্রিন থেকে রেডিমেড Base64 ডাটা চলে আসে
+  if (typeof file === 'string' && file.startsWith('data:image')) {
+    setAnswers(prev => {
+      const existingPhotos = Array.isArray(prev[qNum]) ? prev[qNum] : [];
+      return { ...prev, [qNum]: [...existingPhotos, file] };
+    });
+    setIsCapturing(false);
+    return; // এখানেই কাজ শেষ, নিচের ওরিজিনাল ফাইল রিডারের আর দরকার নেই
+  }
 
   setIsCapturing(true); 
 
