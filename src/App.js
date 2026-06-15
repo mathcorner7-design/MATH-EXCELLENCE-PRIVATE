@@ -1508,13 +1508,13 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
 };
 
    const handleVisibilityChange = () => {
-  // 📝 স্টুডেন্ট যখনই ক্যামেরার বোতামে চাপ দেবে, তখন আমরা 'lastCaptureTime' এ কারেন্ট টাইম সেভ করছি।
-  // ছবি তোলার সময় বা ঠিক তার পরের ৪৫ সেকেন্ডের মধ্যে ব্রাউজার ব্যাকগ্রাউন্ডে গেলে ওটাকে সম্পূর্ণ মাফ করে দেওয়া হবে।
-  const isInsideCameraWindow = (Date.now() - lastCaptureTime) < 45000;
-
   if (document.hidden) {
-    // 📸 যদি স্টুডেন্ট ক্যামেরা অন করার কারণে বাইরে গিয়ে থাকে, তবে ট্যাব সুইচ কাউন্ট হবে না
-    if (isCapturing || isInsideCameraWindow) return;
+    const now = Date.now();
+
+    // 📸 আপনার পুরোনো কোডের সেই আসল সুরক্ষাকবচ যা কখনোই মিস হয় না
+    if (isCapturing || (now - lastCaptureTime < 10000)) { 
+      return; 
+    }
 
     setTabSwitches(prev => {
       const newCount = prev + 1;
@@ -1524,13 +1524,6 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
 
     startTime = new Date().getTime();
   } else {
-    // ↩️ স্টুডেন্ট যখন বাইরে থেকে আবার এক্সাম স্ক্রিনে ফিরে আসবে
-    if (isInsideCameraWindow) {
-      // ক্যামেরা মোড থেকে ফিরলে ইনঅ্যাক্টিভ টাইম রিসেট করে দাও, কোনো পেনাল্টি হবে না
-      startTime = null;
-      return;
-    }
-
     if (startTime) {
       const endTime = new Date().getTime();
       const secondsAway = Math.floor((endTime - startTime) / 1000);
@@ -1623,7 +1616,6 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
   alert("ERROR: কিছু একটা সমস্যা হয়েছে।");
 } finally {
   setIsCapturing(false);
-  setIsCameraLock(false); // 🔓 ছবি আপলোড সফল বা ব্যর্থ যাই হোক, লক খুলে দেওয়া হলো
 }
     };
   };
@@ -1918,46 +1910,36 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
                         </div> 
                       <div className="flex gap-4">
   {/* 📸 ক্যামেরা ওপেন এবং মাল্টিপল পেজ অ্যাড করার নিখুঁত বাটন */}
-  <label 
-    className={`px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl flex items-center gap-2 transition-all ${
-      isCapturing 
-        ? "bg-purple-900 text-purple-300 cursor-not-allowed animate-pulse" 
-        : "bg-blue-600 text-white cursor-pointer active:scale-95"
-    }`}
-  >
-    {isCapturing ? (
-      <>
-        <Loader2 size={12} className="animate-spin" />
-        Uploading Page...
-      </>
-    ) : (
-      Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 
-        ? "➕ Add Next Page" 
-        : "📸 Capture Answer"
-    )}
-
-    {/* ইনপুট ফিল্ড: এটি কোনো বাধা ছাড়াই মোবাইলের ক্যামেরা অন করবে */}
-    <input 
-      type="file" 
-      accept="image/*" 
-      capture="environment" 
-      hidden 
-      onClick={(e) => {
-        if (isCapturing) {
-          e.preventDefault(); // আপলোড চলাকালীন নতুন ক্লিক লক থাকবে
-        }
-      }}
-      onChange={(e) => {
-  if (e.target.files && e.target.files[0]) {
+  {/* 📸 লেবেলের মাথায় onClick ফিরিয়ে আনা হলো যাতে ক্লিক করার সাথে সাথেই রোবট পজ হয়ে যায় */}
+<label 
+  onClick={() => {
     setIsCapturing(true);
-    setIsCameraLock(true); // 🔒 ছবি তোলার সাথে সাথে চুরিরোধক রোবটকে লক করে দেওয়া হলো
     setLastCaptureTime(Date.now());
-    setTimeout(() => { setIsCapturing(false); setIsCameraLock(false); }, 30000); // ব্যাকআপ ৩০ সেকেন্ড পর অটো আনলক
-    handleImageUpload(activeQuestion, e.target.files[0]);
-  }
-}}
-    />
-  </label>
+  }}
+  className={`px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-xl flex items-center gap-2 transition-all ${
+    isCapturing ? "bg-purple-900 text-purple-300 cursor-not-allowed animate-pulse" : "bg-blue-600 text-white cursor-pointer active:scale-95"
+  }`}
+>
+  {isCapturing ? (
+    <>
+      <Loader2 size={12} className="animate-spin" /> Uploading Page...
+    </>
+  ) : (
+    Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 ? "➕ Add Next Page" : "📸 Capture Answer"
+  )}
+  <input 
+    type="file" 
+    accept="image/*" 
+    capture="environment" 
+    hidden 
+    onClick={(e) => { if (isCapturing) e.preventDefault(); }} 
+    onChange={(e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleImageUpload(activeQuestion, e.target.files[0]);
+      }
+    }} 
+  />
+</label>
 
   {/* সব পেজ তোলা শেষ হলে DONE বাটনে চাপ দিলে ইন্টারফেসটি বন্ধ হবে */}
   {!isCapturing && Array.isArray(answers[activeQuestion]) && answers[activeQuestion].length > 0 && (
