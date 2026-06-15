@@ -1868,7 +1868,7 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
   return (
     <div className="fixed inset-0 bg-black z-[100] flex flex-col overflow-hidden animate-in fade-in duration-500">
       <div className="bg-slate-900 p-2 md:p-3 flex justify-between items-center border-b-4 border-yellow-500 shadow-2xl relative z-50 text-white">
-        <div className="flex-1 min-w-0 pr-2">
+<div className={`flex-1 min-w-0 pr-2 ${isZenMode ? 'hidden' : ''}`}>
           <h2 className="font-black text-[10px] uppercase italic tracking-tighter leading-none truncate max-w-[150px]">{exam?.name}</h2>
           <p className="text-[8px] md:text-[9px] text-blue-400 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName} {exam.isGuest && '(GUEST)'}</p>
         </div>
@@ -1880,7 +1880,7 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
   {isZenMode ? "⬅ Cancel Full Screen" : "🖥️ Full Screen QP"}
 </button>
           <div className="px-5 py-1.5 rounded-xl font-black text-2xl border-4 text-white border-slate-800 bg-black">{formatTime(timeLeft)}</div>
-          <button onClick={() => { if (window.confirm("SUBMIT EXAM?")) submitExam(); }} className="bg-green-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg">SUBMIT</button>
+<button onClick={() => { if (window.confirm("SUBMIT EXAM?")) submitExam(); }} className={`bg-green-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg ${isZenMode ? 'hidden' : ''}`}>SUBMIT</button>
         </div>
       </div>
       <div className="flex-1 bg-slate-950 overflow-hidden relative">
