@@ -1553,6 +1553,7 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
     return savedAnswers ? JSON.parse(savedAnswers) : {};
   });
   const [activeQuestion, setActiveQuestion] = useState(null);
+  const [isZenMode, setIsZenMode] = useState(false);
   const [scoreData, setScoreData] = useState(null);
 
   useEffect(() => {
@@ -1872,13 +1873,19 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
           <p className="text-[8px] md:text-[9px] text-blue-400 font-black uppercase mt-1 tracking-widest italic leading-none">{exam?.studentName} {exam.isGuest && '(GUEST)'}</p>
         </div>
         <div className="flex items-center gap-6">
+    <button 
+  onClick={() => setIsZenMode(!isZenMode)} 
+  className={`px-3 py-1.5 rounded-xl font-black text-[9px] uppercase shadow-md transition-all active:scale-95 ${isZenMode ? "bg-red-600 animate-pulse text-white" : "bg-blue-600 text-white"}`}
+>
+  {isZenMode ? "⬅ Cancel Full Screen" : "🖥️ Full Screen QP"}
+</button>
           <div className="px-5 py-1.5 rounded-xl font-black text-2xl border-4 text-white border-slate-800 bg-black">{formatTime(timeLeft)}</div>
           <button onClick={() => { if (window.confirm("SUBMIT EXAM?")) submitExam(); }} className="bg-green-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg">SUBMIT</button>
         </div>
       </div>
       <div className="flex-1 bg-slate-950 overflow-hidden relative">
         <iframe src={exam?.fileUrl?.replace('/view?usp=sharing', '/preview').replace('/view', '/preview')} className="w-full h-full border-none opacity-90" title="Paper" />
-        <div className="absolute bottom-0 left-0 right-0 z-50 bg-slate-900/98 border-t-2 border-white/10 backdrop-blur-xl p-3 md:p-4 shadow-2xl">
+        <div className={`absolute bottom-0 left-0 right-0 z-50 bg-slate-900/98 border-t-2 border-white/10 backdrop-blur-xl p-3 md:p-4 shadow-2xl ${isZenMode ? 'hidden' : ''}`}>
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center justify-between mb-2 px-2">
               <span className="text-[9px] font-black text-blue-400 uppercase italic flex items-center gap-3"><PenTool size={16} /> RESPONSE INTERFACE</span>
