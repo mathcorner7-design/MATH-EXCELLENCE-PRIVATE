@@ -1488,7 +1488,6 @@ const InteractiveExamHall = ({ exam, onFinish, studentsList, setIsAppSubmitting,
   const [isCapturing, setIsCapturing] = useState(false);
   const [isInterfaceHidden, setIsInterfaceHidden] = useState(false);
     const [qpScale, setQpScale] = useState(1); 
-  const [isLandscape, setIsLandscape] = useState(false);
   const [localCapturePreview, setLocalCapturePreview] = useState(null);
   const [lastCaptureTime, setLastCaptureTime] = useState(0);
   const [tabSwitches, setTabSwitches] = useState(0);
@@ -1904,7 +1903,7 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
             const y = e.clientY - window.qpDragStart.y;
             window.qpPos = { x, y };
             const el = document.getElementById('qp-drag-wrapper');
-            if (el) el.style.transform = `translate(${x}px, ${y}px) rotate(${isLandscape ? 90 : 0}deg) scale(${qpScale})`;
+            if (el) el.style.transform = `translate(${x}px, ${y}px) scale(${qpScale})`;
           }}
           onMouseUp={() => window.qpIsDragging = false}
           onMouseLeave={() => window.qpIsDragging = false}
@@ -1921,7 +1920,7 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
             const y = e.touches[0].clientY - window.qpDragStart.y;
             window.qpPos = { x, y };
             const el = document.getElementById('qp-drag-wrapper');
-            if (el) el.style.transform = `translate(${x}px, ${y}px) rotate(${isLandscape ? 90 : 0}deg) scale(${qpScale})`;
+            if (el) el.style.transform = `translate(${x}px, ${y}px) scale(${qpScale})`;
           }}
           onTouchEnd={() => window.qpIsDragging = false}
         >
@@ -1929,16 +1928,18 @@ status: (isBanned || forcedBan) ? "BANNED" : "COMPLETED", obtained: totalObtaine
             id="qp-drag-wrapper"
             className="transition-transform duration-75 ease-out w-full h-full"
             style={{
-              transform: `translate(${window.qpPos?.x || 0}px, ${window.qpPos?.y || 0}px) rotate(${isLandscape ? 95 : 0}deg) scale(${qpScale})`,
-              transformOrigin: 'top left',
-              // ✨ ল্যান্ডস্কেপ মোডের স্ক্রিন সাইজ ও রেশিও পারফেক্ট করার আসল লজিক:
-width: isLandscape ? 'calc(100vh - 180px)' : '100%',
-height: isLandscape ? '100vw' : '100%',
-maxHeight: isLandscape ? '580px' : '100%',
+             transform: `translate(${window.qpPos?.x || 0}px, ${window.qpPos?.y || 0}px) scale(${qpScale})`,
+transformOrigin: 'top left', 
+width: '100%',
+height: '100%',
             }}
           >
             <iframe 
-              src={exam?.fileUrl ? `${exam.fileUrl.split('/view')[0]}/preview?rm=minimal` : ''} 
+              src={(() => {
+  if (!exam?.fileUrl) return '';
+  const match = exam.fileUrl.match(/\/d\/([^/]+)/);
+  return match ? `https://drive.google.com/file/d/${match[1]}/preview?hl=en&authuser=0` : exam.fileUrl;
+})()} 
               className="w-full h-full border-none opacity-90" 
               title="Paper" 
             />
@@ -1961,14 +1962,6 @@ maxHeight: isLandscape ? '580px' : '100%',
             title="Zoom Out"
           >
             ➖
-          </button>
-          {/* ওরিয়েন্টেশন রোটেশন বোতাম */}
-          <button 
-            onClick={() => setIsLandscape(!isLandscape)}
-            className={`w-8 h-8 border border-white/20 rounded-lg flex items-center justify-center shadow-lg active:scale-90 transition-all font-black text-xs select-none ${isLandscape ? 'bg-purple-600 text-white animate-pulse' : 'bg-slate-900/90 text-white'}`}
-            title="Rotate Paper"
-          >
-            🔄
           </button>
         </div>
         {/* 👁️ প্যানেল হাইড থাকলে ছোট গোল বাটন দেখাবে, নয়তো মূল ইন্টারফেস দেখাবে */}
@@ -2117,14 +2110,14 @@ maxHeight: isLandscape ? '580px' : '100%',
       }} 
       className="px-6 py-3 bg-blue-600 text-white cursor-pointer active:scale-95 rounded-xl font-black text-[10px] uppercase shadow-xl flex items-center gap-2 transition-all"
     >
-      📸 Open Web-Cam
+      📸 Open CAMERA
     </label>
 
     {/* ২. ✨ নতুন ল্যাপটপ স্পেশাল ফাইল আপলোড বোতাম (যা সরাসরি প্রিভিউ মোড অন করে দেবে) */}
     <label 
       className="px-6 py-3 bg-slate-800 border border-slate-700 text-slate-300 cursor-pointer active:scale-95 rounded-xl font-black text-[10px] uppercase shadow-xl flex items-center gap-2 transition-all hover:bg-slate-700"
     >
-      📁 Upload (Only Laptop)
+      📁 Upload (COMPUTER ONLY)
       <input 
         type="file" 
         accept="image/*" 
