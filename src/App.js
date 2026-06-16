@@ -192,7 +192,7 @@ const StudentPdfModal = ({ src, title, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black/95 z-[5000] flex flex-col p-4 backdrop-blur-md animate-in fade-in print:hidden">
       <div className="w-full max-w-5xl mx-auto flex justify-between items-center mb-3 border-b border-white/10 pb-2">
-        <h3 className="text-sm font-black uppercase italic tracking-tighter text-blue-400 truncate max-w-[40%] sm:max-w-[60%] md:max-w-none" title={title}>{title}</h3>
+       <h3 className="text-sm font-black uppercase italic tracking-tighter text-blue-400 truncate max-w-[40%] sm:max-w-[60%] md:max-w-none" title={title}>{title}</h3>
         
         <div className="flex items-center gap-3">
           {/* ডাউনলোড বাটন */}
@@ -992,7 +992,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   </button>
 
   {/* ড্রপডাউন সাব-মেনু */}
- <div id={`admin-pdf-drop-${item.id}`} className="hidden fixed right-16 z-[99999] w-44 p-2 bg-slate-950 border border-blue-500 rounded-2xl shadow-2xl flex flex-col gap-2 animate-in fade-in zoom-in duration-150">
+  <div id={`admin-pdf-drop-${item.id}`} className="hidden absolute right-0 top-9 z-[3000] w-44 p-2 bg-slate-950 border border-white/10 rounded-2xl shadow-2xl flex flex-col gap-2 animate-in fade-in zoom-in duration-150">
     {item.fileUrl ? (
       <button 
         onClick={() => window.setStudentPdf ? window.setStudentPdf({url: item.fileUrl, title: `${item.name} - Question Paper`}) : alert("Please reload")} 
@@ -1056,8 +1056,8 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   </button>
 
   {/* ড্রপডাউন সাব-মেনু */}
- <div id={`admin-pdf-drop-${item.id}`} className="hidden fixed right-16 z-[99999] w-44 p-2 bg-slate-950 border border-blue-500 rounded-2xl shadow-2xl flex flex-col gap-2 animate-in fade-in zoom-in duration-150">
-{item.fileUrl ? (
+  <div id={`admin-pdf-drop-${item.id}`} className="hidden absolute right-0 top-9 z-[3000] w-44 p-2 bg-slate-950 border border-white/10 rounded-2xl shadow-2xl flex flex-col gap-2 animate-in fade-in zoom-in duration-150">
+    {item.fileUrl ? (
       <button 
         onClick={() => window.setStudentPdf ? window.setStudentPdf({url: item.fileUrl, title: `${item.name} - Question Paper`}) : alert("Please reload")} 
         className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 hover:bg-amber-950/40 border border-transparent hover:border-amber-900/50 transition-all text-left text-white"
