@@ -897,7 +897,7 @@ const TeacherZoneMainView = ({ liveMocks, practiceSets, students, teacherPin, se
   const classes = [...new Set(items.map(m => m.class || 'Other'))].sort((a, b) => parseInt(a) - parseInt(b));
 
   return (
-    <div className="bg-black/60 backdrop-blur-xl rounded-[2rem] shadow-2xl border-t-8 border-slate-900 mb-8 w-full overflow-hidden print:hidden border-x border-b border-white/5">
+    <div className="bg-black/60 backdrop-blur-xl rounded-[2rem] shadow-2xl border-t-8 border-slate-900 mb-8 w-full overflow-visible print:hidden border-x border-b border-white/5">
       <div className="flex justify-between items-center p-6 border-b border-white/5">
         <h3 className={`font-black uppercase text-xs italic ${color}`}>{title} Manager ({items.length})</h3>
       </div>
